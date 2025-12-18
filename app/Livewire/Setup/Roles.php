@@ -10,6 +10,7 @@ class Roles extends Component
 {
     public $roles, $name, $role_id;
     public $selectedPermissions = [];
+    public $selectAll = false;
     public $isOpen = false;
 
     public function render()
@@ -45,6 +46,46 @@ class Roles extends Component
         $this->name = '';
         $this->role_id = '';
         $this->selectedPermissions = [];
+        $this->selectAll = false;
+    }
+
+    public function updatedSelectAll($value)
+    {
+        if ($value) {
+            $this->selectedPermissions = Permission::pluck('id')->map(fn($id) => (string) $id)->toArray();
+        } else {
+            $this->selectedPermissions = [];
+        }
+    }
+
+    public function toggleGroup($groupName)
+    {
+        $groupPermissions = Permission::where('group_name', $groupName)->pluck('id')->map(fn($id) => (string) $id)->toArray();
+        
+        // If all group permissions are already selected, deselect them
+        if (array_intersect($groupPermissions, $this->selectedPermissions) == $groupPermissions) {
+            $this->selectedPermissions = array_diff($this->selectedPermissions, $groupPermissions);
+        } else {
+            // Otherwise, select them all (avoiding duplicates)
+            $this->selectedPermissions = array_unique(array_merge($this->selectedPermissions, $groupPermissions));
+        }
+
+        $this->updateSelectAllStatus();
+    }
+
+    public function updatedSelectedPermissions()
+    {
+        $this->updateSelectAllStatus();
+    }
+
+    private function updateSelectAllStatus()
+    {
+        $allPermissionIds = Permission::pluck('id')->map(fn($id) => (string) $id)->toArray();
+        if (count($this->selectedPermissions) === count($allPermissionIds)) {
+            $this->selectAll = true;
+        } else {
+            $this->selectAll = false;
+        }
     }
 
     public function store()
@@ -81,6 +122,7 @@ class Roles extends Component
 
         // Load existing permissions
         $this->selectedPermissions = $role->permissions->pluck('id')->map(fn($id) => (string) $id)->toArray();
+        $this->updateSelectAllStatus();
 
         $this->openModal();
     }

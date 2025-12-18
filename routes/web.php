@@ -41,6 +41,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/setup/expense-categories', \App\Livewire\Setup\ExpenseCategories::class)->name('setup.expense-categories');
     Route::get('/setup/expenses', \App\Livewire\Setup\Expenses::class)->name('setup.expenses');
     Route::get('/setup/economic-codes', \App\Livewire\Setup\EconomicCodes::class)->name('setup.economic-codes');
+    Route::get('/setup/users', \App\Livewire\Setup\Users::class)->name('setup.users');
     Route::get('settings/two-factor', TwoFactor::class)
         ->middleware(
             when(
@@ -54,5 +55,6 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/budget/estimation', \App\Livewire\BudgetEstimations::class)->name('budget.estimation');
+    Route::get('/budget/estimations', \App\Livewire\BudgetEstimations::class)->name('budget.estimations');
+    Route::get('/budget/approvals', \App\Livewire\BudgetApprovals::class)->name('budget.approvals');
 });

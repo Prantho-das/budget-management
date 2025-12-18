@@ -136,7 +136,8 @@
                                     <span key="t-utility">{{ __('Budgeting') }}</span>
                                 </a>
                                 <ul class="sub-menu" aria-expanded="false">
-                                    <li><a href="{{ route('budget.estimation') }}" wire:navigate key="t-starter-page">{{ __('Estimation') }}</a></li>
+                                    <li><a href="{{ route('budget.estimations') }}" wire:navigate key="t-estimations">{{ __('Estimation') }}</a></li>
+                                    <li><a href="{{ route('budget.approvals') }}" wire:navigate key="t-approvals">{{ __('Approvals') }}</a></li>
                                 </ul>
                             </li>
                             <li>
@@ -146,8 +147,9 @@
                                 </a>
                                 <ul class="sub-menu" aria-expanded="false">
                                     <li><a href="{{ route('setup.fiscal-years') }}" wire:navigate key="t-fiscal-years">{{ __('Fiscal Years') }}</a></li>
-                                    <li><a href="{{ route('setup.permissions') }}" wire:navigate key="t-permissions">{{ __('Permissions') }}</a></li>
+                                     <li><a href="{{ route('setup.permissions') }}" wire:navigate key="t-permissions">{{ __('Permissions') }}</a></li>
                                     <li><a href="{{ route('setup.roles') }}" wire:navigate key="t-roles">{{ __('Roles') }}</a></li>
+                                    <li><a href="{{ route('setup.users') }}" wire:navigate key="t-users">{{ __('Users') }}</a></li>
                                     <li><a href="{{ route('setup.rpo-units') }}" wire:navigate key="t-offices">{{ __('Offices') }}</a></li>
                                     <li><a href="{{ route('setup.expense-categories') }}" wire:navigate key="t-expense-categories">{{ __('Expense Categories') }}</a></li>
                                     <li><a href="{{ route('setup.expenses') }}" wire:navigate key="t-expenses">{{ __('Expenses') }}</a></li>

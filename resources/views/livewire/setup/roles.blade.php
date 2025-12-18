@@ -48,19 +48,31 @@
                                                 @error('name') <span class="text-danger">{{ $message }}</span>@enderror
                                             </div>
 
-                                            <div class="mb-3">
-                                                <label class="form-label">Permissions</label>
+                                             <div class="mb-3">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <label class="form-label mb-0">Permissions</label>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="selectAll" wire:model.live="selectAll">
+                                                        <label class="form-check-label" for="selectAll">Select All</label>
+                                                    </div>
+                                                </div>
                                                 <div class="row" style="max-height: 400px; overflow-y: auto;">
                                                     @foreach($groupedPermissions as $groupName => $permissions)
                                                         <div class="col-md-6 mb-3">
                                                             <div class="card border">
-                                                                <div class="card-header bg-light py-2">
+                                                                 <div class="card-header bg-light py-1 d-flex justify-content-between align-items-center">
                                                                     <h6 class="mb-0">{{ $groupName ?: 'Uncategorized' }}</h6>
+                                                                    <div class="form-check">
+                                                                        <input class="form-check-input" type="checkbox" id="checkGroup_{{ Str::slug($groupName) }}" 
+                                                                            wire:click="toggleGroup('{{ $groupName }}')" 
+                                                                            {{ array_intersect($permissions->pluck('id')->map(fn($id) => (string) $id)->toArray(), $selectedPermissions) == $permissions->pluck('id')->map(fn($id) => (string) $id)->toArray() ? 'checked' : '' }}>
+                                                                        <label class="form-check-label" for="checkGroup_{{ Str::slug($groupName) }}">All</label>
+                                                                    </div>
                                                                 </div>
                                                                 <div class="card-body p-2">
                                                                     @foreach($permissions as $permission)
-                                                                        <div class="form-check mb-1">
-                                                                            <input class="form-check-input" type="checkbox" value="{{ $permission->id }}" id="perm_{{ $permission->id }}" wire:model="selectedPermissions">
+                                                                         <div class="form-check mb-1">
+                                                                            <input class="form-check-input" type="checkbox" value="{{ $permission->id }}" id="perm_{{ $permission->id }}" wire:model.live="selectedPermissions">
                                                                             <label class="form-check-label" for="perm_{{ $permission->id }}">
                                                                                 {{ $permission->name }}
                                                                             </label>

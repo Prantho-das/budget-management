@@ -2,21 +2,19 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\FiscalYear;
+use App\Models\RpoUnit;
+use App\Models\EconomicCode;
 
-class BudgetEstimation extends Model
+class BudgetAllocation extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'fiscal_year_id',
         'budget_type',
         'rpo_unit_id',
         'economic_code_id',
-        'amount_demand',
-        'amount_approved',
-        'status',
+        'amount',
         'remarks',
     ];
 

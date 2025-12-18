@@ -14,6 +14,8 @@ class BudgetEstimations extends Component
   public $fiscal_year_id;
   public $rpo_unit_id;
   public $demands = []; // [economic_code_id => amount]
+  public $previousDemands = []; // [economic_code_id => amount]
+  public $budget_type = 'Main Budget';
   public $status = 'draft';
 
   public function mount()
@@ -22,29 +24,49 @@ class BudgetEstimations extends Component
     $fiscalYear = FiscalYear::where('status', true)->latest()->first();
     $this->fiscal_year_id = $fiscalYear ? $fiscalYear->id : null;
 
-    // In a real app, this would be the logged-in user's office. 
-    // For demo, we might need to select it or assume a default.
-    // Let's assume the first RPO unit for now if not linked to user.
-    $this->rpo_unit_id = RpoUnit::first()->id ?? null;
+    // Use the logged-in user's office. 
+    $this->rpo_unit_id = Auth::user()->rpo_unit_id;
 
     $this->loadDemands();
   }
 
   public function loadDemands()
   {
+    $this->demands = [];
     if (!$this->fiscal_year_id || !$this->rpo_unit_id) return;
 
+    $currentFiscalYear = FiscalYear::find($this->fiscal_year_id);
+
+    // Current Year Demands
     $estimations = BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id)
       ->where('rpo_unit_id', $this->rpo_unit_id)
+      ->where('budget_type', $this->budget_type)
       ->get();
 
     foreach ($estimations as $estimation) {
       $this->demands[$estimation->economic_code_id] = $estimation->amount_demand;
     }
 
+    // Previous Year Demands
+    $previousFiscalYear = FiscalYear::where('end_date', '<', $currentFiscalYear->start_date)
+      ->orderBy('end_date', 'desc')
+      ->first();
+
+    if ($previousFiscalYear) {
+      $prevEstimations = BudgetEstimation::where('fiscal_year_id', $previousFiscalYear->id)
+        ->where('rpo_unit_id', $this->rpo_unit_id)
+        ->get();
+
+      foreach ($prevEstimations as $estimation) {
+        $this->previousDemands[$estimation->economic_code_id] = $estimation->amount_demand;
+      }
+    }
+
     // Infer status from one of the records (assuming all have same status per batch)
     if ($estimations->isNotEmpty()) {
       $this->status = $estimations->first()->status;
+    } else {
+      $this->status = 'draft';
     }
   }
 
@@ -64,17 +86,27 @@ class BudgetEstimations extends Component
   {
     if (!$this->fiscal_year_id || !$this->rpo_unit_id) return;
 
+    // Check if currently editable
+    if ($this->status !== 'draft' && $this->status !== 'rejected') {
+      session()->flash('error', 'Budget already submitted or approved and cannot be edited.');
+      return;
+    }
+
     foreach ($this->demands as $code_id => $amount) {
-      // Only save if amount > 0 or record exists
-      if ($amount > 0) {
+      if ($amount > 0 || BudgetEstimation::where([
+        'fiscal_year_id' => $this->fiscal_year_id,
+        'rpo_unit_id' => $this->rpo_unit_id,
+        'economic_code_id' => $code_id,
+      ])->exists()) {
         BudgetEstimation::updateOrCreate(
           [
             'fiscal_year_id' => $this->fiscal_year_id,
-            'rpo_unit_id' => $this->rpo_unit_id,
+            'budget_type'    => $this->budget_type,
+            'rpo_unit_id'    => $this->rpo_unit_id,
             'economic_code_id' => $code_id,
           ],
           [
-            'amount_demand' => $amount,
+            'amount_demand' => $amount ?: 0,
             'status' => $status,
           ]
         );

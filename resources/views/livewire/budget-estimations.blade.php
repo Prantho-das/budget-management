@@ -26,19 +26,44 @@
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <div>
                             <h5 class="card-title">Fiscal Year: {{ $currentFiscalYear->name }}</h5>
-                            <p class="card-title-desc mb-0">Office: {{ $currentOffice->name }} ({{ $currentOffice->code }})</p>
+                            <p class="card-title-desc mb-2">Office: {{ $currentOffice->name }} ({{ $currentOffice->code }})</p>
+                            
+                            <div class="mb-3" style="max-width: 300px;">
+                                <label class="form-label font-size-13 text-muted">Budget Request Type</label>
+                                <select wire:model="budget_type" wire:change="loadDemands" class="form-select form-select-sm" {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
+                                    <option value="Main Budget">Main Budget</option>
+                                    <option value="Supplementary Budget 1">Supplementary Budget 1</option>
+                                    <option value="Supplementary Budget 2">Supplementary Budget 2</option>
+                                    <option value="Supplementary Budget 3">Supplementary Budget 3</option>
+                                </select>
+                            </div>
+
                             <p class="mb-0">Status: 
-                                <span class="badge bg-{{ $status === 'submitted' ? 'success' : 'warning' }}">
-                                    {{ ucfirst($status) }}
+                                @php
+                                    $badgeClass = match($status) {
+                                        'draft' => 'secondary',
+                                        'submitted' => 'primary',
+                                        'partially_approved' => 'info',
+                                        'district_approved' => 'info',
+                                        'hq_approved' => 'success',
+                                        'approved' => 'success',
+                                        'rejected' => 'danger',
+                                        default => 'warning'
+                                    };
+                                @endphp
+                                <span class="badge bg-{{ $badgeClass }}">
+                                    {{ ucfirst(str_replace('_', ' ', $status)) }}
                                 </span>
                             </p>
                         </div>
                         <div>
-                            @if($status === 'draft')
+                            @if($status === 'draft' || $status === 'rejected')
                                 <button wire:click="saveDraft" class="btn btn-secondary waves-effect waves-light me-2">Save Draft</button>
                                 <button wire:click="submit" class="btn btn-primary waves-effect waves-light">Submit Budget</button>
                             @else
-                                <button class="btn btn-success disabled">Submitted</button>
+                                <button class="btn btn-success disabled">
+                                    <i class="bx bx-check-double me-1"></i> Submitted
+                                </button>
                             @endif
                         </div>
                     </div>
@@ -56,6 +81,7 @@
                                 <tr>
                                     <th style="width: 15%;">Economic Code</th>
                                     <th>Description</th>
+                                    <th style="width: 15%;">Prev. Year (Prakkalon)</th>
                                     <th style="width: 20%;">Demand Amount</th>
                                 </tr>
                             </thead>
@@ -67,6 +93,13 @@
                                             {{ $code->name }} <br>
                                             <small class="text-muted">{{ $code->description }}</small>
                                         </td>
+                                        <td class="text-end">
+                                            @if(isset($previousDemands[$code->id]))
+                                                <strong>৳ {{ number_format($previousDemands[$code->id], 2) }}</strong>
+                                            @else
+                                                <span class="text-muted">N/A</span>
+                                            @endif
+                                        </td>
                                         <td>
                                             <div class="input-group">
                                                 <span class="input-group-text">৳</span>
@@ -75,7 +108,7 @@
                                                        class="form-control" 
                                                        wire:model.defer="demands.{{ $code->id }}" 
                                                        placeholder="0.00"
-                                                       {{ $status === 'submitted' ? 'disabled' : '' }}>
+                                                       {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
                                             </div>
                                         </td>
                                     </tr>

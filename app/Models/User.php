@@ -24,6 +24,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'rpo_unit_id',
     ];
 
     /**
@@ -59,7 +60,12 @@ class User extends Authenticatable
         return Str::of($this->name)
             ->explode(' ')
             ->take(2)
-            ->map(fn ($word) => Str::substr($word, 0, 1))
+            ->map(fn($word) => Str::substr($word, 0, 1))
             ->implode('');
+    }
+
+    public function office()
+    {
+        return $this->belongsTo(RpoUnit::class, 'rpo_unit_id');
     }
 }
