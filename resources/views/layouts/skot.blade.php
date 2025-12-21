@@ -130,6 +130,7 @@
                                     <span key="t-dashboards">{{ __('Dashboard') }}</span>
                                 </a>
                             </li>
+                            @can('view-budget-estimations')
                             <li>
                                 <a href="javascript: void(0);" class="has-arrow waves-effect">
                                     <i class="bx bx-file"></i>
@@ -137,25 +138,58 @@
                                 </a>
                                 <ul class="sub-menu" aria-expanded="false">
                                     <li><a href="{{ route('budget.estimations') }}" wire:navigate key="t-estimations">{{ __('Estimation') }}</a></li>
-                                    <li><a href="{{ route('budget.approvals') }}" wire:navigate key="t-approvals">{{ __('Approvals') }}</a></li>
+                                    @canany(['approve-budget', 'reject-budget'])
+                                        <li><a href="{{ route('budget.approvals') }}" wire:navigate key="t-approvals">{{ __('Approvals') }}</a></li>
+                                    @endcanany
+                                    <li><a href="{{ route('budget.status') }}" wire:navigate key="t-status">{{ __('Budget Status') }}</a></li>
+                                    <li><a href="{{ route('budget.summary') }}" wire:navigate key="t-summary">{{ __('My Budget Summary') }}</a></li>
                                 </ul>
                             </li>
+                            @endcan
+
+                            @can('view-expenses')
+                            <li>
+                                <a href="{{ route('setup.expenses') }}" wire:navigate class="waves-effect">
+                                    <i class="bx bx-wallet"></i>
+                                    <span key="t-expenses">{{ __('Expenses') }}</span>
+                                </a>
+                            </li>
+                            @endcan
+
+                            @canany(['view-fiscal-years', 'view-budget-types', 'view-users', 'view-offices', 'view-economic-codes', 'view-roles', 'view-permissions', 'view-system-settings'])
                             <li>
                                 <a href="javascript: void(0);" class="has-arrow waves-effect">
                                     <i class="bx bx-cog"></i>
                                     <span key="t-setup">{{ __('Setup') }}</span>
                                 </a>
                                 <ul class="sub-menu" aria-expanded="false">
-                                    <li><a href="{{ route('setup.fiscal-years') }}" wire:navigate key="t-fiscal-years">{{ __('Fiscal Years') }}</a></li>
-                                     <li><a href="{{ route('setup.permissions') }}" wire:navigate key="t-permissions">{{ __('Permissions') }}</a></li>
-                                    <li><a href="{{ route('setup.roles') }}" wire:navigate key="t-roles">{{ __('Roles') }}</a></li>
-                                    <li><a href="{{ route('setup.users') }}" wire:navigate key="t-users">{{ __('Users') }}</a></li>
-                                    <li><a href="{{ route('setup.rpo-units') }}" wire:navigate key="t-offices">{{ __('Offices') }}</a></li>
-                                    <li><a href="{{ route('setup.expense-categories') }}" wire:navigate key="t-expense-categories">{{ __('Expense Categories') }}</a></li>
-                                    <li><a href="{{ route('setup.expenses') }}" wire:navigate key="t-expenses">{{ __('Expenses') }}</a></li>
-                                    <li><a href="{{ route('setup.economic-codes') }}" wire:navigate key="t-economic-codes">{{ __('Economic Codes') }}</a></li>
+                                    @can('view-fiscal-years')
+                                        <li><a href="{{ route('setup.fiscal-years') }}" wire:navigate key="t-fiscal-years">{{ __('Fiscal Years') }}</a></li>
+                                    @endcan
+                                    @can('view-budget-types')
+                                        <li><a href="{{ route('setup.budget-types') }}" wire:navigate key="t-budget-types">{{ __('Budget Types') }}</a></li>
+                                    @endcan
+                                    @can('view-users')
+                                        <li><a href="{{ route('setup.users') }}" wire:navigate key="t-users">{{ __('Users') }}</a></li>
+                                    @endcan
+                                    @can('view-offices')
+                                        <li><a href="{{ route('setup.rpo-units') }}" wire:navigate key="t-offices">{{ __('Offices') }}</a></li>
+                                    @endcan
+                                    @can('view-economic-codes')
+                                        <li><a href="{{ route('setup.economic-codes') }}" wire:navigate key="t-economic-codes">{{ __('Economic Codes') }}</a></li>
+                                    @endcan
+                                    @can('view-roles')
+                                        <li><a href="{{ route('setup.roles') }}" wire:navigate key="t-roles">{{ __('Roles') }}</a></li>
+                                    @endcan
+                                    @can('view-permissions')
+                                        <li><a href="{{ route('setup.permissions') }}" wire:navigate key="t-permissions">{{ __('Permissions') }}</a></li>
+                                    @endcan
+                                    @can('view-system-settings')
+                                        <li><a href="{{ route('setup.system-settings') }}" wire:navigate key="t-system-settings">{{ __('System Settings') }}</a></li>
+                                    @endcan
                                 </ul>
                             </li>
+                            @endcan
 
 
                         </ul>

@@ -12,12 +12,14 @@ class Permissions extends Component
 
     public function render()
     {
+        abort_if(auth()->user()->cannot('view-permissions'), 403);
         $this->permissions = Permission::orderBy('group_name')->get();
         return view('livewire.setup.permissions')->extends('layouts.skot')->section('content');
     }
 
     public function create()
     {
+        abort_if(auth()->user()->cannot('create-permissions'), 403);
         $this->resetInputFields();
         $this->openModal();
     }
@@ -41,6 +43,12 @@ class Permissions extends Component
 
     public function store()
     {
+        if ($this->permission_id) {
+            abort_if(auth()->user()->cannot('edit-permissions'), 403);
+        } else {
+            abort_if(auth()->user()->cannot('create-permissions'), 403);
+        }
+
         $this->validate([
             'name' => 'required|unique:permissions,name,' . $this->permission_id,
             'group_name' => 'required',
@@ -53,7 +61,7 @@ class Permissions extends Component
 
         session()->flash(
             'message',
-            $this->permission_id ? 'Permission Updated Successfully.' : 'Permission Created Successfully.'
+            $this->permission_id ? __('Permission Updated Successfully.') : __('Permission Created Successfully.')
         );
 
         $this->closeModal();
@@ -62,6 +70,7 @@ class Permissions extends Component
 
     public function edit($id)
     {
+        abort_if(auth()->user()->cannot('edit-permissions'), 403);
         $permission = Permission::findOrFail($id);
         $this->permission_id = $id;
         $this->name = $permission->name;
@@ -74,16 +83,17 @@ class Permissions extends Component
 
     public function delete($id)
     {
-
+        abort_if(auth()->user()->cannot('delete-permissions'), 403);
         $this->dispatch('delete-confirmation', $id);
     }
 
     public function deleteConfirmed($id)
     {
+        abort_if(auth()->user()->cannot('delete-permissions'), 403);
         if (is_array($id)) {
             $id = $id['id'] ?? $id[0];
         }
         Permission::find($id)->delete();
-        session()->flash('message', 'Permission Deleted Successfully.');
+        session()->flash('message', __('Permission Deleted Successfully.'));
     }
 }

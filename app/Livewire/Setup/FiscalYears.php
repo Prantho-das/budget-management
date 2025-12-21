@@ -13,6 +13,7 @@ class FiscalYears extends Component
 
     public function render()
     {
+        abort_if(auth()->user()->cannot('view-fiscal-years'), 403);
         $this->fiscal_years = FiscalYear::orderBy('id', 'desc')->get();
         return view('livewire.setup.fiscal-years')
             ->extends('layouts.skot')
@@ -21,6 +22,7 @@ class FiscalYears extends Component
 
     public function create()
     {
+        abort_if(auth()->user()->cannot('create-fiscal-years'), 403);
         $this->resetInputFields();
         $this->openModal();
     }
@@ -46,6 +48,12 @@ class FiscalYears extends Component
 
     public function store()
     {
+        if ($this->fiscal_year_id) {
+            abort_if(auth()->user()->cannot('edit-fiscal-years'), 403);
+        } else {
+            abort_if(auth()->user()->cannot('create-fiscal-years'), 403);
+        }
+
         $this->validate([
             'name' => 'required',
             'start_date' => 'required|date',
@@ -62,7 +70,7 @@ class FiscalYears extends Component
 
         session()->flash(
             'message',
-            $this->fiscal_year_id ? 'Fiscal Year Updated Successfully.' : 'Fiscal Year Created Successfully.'
+            $this->fiscal_year_id ? __('Fiscal Year Updated Successfully.') : __('Fiscal Year Created Successfully.')
         );
 
         $this->closeModal();
@@ -71,6 +79,7 @@ class FiscalYears extends Component
 
     public function edit($id)
     {
+        abort_if(auth()->user()->cannot('edit-fiscal-years'), 403);
         $fiscalYear = FiscalYear::findOrFail($id);
         $this->fiscal_year_id = $id;
         $this->name = $fiscalYear->name;
@@ -85,16 +94,17 @@ class FiscalYears extends Component
 
     public function delete($id)
     {
+        abort_if(auth()->user()->cannot('delete-fiscal-years'), 403);
         $this->dispatch('delete-confirmation', $id);
     }
 
     public function deleteConfirmed($id)
     {
-
+        abort_if(auth()->user()->cannot('delete-fiscal-years'), 403);
         if (is_array($id)) {
             $id = $id['id'] ?? $id[0];
         }
         FiscalYear::find($id)->delete();
-        session()->flash('message', 'Fiscal Year Deleted Successfully.');
+        session()->flash('message', __('Fiscal Year Deleted Successfully.'));
     }
 }

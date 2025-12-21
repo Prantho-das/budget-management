@@ -9,11 +9,38 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Spatie\Permission\Traits\HasRoles;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, TwoFactorAuthenticatable, HasRoles;
+    use HasFactory, Notifiable, TwoFactorAuthenticatable, HasRoles, LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->logExcept(['password']);
+    }
+
+    protected static function booted()
+    {
+        static::updated(function ($user) {
+            if ($user->isDirty('rpo_unit_id')) {
+                UserOfficeTransfer::create([
+                    'user_id' => $user->id,
+                    'from_office_id' => $user->getOriginal('rpo_unit_id'),
+                    'to_office_id' => $user->rpo_unit_id,
+                    'transfer_date' => now(),
+                    'remarks' => 'Automated transfer log on office update',
+                    'created_by' => auth()->id(),
+                ]);
+            }
+        });
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -22,6 +49,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'designation',
         'email',
         'password',
         'rpo_unit_id',

@@ -13,14 +13,17 @@ class Users extends Component
 {
     use WithPagination;
 
-    public $name, $email, $password, $user_id, $rpo_unit_id, $role;
+    public $name, $designation, $email, $password, $user_id, $rpo_unit_id, $role;
     public $isOpen = false;
     public $search = '';
+    public $transferHistory = [];
+    public $showTransferHistoryModal = false;
 
     protected $paginationTheme = 'bootstrap';
 
     public function render()
     {
+        abort_if(auth()->user()->cannot('view-users'), 403);
         $users = User::with(['office', 'roles'])
             ->where(function ($query) {
                 $query->where('name', 'like', '%' . $this->search . '%')
@@ -38,6 +41,7 @@ class Users extends Component
 
     public function create()
     {
+        abort_if(auth()->user()->cannot('create-users'), 403);
         $this->resetInputFields();
         $this->openModal();
     }
@@ -55,6 +59,7 @@ class Users extends Component
     private function resetInputFields()
     {
         $this->name = '';
+        $this->designation = '';
         $this->email = '';
         $this->password = '';
         $this->user_id = '';
@@ -64,6 +69,12 @@ class Users extends Component
 
     public function store()
     {
+        if ($this->user_id) {
+            abort_if(auth()->user()->cannot('edit-users'), 403);
+        } else {
+            abort_if(auth()->user()->cannot('create-users'), 403);
+        }
+
         $this->validate([
             'name' => 'required',
             'email' => 'required|email|unique:users,email,' . $this->user_id,
@@ -74,6 +85,7 @@ class Users extends Component
 
         $userData = [
             'name' => $this->name,
+            'designation' => $this->designation,
             'email' => $this->email,
             'rpo_unit_id' => $this->rpo_unit_id,
         ];
@@ -87,7 +99,7 @@ class Users extends Component
 
         session()->flash(
             'message',
-            $this->user_id ? 'User Updated/Transferred Successfully.' : 'User Created Successfully.'
+            $this->user_id ? __('User Updated/Transferred Successfully.') : __('User Created Successfully.')
         );
 
         $this->closeModal();
@@ -96,9 +108,11 @@ class Users extends Component
 
     public function edit($id)
     {
+        abort_if(auth()->user()->cannot('edit-users'), 403);
         $user = User::findOrFail($id);
         $this->user_id = $id;
         $this->name = $user->name;
+        $this->designation = $user->designation;
         $this->email = $user->email;
         $this->rpo_unit_id = $user->rpo_unit_id;
         $this->role = $user->roles->first()?->name;
@@ -108,7 +122,24 @@ class Users extends Component
 
     public function delete($id)
     {
+        abort_if(auth()->user()->cannot('delete-users'), 403);
         User::find($id)->delete();
-        session()->flash('message', 'User Deleted Successfully.');
+        session()->flash('message', __('User Deleted Successfully.'));
+    }
+
+    public function showHistory($userId)
+    {
+        abort_if(auth()->user()->cannot('view-transfer-history'), 403);
+        $this->transferHistory = \App\Models\UserOfficeTransfer::with(['fromOffice', 'toOffice', 'creator'])
+            ->where('user_id', $userId)
+            ->orderBy('transfer_date', 'desc')
+            ->get();
+        $this->showTransferHistoryModal = true;
+    }
+
+    public function closeHistoryModal()
+    {
+        $this->showTransferHistoryModal = false;
+        $this->transferHistory = [];
     }
 }

@@ -34,14 +34,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/settings/appearance', Appearance::class)->name('settings.appearance');
 
     // Setup Routes
-    Route::get('/setup/fiscal-years', \App\Livewire\Setup\FiscalYears::class)->name('setup.fiscal-years');
-    Route::get('/setup/permissions', \App\Livewire\Setup\Permissions::class)->name('setup.permissions');
-    Route::get('/setup/roles', \App\Livewire\Setup\Roles::class)->name('setup.roles');
-    Route::get('/setup/offices', \App\Livewire\Setup\RpoUnits::class)->name('setup.rpo-units');
-    Route::get('/setup/expense-categories', \App\Livewire\Setup\ExpenseCategories::class)->name('setup.expense-categories');
-    Route::get('/setup/expenses', \App\Livewire\Setup\Expenses::class)->name('setup.expenses');
-    Route::get('/setup/economic-codes', \App\Livewire\Setup\EconomicCodes::class)->name('setup.economic-codes');
-    Route::get('/setup/users', \App\Livewire\Setup\Users::class)->name('setup.users');
+    Route::get('/setup/fiscal-years', \App\Livewire\Setup\FiscalYears::class)->middleware('can:view-fiscal-years')->name('setup.fiscal-years');
+    Route::get('/setup/permissions', \App\Livewire\Setup\Permissions::class)->middleware('can:view-permissions')->name('setup.permissions');
+    Route::get('/setup/system-settings', \App\Livewire\Setup\SystemSettings::class)->middleware('can:view-system-settings')->name('setup.system-settings');
+    Route::get('/setup/roles', \App\Livewire\Setup\Roles::class)->middleware('can:view-roles')->name('setup.roles');
+    Route::get('/setup/offices', \App\Livewire\Setup\RpoUnits::class)->middleware('can:view-offices')->name('setup.rpo-units');
+    Route::get('/setup/expenses', \App\Livewire\Setup\Expenses::class)->middleware('can:view-expenses')->name('setup.expenses');
+    Route::get('/setup/economic-codes', \App\Livewire\Setup\EconomicCodes::class)->middleware('can:view-economic-codes')->name('setup.economic-codes');
+    Route::get('/setup/budget-types', \App\Livewire\Setup\BudgetTypes::class)->middleware('can:view-budget-types')->name('setup.budget-types');
+    Route::get('/setup/users', \App\Livewire\Setup\Users::class)->middleware('can:view-users')->name('setup.users');
     Route::get('settings/two-factor', TwoFactor::class)
         ->middleware(
             when(
@@ -55,6 +56,8 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/budget/estimations', \App\Livewire\BudgetEstimations::class)->name('budget.estimations');
-    Route::get('/budget/approvals', \App\Livewire\BudgetApprovals::class)->name('budget.approvals');
+    Route::get('/budget/estimations', \App\Livewire\BudgetEstimations::class)->middleware('can:view-budget-estimations')->name('budget.estimations');
+    Route::get('/budget/approvals', \App\Livewire\BudgetApprovals::class)->middleware('can:view-budget-estimations')->name('budget.approvals');
+    Route::get('/budget/status', \App\Livewire\BudgetStatus::class)->middleware('can:view-budget-estimations')->name('budget.status');
+    Route::get('/budget/summary', \App\Livewire\BudgetSummary::class)->middleware('can:view-budget-estimations')->name('budget.summary');
 });

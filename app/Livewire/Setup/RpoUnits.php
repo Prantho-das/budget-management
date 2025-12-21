@@ -7,7 +7,7 @@ use App\Models\RpoUnit;
 
 class RpoUnits extends Component
 {
-  public $rpo_units, $name, $code, $type, $parent_id, $district, $rpo_unit_id;
+  public $rpo_units, $name, $code, $parent_id, $district, $rpo_unit_id;
   public $isOpen = false;
 
   // Robust delete application
@@ -15,8 +15,9 @@ class RpoUnits extends Component
 
   public function render()
   {
+    abort_if(auth()->user()->cannot('view-offices'), 403);
     $this->rpo_units = RpoUnit::with('parent')->orderBy('id', 'desc')->get();
-    // Get potential parents (excluding self if editing could be added later, but simpler for now)
+    // Get potential parents
     $idsToExclude = $this->rpo_unit_id ? [$this->rpo_unit_id] : [];
     $parents = RpoUnit::whereNotIn('id', $idsToExclude)->get();
 
@@ -27,6 +28,7 @@ class RpoUnits extends Component
 
   public function create()
   {
+    abort_if(auth()->user()->cannot('create-offices'), 403);
     $this->resetInputFields();
     $this->openModal();
   }
@@ -45,7 +47,6 @@ class RpoUnits extends Component
   {
     $this->name = '';
     $this->code = '';
-    $this->type = ''; // Default or empty
     $this->parent_id = null;
     $this->district = '';
     $this->rpo_unit_id = '';
@@ -53,25 +54,29 @@ class RpoUnits extends Component
 
   public function store()
   {
+    if ($this->rpo_unit_id) {
+        abort_if(auth()->user()->cannot('edit-offices'), 403);
+    } else {
+        abort_if(auth()->user()->cannot('create-offices'), 403);
+    }
+
     $this->validate([
       'name' => 'required',
       'code' => 'required|unique:rpo_units,code,' . $this->rpo_unit_id,
-      'type' => 'required|in:ministry,headquarters,regional,divisional',
       'parent_id' => 'nullable|exists:rpo_units,id'
     ]);
 
     RpoUnit::updateOrCreate(['id' => $this->rpo_unit_id], [
       'name' => $this->name,
       'code' => $this->code,
-      'type' => $this->type,
-      'parent_id' => $this->parent_id ?: null, // Ensure null if empty
+      'parent_id' => $this->parent_id ?: null,
       'district' => $this->district,
       'status' => true
     ]);
 
     session()->flash(
       'message',
-      $this->rpo_unit_id ? 'Office Updated Successfully.' : 'Office Created Successfully.'
+      $this->rpo_unit_id ? __('Office Updated Successfully.') : __('Office Created Successfully.')
     );
 
     $this->closeModal();
@@ -80,11 +85,11 @@ class RpoUnits extends Component
 
   public function edit($id)
   {
+    abort_if(auth()->user()->cannot('edit-offices'), 403);
     $unit = RpoUnit::findOrFail($id);
     $this->rpo_unit_id = $id;
     $this->name = $unit->name;
     $this->code = $unit->code;
-    $this->type = $unit->type;
     $this->parent_id = $unit->parent_id;
     $this->district = $unit->district;
 
@@ -93,15 +98,17 @@ class RpoUnits extends Component
 
   public function delete($id)
   {
+    abort_if(auth()->user()->cannot('delete-offices'), 403);
     $this->dispatch('delete-confirmation', $id);
   }
 
   public function deleteConfirmed($id)
   {
+    abort_if(auth()->user()->cannot('delete-offices'), 403);
     if (is_array($id)) {
       $id = $id['id'] ?? $id[0];
     }
     RpoUnit::find($id)->delete();
-    session()->flash('message', 'Office Deleted Successfully.');
+    session()->flash('message', __('Office Deleted Successfully.'));
   }
 }

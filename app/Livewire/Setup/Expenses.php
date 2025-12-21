@@ -8,29 +8,73 @@ use App\Models\ExpenseCategory;
 use App\Models\RpoUnit;
 use App\Models\FiscalYear;
 
+use App\Models\EconomicCode;
+use App\Models\BudgetType;
+use App\Models\BudgetAllocation;
+
 class Expenses extends Component
 {
-  public $expenses, $code, $amount, $description, $date, $expense_category_id, $rpo_unit_id, $fiscal_year_id, $expense_id;
+  public $code, $amount, $description, $date, $rpo_unit_id, $fiscal_year_id, $economic_code_id, $budget_type_id;
+  public $totalReleased = 0;
+  public $availableBalance = 0;
   public $isOpen = false;
+  public $expenses, $expense_id; // Retaining $expenses and $expense_id as they are used elsewhere
 
   protected $listeners = ['deleteConfirmed'];
 
   public function render()
   {
-    $this->expenses = Expense::with(['category', 'office', 'fiscalYear'])->orderBy('id', 'desc')->get();
-    $categories = ExpenseCategory::all();
+    abort_if(auth()->user()->cannot('view-expenses'), 403);
+    $this->expenses = Expense::with(['office', 'fiscalYear', 'economicCode'])->orderBy('id', 'desc')->get();
+    //$categories = ExpenseCategory::all();
     $offices = RpoUnit::all();
-    $fiscalYears = FiscalYear::all(); // Should logically filter by active, but fetching all for now
+    $fiscalYears = FiscalYear::orderBy('name', 'desc')->get();
+    $economicCodes = EconomicCode::all();
+    $budgetTypes = \App\Models\BudgetType::all();
 
     return view('livewire.setup.expenses', [
-      'categories' => $categories,
+      'expenses' => $this->expenses,
       'offices' => $offices,
-      'fiscalYears' => $fiscalYears
+      'fiscalYears' => $fiscalYears,
+      'economicCodes' => $economicCodes,
+      'budgetTypes' => $budgetTypes
     ])->extends('layouts.skot')->section('content');
+  }
+
+  public function updated($propertyName)
+  {
+      if (in_array($propertyName, ['economic_code_id', 'rpo_unit_id', 'fiscal_year_id'])) {
+          $this->calculateBalance();
+      }
+  }
+
+  public function calculateBalance()
+  {
+      if ($this->economic_code_id && $this->rpo_unit_id && $this->fiscal_year_id) {
+          $released = BudgetAllocation::where([
+              'economic_code_id' => $this->economic_code_id,
+              'rpo_unit_id' => $this->rpo_unit_id,
+              'fiscal_year_id' => $this->fiscal_year_id,
+          ])->sum('amount');
+
+          $spent = Expense::where([
+              'economic_code_id' => $this->economic_code_id,
+              'rpo_unit_id' => $this->rpo_unit_id,
+              'fiscal_year_id' => $this->fiscal_year_id,
+          ])->when($this->expense_id, fn($q) => $q->where('id', '!=', $this->expense_id))
+          ->sum('amount');
+
+          $this->totalReleased = $released;
+          $this->availableBalance = $released - $spent;
+      } else {
+          $this->totalReleased = 0;
+          $this->availableBalance = 0;
+      }
   }
 
   public function create()
   {
+    abort_if(auth()->user()->cannot('create-expenses'), 403);
     $this->resetInputFields();
     $this->openModal();
   }
@@ -51,36 +95,48 @@ class Expenses extends Component
     $this->amount = '';
     $this->description = '';
     $this->date = date('Y-m-d');
-    $this->expense_category_id = '';
     $this->rpo_unit_id = '';
     $this->fiscal_year_id = '';
+    $this->economic_code_id = '';
+    $this->budget_type_id = '';
     $this->expense_id = '';
+    $this->availableBalance = 0;
+    $this->totalReleased = 0;
   }
 
   public function store()
   {
+    if ($this->expense_id) {
+        abort_if(auth()->user()->cannot('edit-expenses'), 403);
+    } else {
+        abort_if(auth()->user()->cannot('create-expenses'), 403);
+    }
+
+    $this->calculateBalance();
+
     $this->validate([
       'code' => 'required|unique:expenses,code,' . $this->expense_id,
-      'amount' => 'required|numeric',
+      'amount' => 'required|numeric|min:0.01|max:' . ($this->availableBalance + ($this->expense_id ? Expense::find($this->expense_id)->amount : 0)),
       'date' => 'required|date',
-      'expense_category_id' => 'required|exists:expense_categories,id',
-      'rpo_unit_id' => 'required|exists:rpo_units,id',
-      'fiscal_year_id' => 'nullable|exists:fiscal_years,id',
+      'rpo_unit_id' => 'required',
+      'fiscal_year_id' => 'required',
+      'economic_code_id' => 'required',
     ]);
 
-    Expense::updateOrCreate(['id' => $this->expense_id], [
-      'code' => $this->code,
-      'amount' => $this->amount,
-      'description' => $this->description,
-      'date' => $this->date,
-      'expense_category_id' => $this->expense_category_id,
-      'rpo_unit_id' => $this->rpo_unit_id,
-      'fiscal_year_id' => $this->fiscal_year_id,
-    ]);
+        Expense::updateOrCreate(['id' => $this->expense_id], [
+            'code' => $this->code ?: 'EXP-' . strtoupper(uniqid()),
+            'amount' => $this->amount,
+            'description' => $this->description,
+            'date' => $this->date,
+            'rpo_unit_id' => $this->rpo_unit_id,
+            'fiscal_year_id' => $this->fiscal_year_id,
+            'economic_code_id' => $this->economic_code_id,
+            'budget_type_id' => $this->budget_type_id,
+        ]);
 
     session()->flash(
       'message',
-      $this->expense_id ? 'Expense Updated Successfully.' : 'Expense Created Successfully.'
+      $this->expense_id ? __('Expense Updated Successfully.') : __('Expense Created Successfully.')
     );
 
     $this->closeModal();
@@ -89,30 +145,35 @@ class Expenses extends Component
 
   public function edit($id)
   {
+    abort_if(auth()->user()->cannot('edit-expenses'), 403);
     $expense = Expense::findOrFail($id);
     $this->expense_id = $id;
     $this->code = $expense->code;
     $this->amount = $expense->amount;
     $this->description = $expense->description;
     $this->date = $expense->date;
-    $this->expense_category_id = $expense->expense_category_id;
+    $this->economic_code_id = $expense->economic_code_id;
+    $this->budget_type_id = $expense->budget_type_id;
     $this->rpo_unit_id = $expense->rpo_unit_id;
     $this->fiscal_year_id = $expense->fiscal_year_id;
 
+    $this->calculateBalance();
     $this->openModal();
   }
 
   public function delete($id)
   {
+    abort_if(auth()->user()->cannot('delete-expenses'), 403);
     $this->dispatch('delete-confirmation', $id);
   }
 
   public function deleteConfirmed($id)
   {
+    abort_if(auth()->user()->cannot('delete-expenses'), 403);
     if (is_array($id)) {
       $id = $id['id'] ?? $id[0];
     }
     Expense::find($id)->delete();
-    session()->flash('message', 'Expense Deleted Successfully.');
+    session()->flash('message', __('Expense Deleted Successfully.'));
   }
 }

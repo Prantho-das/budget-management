@@ -15,6 +15,7 @@ class Roles extends Component
 
     public function render()
     {
+        abort_if(auth()->user()->cannot('view-roles'), 403);
         $this->roles = Role::with('permissions')->orderBy('id', 'desc')->get();
         // Fetch permissions and group them by group_name
         $permissions = Permission::all();
@@ -27,6 +28,7 @@ class Roles extends Component
 
     public function create()
     {
+        abort_if(auth()->user()->cannot('create-roles'), 403);
         $this->resetInputFields();
         $this->openModal();
     }
@@ -90,6 +92,12 @@ class Roles extends Component
 
     public function store()
     {
+        if ($this->role_id) {
+            abort_if(auth()->user()->cannot('edit-roles'), 403);
+        } else {
+            abort_if(auth()->user()->cannot('create-roles'), 403);
+        }
+
         $this->validate([
             'name' => 'required|unique:roles,name,' . $this->role_id,
         ]);
@@ -107,7 +115,7 @@ class Roles extends Component
 
         session()->flash(
             'message',
-            $this->role_id ? 'Role Updated Successfully.' : 'Role Created Successfully.'
+            $this->role_id ? __('Role Updated Successfully.') : __('Role Created Successfully.')
         );
 
         $this->closeModal();
@@ -116,6 +124,7 @@ class Roles extends Component
 
     public function edit($id)
     {
+        abort_if(auth()->user()->cannot('edit-roles'), 403);
         $role = Role::findOrFail($id);
         $this->role_id = $id;
         $this->name = $role->name;
@@ -131,15 +140,17 @@ class Roles extends Component
 
     public function delete($id)
     {
+        abort_if(auth()->user()->cannot('delete-roles'), 403);
         $this->dispatch('delete-confirmation', $id);
     }
 
     public function deleteConfirmed($id)
     {
+        abort_if(auth()->user()->cannot('delete-roles'), 403);
         if (is_array($id)) {
             $id = $id['id'] ?? $id[0];
         }
         Role::find($id)->delete();
-        session()->flash('message', 'Role Deleted Successfully.');
+        session()->flash('message', __('Role Deleted Successfully.'));
     }
 }

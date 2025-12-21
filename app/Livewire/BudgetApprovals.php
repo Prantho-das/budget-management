@@ -22,6 +22,7 @@ class BudgetApprovals extends Component
 
     public function mount()
     {
+        abort_if(auth()->user()->cannot('view-budget-estimations'), 403);
         $fiscalYear = FiscalYear::where('status', true)->latest()->first();
         $this->fiscal_year_id = $fiscalYear ? $fiscalYear->id : null;
         $this->loadChildSubmissions();
@@ -33,35 +34,33 @@ class BudgetApprovals extends Component
 
         $userOfficeId = Auth::user()->rpo_unit_id;
 
-        // Find children of this office
-        $children = RpoUnit::where('parent_id', $userOfficeId)->get();
+        // Find all submissions targetted at THIS office
+        $submissions = BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id)
+            ->where('target_office_id', $userOfficeId)
+            ->where('status', '!=', 'draft')
+            ->select('rpo_unit_id', 'budget_type_id', 'status', DB::raw('SUM(amount_demand) as total_demand'))
+            ->groupBy('rpo_unit_id', 'budget_type_id', 'status')
+            ->with('office')
+            ->get();
 
         $this->childOffices = [];
-        foreach ($children as $office) {
-            $submissions = BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id)
-                ->where('rpo_unit_id', $office->id)
-                ->where('status', '!=', 'draft')
-                ->select('budget_type', 'status', DB::raw('SUM(amount_demand) as total_demand'))
-                ->groupBy('budget_type', 'status')
-                ->get();
-
-            foreach ($submissions as $sub) {
-                $this->childOffices[] = [
-                    'id' => $office->id,
-                    'name' => $office->name,
-                    'code' => $office->code,
-                    'budget_type' => $sub->budget_type,
-                    'total_demand' => $sub->total_demand,
-                    'status' => $sub->status,
-                ];
-            }
+        foreach ($submissions as $sub) {
+            $this->childOffices[] = [
+                'id' => $sub->rpo_unit_id,
+                'name' => $sub->office->name,
+                'code' => $sub->office->code,
+                'budget_type_id' => $sub->budget_type_id,
+                'total_demand' => $sub->total_demand,
+                'status' => $sub->status,
+            ];
         }
     }
 
-    public function viewDetails($officeId, $budgetType)
+    public function viewDetails($officeId, $budgetTypeId)
     {
+        abort_if(auth()->user()->cannot('view-budget-estimations'), 403);
         $this->selected_office_id = $officeId;
-        $this->selected_budget_type = $budgetType;
+        $this->selected_budget_type_id = $budgetTypeId;
         $this->viewMode = 'detail';
         $this->loadDemands();
     }
@@ -70,7 +69,8 @@ class BudgetApprovals extends Component
     {
         $estimations = BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id)
             ->where('rpo_unit_id', $this->selected_office_id)
-            ->where('budget_type', $this->selected_budget_type)
+            ->where('budget_type_id', $this->selected_budget_type_id)
+            ->where('target_office_id', Auth::user()->rpo_unit_id)
             ->with('economicCode')
             ->get();
 
@@ -94,84 +94,64 @@ class BudgetApprovals extends Component
         $this->loadChildSubmissions();
     }
 
-    public function approve($officeId, $budgetType)
+    public function approve($officeId, $budgetTypeId)
     {
-        $userOfficeType = Auth::user()->office->type ?? 'office';
-        $newStatus = 'approved';
+        abort_if(auth()->user()->cannot('approve-budget'), 403);
 
-        if ($userOfficeType === 'district') {
-            $newStatus = 'district_approved';
-        } elseif ($userOfficeType === 'headquarters') {
-            $newStatus = 'hq_approved';
-        }
-
-        BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id)
+        $workflow = new \App\Services\BudgetWorkflowService();
+        $estimations = BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id)
             ->where('rpo_unit_id', $officeId)
-            ->where('budget_type', $budgetType)
-            ->update([
-                'status' => $newStatus,
-                'amount_approved' => DB::raw('COALESCE(amount_approved, amount_demand)')
-            ]);
+            ->where('budget_type_id', $budgetTypeId)
+            ->where('target_office_id', Auth::user()->rpo_unit_id)
+            ->get();
 
-        // PHASE 4: Allocation Records Creation (if HQ approves)
-        if ($newStatus === 'hq_approved') {
-            $estimations = BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id)
-                ->where('rpo_unit_id', $officeId)
-                ->where('budget_type', $budgetType)
-                ->get();
-
-            foreach ($estimations as $est) {
-                BudgetAllocation::updateOrCreate(
-                    [
-                        'fiscal_year_id' => $est->fiscal_year_id,
-                        'budget_type'    => $est->budget_type,
-                        'rpo_unit_id' => $est->rpo_unit_id,
-                        'economic_code_id' => $est->economic_code_id,
-                    ],
-                    [
-                        'amount' => $est->amount_approved ?? $est->amount_demand,
-                        'remarks' => 'Finalized and allocated by HQ (' . $budgetType . ')'
-                    ]
-                );
-            }
+        foreach($estimations as $est) {
+            $workflow->approve($est);
         }
 
-        session()->flash('message', 'Budget Approved Successfully.');
+        session()->flash('message', __('Budget Approved Successfully.'));
         $this->backToInbox();
     }
 
-    public function reject($officeId, $budgetType)
+    public function reject($officeId, $budgetTypeId)
     {
-        $key = $officeId . '_' . str_replace(' ', '_', $budgetType);
+        abort_if(auth()->user()->cannot('reject-budget'), 403);
+
+        $key = $officeId . '_' . $budgetTypeId;
         $this->validate([
             "remarks.$key" => 'required|min:5'
         ], [
-            "remarks.$key.required" => 'Please provide a reason for rejection.'
+            "remarks.$key.required" => __('Please provide a reason for rejection.')
         ]);
 
-        BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id)
+        $workflow = new \App\Services\BudgetWorkflowService();
+        $estimations = BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id)
             ->where('rpo_unit_id', $officeId)
-            ->where('budget_type', $budgetType)
-            ->update([
-                'status' => 'rejected',
-                'remarks' => $this->remarks[$key]
-            ]);
+            ->where('budget_type_id', $budgetTypeId)
+            ->where('target_office_id', Auth::user()->rpo_unit_id)
+            ->get();
 
-        session()->flash('message', 'Budget Rejected.');
+        foreach($estimations as $est) {
+            $workflow->reject($est, $this->remarks[$key]);
+        }
+
+        session()->flash('message', __('Budget Rejected.'));
         $this->backToInbox();
     }
 
     public function updateAdjustment($estimationId, $amount)
     {
+        // This should probably also have a permission check
+        abort_if(auth()->user()->cannot('view-budget-estimations'), 403);
         $est = BudgetEstimation::find($estimationId);
-        // Prevent adjustments if already hq_approved
-        if ($est && $est->status !== 'hq_approved' && $est->status !== 'approved') {
+        if ($est && $est->current_stage !== 'Released') {
             $est->update(['amount_approved' => $amount]);
         }
     }
 
     public function render()
     {
+        abort_if(auth()->user()->cannot('view-budget-estimations'), 403);
         return view('livewire.budget-approvals', [
             'office' => $this->selected_office_id ? RpoUnit::find($this->selected_office_id) : null
         ])->extends('layouts.skot')->section('content');
