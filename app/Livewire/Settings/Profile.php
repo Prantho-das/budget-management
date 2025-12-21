@@ -10,9 +10,13 @@ use Livewire\Component;
 
 class Profile extends Component
 {
+    use \Livewire\WithFileUploads;
+
     public string $name = '';
 
     public string $email = '';
+
+    public $photo;
 
     /**
      * Mount the component.
@@ -41,15 +45,26 @@ class Profile extends Component
                 'max:255',
                 Rule::unique(User::class)->ignore($user->id),
             ],
+            'photo' => ['nullable', 'image', 'max:1024'], // 1MB Max
         ]);
 
-        $user->fill($validated);
+        if ($this->photo) {
+            if ($user->profile_photo_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->profile_photo_path);
+            }
+            $user->profile_photo_path = $this->photo->store('profile-photos', 'public');
+        }
+
+        $user->name = $this->name;
+        $user->email = $this->email;
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
         }
 
         $user->save();
+
+        $this->photo = null;
 
         $this->dispatch('profile-updated', name: $user->name);
     }

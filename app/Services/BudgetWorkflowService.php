@@ -13,18 +13,21 @@ class BudgetWorkflowService
      */
     public function submit(BudgetEstimation $estimation)
     {
-        $parent = $estimation->office->parent;
+        $firstStep = \App\Models\WorkflowStep::where('is_active', true)->orderBy('order', 'asc')->first();
 
-        if (!$parent) {
-            return $this->transition($estimation, 'Released', 'Submitted and Auto-Released (Top Level)', 'approved', null);
+        if (!$firstStep) {
+            return $this->transition($estimation, 'Released', 'Submitted and Auto-Released (No Workflow Defined)', 'approved', null);
         }
 
+        $targetOfficeId = $this->determineTargetOffice($estimation, $firstStep);
+
         return $this->transition(
-            $estimation, 
-            "Waiting for {$parent->name}", 
-            "Submitted for {$parent->name} review", 
-            'submitted', 
-            $parent->id
+            $estimation,
+            $firstStep->name,
+            "Submitted for {$firstStep->name}",
+            'submitted',
+            $targetOfficeId,
+            $firstStep->id
         );
     }
 
@@ -37,31 +40,29 @@ class BudgetWorkflowService
             throw new \Exception("Budget is already at the final stage.");
         }
 
-        $currentApproverOfficeId = $estimation->target_office_id;
-        
-        if (!$currentApproverOfficeId) {
-            // This case shouldn't happen if logic is correct, but safety first
+        $currentStep = $estimation->workflowStep;
+        $nextStep = \App\Models\WorkflowStep::where('is_active', true)
+            ->where('order', '>', $currentStep ? $currentStep->order : 0)
+            ->orderBy('order', 'asc')
+            ->first();
+
+        if ($currentStep && str_contains(strtolower($currentStep->name), 'release')) {
+            abort_if(Auth::user()->cannot($currentStep->required_permission), 403, 'You do not have permission to release budgets.');
+        }
+
+        if (!$nextStep) {
             $nextStage = 'Released';
             $nextTargetId = null;
+            $nextStepId = null;
         } else {
-            $currentApproverOffice = \App\Models\RpoUnit::find($currentApproverOfficeId);
-            $nextOffice = $currentApproverOffice->parent;
-
-            if (!$nextOffice) {
-                // This is the final release - check for release-budget permission
-                abort_if(Auth::user()->cannot('release-budget'), 403, 'You do not have permission to release budgets.');
-                $nextStage = 'Released';
-                $nextTargetId = null;
-            } else {
-                $nextStage = "Waiting for {$nextOffice->name}";
-                $nextTargetId = $nextOffice->id;
-            }
+            $nextStage = $nextStep->name;
+            $nextTargetId = $this->determineTargetOffice($estimation, $nextStep);
+            $nextStepId = $nextStep->id;
         }
 
         $remarks = $remarks ?? "Approved by " . (Auth::user()->office->name ?? 'System');
-        $transition = $this->transition($estimation, $nextStage, $remarks, null, $nextTargetId);
+        $transition = $this->transition($estimation, $nextStage, $remarks, null, $nextTargetId, $nextStepId);
 
-        // If it reached 'Released', we automatically create an Allocation entry
         if ($nextStage === 'Released') {
             $this->createAllocation($estimation);
         }
@@ -80,7 +81,7 @@ class BudgetWorkflowService
     /**
      * Handle the transition logic.
      */
-    protected function transition(BudgetEstimation $estimation, $newStage, $remarks, $status = null, $targetOfficeId = null)
+    protected function transition(BudgetEstimation $estimation, $newStage, $remarks, $status = null, $targetOfficeId = null, $workflowStepId = null)
     {
         $log = $estimation->approval_log ?? [];
         $log[] = [
@@ -96,11 +97,33 @@ class BudgetWorkflowService
         $estimation->update([
             'current_stage' => $newStage,
             'target_office_id' => $targetOfficeId,
+            'workflow_step_id' => $workflowStepId,
             'approval_log' => $log,
             'status' => $status ?? ($newStage === 'Released' ? 'approved' : 'submitted')
         ]);
 
         return $estimation;
+    }
+
+    protected function determineTargetOffice(BudgetEstimation $estimation, $step)
+    {
+        $originOffice = $estimation->office;
+
+        switch ($step->office_level) {
+            case 'origin':
+                return $originOffice->id;
+            case 'parent':
+                // Simple parent logic: move up from current target if exists, else move from origin.
+                // This allows sequential parent steps to climb the tree.
+                $currentOfficeId = $estimation->target_office_id ?: $originOffice->id;
+                $currentOffice = \App\Models\RpoUnit::find($currentOfficeId);
+                return $currentOffice->parent_id ?: $currentOfficeId;
+            case 'hq':
+                $hq = \App\Models\RpoUnit::whereNull('parent_id')->first();
+                return $hq ? $hq->id : $originOffice->id;
+            default:
+                return $originOffice->id;
+        }
     }
 
     /**

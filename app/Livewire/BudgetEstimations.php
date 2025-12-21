@@ -36,7 +36,7 @@ class BudgetEstimations extends Component
 
   public function updatedBudgetTypeId()
   {
-      $this->loadDemands();
+    $this->loadDemands();
   }
 
   public function loadDemands()
@@ -58,7 +58,7 @@ class BudgetEstimations extends Component
 
     // Previous 3 Years Expense Data
     $this->previousDemands = [];
-    
+
     $previousYears = FiscalYear::where('end_date', '<', $currentFiscalYear->start_date)
       ->orderBy('end_date', 'desc')
       ->take(3)
@@ -102,15 +102,15 @@ class BudgetEstimations extends Component
   {
     abort_if(auth()->user()->cannot('submit-budget-estimations'), 403);
     $this->persist('submitted');
-    
+
     $estimations = BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id)
-        ->where('rpo_unit_id', $this->rpo_unit_id)
-        ->where('budget_type_id', $this->budget_type_id)
-        ->get();
-    
+      ->where('rpo_unit_id', $this->rpo_unit_id)
+      ->where('budget_type_id', $this->budget_type_id)
+      ->get();
+
     $workflow = new BudgetWorkflowService();
-    foreach($estimations as $estimation) {
-        $workflow->submit($estimation);
+    foreach ($estimations as $estimation) {
+      $workflow->submit($estimation);
     }
 
     $this->loadDemands();
@@ -157,24 +157,24 @@ class BudgetEstimations extends Component
     $economicCodes = EconomicCode::all();
     $fiscalYear = FiscalYear::find($this->fiscal_year_id);
     $office = RpoUnit::find($this->rpo_unit_id);
-    
+
     $allTypes = BudgetType::where('status', true)->orderBy('order_priority')->get();
-    
+
     $availableTypes = [];
 
     foreach ($allTypes as $type) {
-        $isReleased = BudgetEstimation::where([
-            'fiscal_year_id' => $this->fiscal_year_id,
-            'rpo_unit_id' => $this->rpo_unit_id,
-            'budget_type_id' => $type->id,
-            'current_stage' => 'Released'
-        ])->exists();
+      $isReleased = BudgetEstimation::where([
+        'fiscal_year_id' => $this->fiscal_year_id,
+        'rpo_unit_id' => $this->rpo_unit_id,
+        'budget_type_id' => $type->id,
+        'current_stage' => 'Released'
+      ])->exists();
 
-        $availableTypes[] = $type;
+      $availableTypes[] = $type;
 
-        if (!$isReleased) {
-            break;
-        }
+      if (!$isReleased) {
+        break;
+      }
     }
 
     return view('livewire.budget-estimations', [

@@ -48,28 +48,18 @@
                                             <td><span class="badge badge-soft-info">{{ $officeData['budget_type_id'] }}</span></td>
                                             <td><strong>৳ {{ number_format($officeData['total_demand'], 2) }}</strong></td>
                                             <td>
-                                                @php
-                                                    $badgeClass = match($officeData['status']) {
-                                                        'submitted' => 'primary',
-                                                        'district_approved' => 'info',
-                                                        'hq_approved' => 'success',
-                                                        'approved' => 'success',
-                                                        'rejected' => 'danger',
-                                                        default => 'warning'
-                                                    };
-                                                @endphp
-                                                <span class="badge bg-{{ $badgeClass }}">{{ __(ucfirst(str_replace('_', ' ', $officeData['status']))) }}</span>
+                                                <span class="badge badge-soft-primary font-size-12">{{ __($officeData['current_stage']) }}</span>
                                             </td>
                                             <td>
-                                                <button wire:click="viewDetails({{ $officeData['id'] }}, '{{ $officeData['budget_type_id'] }}')" class="btn btn-sm btn-info waves-effect waves-light">
+                                                <button wire:click="viewDetails({{ $officeData['id'] }}, '{{ $officeData['budget_type_id'] }}', '{{ $officeData['current_stage'] }}')" class="btn btn-sm btn-info waves-effect waves-light">
                                                     <i class="bx bx-search-alt me-1"></i> {{ __('Review') }}
                                                 </button>
                                                 
-                                                <button onclick="confirmApproval({{ $officeData['id'] }}, '{{ $officeData['budget_type_id'] }}')" class="btn btn-sm btn-success waves-effect waves-light">
+                                                <button onclick="confirmApproval({{ $officeData['id'] }}, '{{ $officeData['budget_type_id'] }}', '{{ $officeData['current_stage'] }}')" class="btn btn-sm btn-success waves-effect waves-light">
                                                     <i class="bx bx-check me-1"></i> {{ __('Approve') }}
                                                 </button>
 
-                                                <button onclick="promptRejection({{ $officeData['id'] }}, '{{ $officeData['budget_type_id'] }}')" class="btn btn-sm btn-danger waves-effect waves-light">
+                                                <button onclick="promptRejection({{ $officeData['id'] }}, '{{ $officeData['budget_type_id'] }}', '{{ $officeData['current_stage'] }}')" class="btn btn-sm btn-danger waves-effect waves-light">
                                                     <i class="bx bx-x me-1"></i> {{ __('Reject') }}
                                                 </button>
                                             </td>
@@ -152,10 +142,10 @@
     @endif
 
     <script>
-        function confirmApproval(id, type) {
+        function confirmApproval(id, type, stage) {
             Swal.fire({
                 title: '{{ __("Confirm Approval") }}',
-                text: "{{ __('Approve') }} " + type + " {{ __('for this office?') }}",
+                text: "{{ __('Approve') }} " + type + " (" + stage + ") {{ __('for this office?') }}",
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#34c38f',
@@ -163,14 +153,14 @@
                 confirmButtonText: '{{ __("Yes, approve it!") }}'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    @this.approve(id, type);
+                    @this.approve(id, type, stage);
                 }
             })
         }
 
-        async function promptRejection(id, type) {
+        async function promptRejection(id, type, stage) {
             const { value: text } = await Swal.fire({
-                title: '{{ __("Reason for Rejection") }} (' + type + ')',
+                title: '{{ __("Reason for Rejection") }} (' + type + ' - ' + stage + ')',
                 input: 'textarea',
                 inputPlaceholder: '{{ __("Enter your remarks here...") }}',
                 showCancelButton: true,
@@ -179,10 +169,10 @@
             })
 
             if (text) {
-                // Formatting key to match PHP key generation: $officeId . '_' . $budgetTypeId
-                let key = id + '_' + type;
+                // Formatting key to match PHP key generation: $officeId . '_' . $budgetTypeId . '_' . stage
+                let key = id + '_' + type + '_' + stage.replace(/ /g, '_');
                 @this.set('remarks.' + key, text);
-                @this.reject(id, type);
+                @this.reject(id, type, stage);
             }
         }
     </script>

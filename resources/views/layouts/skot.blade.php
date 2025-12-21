@@ -70,14 +70,16 @@
                                 @if(app()->getLocale() == 'bn')
                                      <span class="align-middle fw-bold">বাংলা</span>
                                 @else
-                                    <img id="header-lang-img" src="{{ asset('assets/images/flags/us.jpg') }}" alt="Header Language" height="16">
+                                    {{-- <img id="header-lang-img" src="{{ asset('assets/images/flags/us.jpg') }}" alt="Header Language" height="16"> --}}
+                                    <span class="align-middle fw-bold">En</span>
                                 @endif
                             </button>
                             <div class="dropdown-menu dropdown-menu-end" :class="{ 'show': open }" style="display: none;" x-show="open" x-transition>
 
                                 <!-- item-->
                                 <a href="{{ route('lang.switch', 'en') }}" class="dropdown-item notify-item language" data-lang="en">
-                                    <img src="{{ asset('assets/images/flags/us.jpg') }}" alt="user-image" class="me-1" height="12"> <span class="align-middle">{{ __('English') }}</span>
+                                    {{-- <img src="{{ asset('assets/images/flags/us.jpg') }}" alt="user-image" class="me-1" height="12">  --}}
+                                    <span class="align-middle">{{ __('English') }}</span>
                                 </a>
                                 <!-- item-->
                                 <a href="{{ route('lang.switch', 'bn') }}" class="dropdown-item notify-item language" data-lang="bn">
@@ -91,7 +93,7 @@
                         <div class="dropdown d-inline-block" x-data="{ open: false }" @click.outside="open = false">
                             <button type="button" class="btn header-item waves-effect" id="page-header-user-dropdown"
                             @click="open = !open" :class="{ 'show': open }" aria-haspopup="true" aria-expanded="false">
-                                <img class="rounded-circle header-profile-user" src="{{ asset('assets/images/users/avatar-1.jpg') }}"
+                                <img class="rounded-circle header-profile-user" src="{{ Auth::user()->profile_photo_url }}"
                                     alt="Header Avatar">
                                 <span class="d-none d-xl-inline-block ms-1" key="t-henry">{{ Auth::user()->name }}</span>
                                 <i class="mdi mdi-chevron-down d-none d-xl-inline-block"></i>

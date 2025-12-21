@@ -20,6 +20,8 @@ class BudgetEstimation extends Model
         'amount_approved',
         'status',
         'current_stage',
+        'workflow_step_id',
+        'target_office_id',
         'approval_log',
         'remarks',
     ];
@@ -54,5 +56,15 @@ class BudgetEstimation extends Model
     public function economicCode()
     {
         return $this->belongsTo(EconomicCode::class);
+    }
+
+    public function workflowStep()
+    {
+        return $this->belongsTo(WorkflowStep::class);
+    }
+
+    public function targetOffice()
+    {
+        return $this->belongsTo(RpoUnit::class, 'target_office_id');
     }
 }
