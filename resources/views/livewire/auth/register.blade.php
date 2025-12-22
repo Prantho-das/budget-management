@@ -79,7 +79,7 @@
             @if (Route::has('login'))
                 <p>Already have an account ? <a href="{{ route('login') }}" class="fw-medium text-primary"> Login</a> </p>
             @endif
-            <p>© {{ date('Y') }} Skote. Crafted with <i class="mdi mdi-heart text-danger"></i> by Themesbrand</p>
+            <p>© {{ date('Y') }} {{ get_setting('site_name', 'Budget Management System') }}. Crafted with <i class="mdi mdi-heart text-danger"></i> by Themesbrand</p>
         </div>
     </div>
 @endsection

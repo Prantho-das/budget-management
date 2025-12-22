@@ -79,6 +79,7 @@ class DummyDataSeeder extends Seeder
             // Reports
             'view-reports' => 'Reports',
             'view-transfer-history' => 'User Transfers',
+            'view-all-offices-data' => 'Permissions',
         ];
 
         foreach ($permissions as $permission => $group) {
@@ -98,7 +99,8 @@ class DummyDataSeeder extends Seeder
             'approve-budget',
             'release-budget',
             'reject-budget',
-            'view-reports'
+            'view-reports',
+            'view-all-offices-data'
         ]);
 
         $regionalManager = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Regional Manager', 'guard_name' => 'web']);
@@ -114,7 +116,8 @@ class DummyDataSeeder extends Seeder
             'view-budget-estimations',
             'approve-budget',
             'reject-budget',
-            'view-reports'
+            'view-reports',
+            'view-all-offices-data'
         ]);
 
         $userRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Office User', 'guard_name' => 'web']);
@@ -360,18 +363,18 @@ class DummyDataSeeder extends Seeder
         // 9. Historical Data for Previous 4 Fiscal Years
         $economicCodes = \App\Models\EconomicCode::all();
         $offices = [$upazila, $district, $regional];
-        
+
         // Seed data for the first 4 fiscal years (not current year)
         for ($i = 0; $i < 4; $i++) {
             $historicalFY = $createdFYs[$i];
             $baseAmount = 50000 + ($i * 10000); // Increasing amounts over years
-            
+
             foreach ($offices as $office) {
                 foreach ($economicCodes->take(5) as $code) {
                     $demandAmount = $baseAmount + rand(5000, 15000);
                     $releasedAmount = $demandAmount * (rand(85, 98) / 100); // 85-98% of demand
                     $expenseAmount = $releasedAmount * (rand(90, 99) / 100); // 90-99% of released
-                    
+
                     // Create Budget Estimation (Demand)
                     $estimation = \App\Models\BudgetEstimation::create([
                         'fiscal_year_id' => $historicalFY->id,
@@ -394,7 +397,7 @@ class DummyDataSeeder extends Seeder
                             ]
                         ])
                     ]);
-                    
+
                     // Create Budget Allocation (Released)
                     \App\Models\BudgetAllocation::create([
                         'fiscal_year_id' => $historicalFY->id,
@@ -404,18 +407,18 @@ class DummyDataSeeder extends Seeder
                         'amount' => $releasedAmount,
                         'remarks' => "Historical allocation for FY {$historicalFY->name}"
                     ]);
-                    
+
                     // Create Expenses (Actual Spending)
                     $numExpenses = rand(3, 8);
                     $remainingAmount = $expenseAmount;
-                    
+
                     for ($e = 0; $e < $numExpenses; $e++) {
                         if ($remainingAmount <= 0) break;
-                        
-                        $expAmount = ($e == $numExpenses - 1) 
-                            ? $remainingAmount 
+
+                        $expAmount = ($e == $numExpenses - 1)
+                            ? $remainingAmount
                             : $remainingAmount * (rand(10, 30) / 100);
-                        
+
                         \App\Models\Expense::create([
                             'code' => 'EXP-' . strtoupper(uniqid()),
                             'amount' => $expAmount,
@@ -426,11 +429,11 @@ class DummyDataSeeder extends Seeder
                             'economic_code_id' => $code->id,
                             'budget_type_id' => $originalType->id,
                         ]);
-                        
+
                         $remainingAmount -= $expAmount;
                     }
                 }
-                
+
                 // Add some rejected budgets for realism (10% chance)
                 if (rand(1, 10) == 1) {
                     $rejectedCode = $economicCodes->random();

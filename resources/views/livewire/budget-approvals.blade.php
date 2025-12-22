@@ -34,6 +34,7 @@
                                         <th>{{ __('Office Name') }}</th>
                                         <th>{{ __('Budget Type') }}</th>
                                         <th>{{ __('Total Demand') }}</th>
+                                        <th>{{ __('Submission Date') }}</th>
                                         <th>{{ __('Current Status') }}</th>
                                         <th>{{ __('Actions') }}</th>
                                     </tr>
@@ -47,19 +48,20 @@
                                             <td>{{ $officeData['name'] }} <br><small class="text-muted">{{ $officeData['code'] }}</small></td>
                                             <td><span class="badge badge-soft-info">{{ $officeData['budget_type_id'] }}</span></td>
                                             <td><strong>৳ {{ number_format($officeData['total_demand'], 2) }}</strong></td>
+                                            <td><small class="text-muted">{{ date('d M Y, h:i A', strtotime($officeData['created_at'])) }}</small></td>
                                             <td>
                                                 <span class="badge badge-soft-primary font-size-12">{{ __($officeData['current_stage']) }}</span>
                                             </td>
                                             <td>
-                                                <button wire:click="viewDetails({{ $officeData['id'] }}, '{{ $officeData['budget_type_id'] }}', '{{ $officeData['current_stage'] }}')" class="btn btn-sm btn-info waves-effect waves-light">
+                                                <button wire:click="viewDetails({{ $officeData['id'] }}, '{{ $officeData['budget_type_id'] }}', '{{ $officeData['current_stage'] }}', '{{ $officeData['batch_id'] }}')" class="btn btn-sm btn-info waves-effect waves-light">
                                                     <i class="bx bx-search-alt me-1"></i> {{ __('Review') }}
                                                 </button>
                                                 
-                                                <button onclick="confirmApproval({{ $officeData['id'] }}, '{{ $officeData['budget_type_id'] }}', '{{ $officeData['current_stage'] }}')" class="btn btn-sm btn-success waves-effect waves-light">
+                                                <button onclick="confirmApproval({{ $officeData['id'] }}, '{{ $officeData['budget_type_id'] }}', '{{ $officeData['current_stage'] }}', '{{ $officeData['batch_id'] }}')" class="btn btn-sm btn-success waves-effect waves-light">
                                                     <i class="bx bx-check me-1"></i> {{ __('Approve') }}
                                                 </button>
-
-                                                <button onclick="promptRejection({{ $officeData['id'] }}, '{{ $officeData['budget_type_id'] }}', '{{ $officeData['current_stage'] }}')" class="btn btn-sm btn-danger waves-effect waves-light">
+ 
+                                                <button onclick="promptRejection({{ $officeData['id'] }}, '{{ $officeData['budget_type_id'] }}', '{{ $officeData['current_stage'] }}', '{{ $officeData['batch_id'] }}')" class="btn btn-sm btn-danger waves-effect waves-light">
                                                     <i class="bx bx-x me-1"></i> {{ __('Reject') }}
                                                 </button>
                                             </td>
@@ -90,10 +92,10 @@
                                 <p class="text-muted mb-0">{{ __('Detailed Economic Code Breakdown') }}</p>
                             </div>
                             <div class="text-end">
-                                <button onclick="confirmApproval({{ $office->id }}, '{{ $selected_budget_type_id }}')" class="btn btn-success btn-rounded px-4">
+                                <button onclick="confirmApproval({{ $office->id }}, '{{ $selected_budget_type_id }}', '{{ $selected_stage }}', '{{ $selected_batch_id }}')" class="btn btn-success btn-rounded px-4">
                                     <i class="bx bx-check-double me-1"></i> {{ __('Approve Entire Budget') }}
                                 </button>
-                                <button onclick="promptRejection({{ $office->id }}, '{{ $selected_budget_type_id }}')" class="btn btn-danger btn-rounded px-4 ms-2">
+                                <button onclick="promptRejection({{ $office->id }}, '{{ $selected_budget_type_id }}', '{{ $selected_stage }}', '{{ $selected_batch_id }}')" class="btn btn-danger btn-rounded px-4 ms-2">
                                     <i class="bx bx-x me-1"></i> {{ __('Reject All') }}
                                 </button>
                             </div>
@@ -105,8 +107,17 @@
                                     <tr>
                                         <th>{{ __('Code') }}</th>
                                         <th>{{ __('Description') }}</th>
-                                        <th style="width: 15%;">{{ __('Demand Amount') }}</th>
-                                        <th style="width: 20%;">{{ __('Approved Amount (Adjustment)') }}</th>
+                                        @foreach($previousDemands as $codeId => $years)
+                                            @once
+                                                @foreach($years as $index => $data)
+                                                    <th class="text-center">{{ __('Exp') }}<br><small>{{ $data['year'] }}</small></th>
+                                                @endforeach
+                                            @endonce
+                                        @endforeach
+                                        <th style="width: 12%;">{{ __('Demand Amount') }}</th>
+                                        <th style="width: 15%;">{{ __('Requester Remarks') }}</th>
+                                        <th style="width: 18%;">{{ __('Approved Amount') }}</th>
+                                        <th style="width: 18%;">{{ __('Approver Remarks') }}</th>
                                         <th>{{ __('Status') }}</th>
                                     </tr>
                                 </thead>
@@ -115,7 +126,17 @@
                                         <tr>
                                             <td><strong>{{ $data['code'] }}</strong></td>
                                             <td>{{ $data['name'] }}</td>
+                                            @for($i = 0; $i < 3; $i++)
+                                                <td class="text-end">
+                                                    @if(isset($previousDemands[$codeId]["year_{$i}"]))
+                                                        <strong class="text-info">৳ {{ number_format($previousDemands[$codeId]["year_{$i}"]['amount'], 2) }}</strong>
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </td>
+                                            @endfor
                                             <td>৳ {{ number_format($data['demand'], 2) }}</td>
+                                            <td><small>{{ $data['remarks'] ?: '-' }}</small></td>
                                             <td>
                                                 <div class="input-group input-group-sm">
                                                     <span class="input-group-text">৳</span>
@@ -124,6 +145,13 @@
                                                            value="{{ $data['approved'] }}"
                                                            onchange="@this.updateAdjustment({{ $data['id'] }}, this.value)">
                                                 </div>
+                                            </td>
+                                            <td>
+                                                <input type="text" 
+                                                       class="form-control form-control-sm" 
+                                                       wire:model.debounce.500ms="approval_remarks.{{ $data['id'] }}"
+                                                       placeholder="{{ __('Approver Remarks') }}"
+                                                       onchange="@this.updateAdjustment({{ $data['id'] }}, null, this.value)">
                                             </td>
                                             <td>
                                                 <span class="badge bg-{{ $data['status'] === 'rejected' ? 'danger' : 'secondary' }}">
@@ -142,7 +170,7 @@
     @endif
 
     <script>
-        function confirmApproval(id, type, stage) {
+        function confirmApproval(id, type, stage, batch) {
             Swal.fire({
                 title: '{{ __("Confirm Approval") }}',
                 text: "{{ __('Approve') }} " + type + " (" + stage + ") {{ __('for this office?') }}",
@@ -153,7 +181,7 @@
                 confirmButtonText: '{{ __("Yes, approve it!") }}'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    @this.approve(id, type, stage);
+                    @this.approve(id, type, stage, batch);
                 }
             })
         }

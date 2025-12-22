@@ -3,6 +3,7 @@
 namespace App\Livewire\Setup;
 
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\RpoUnit;
@@ -14,18 +15,25 @@ use App\Models\BudgetAllocation;
 
 class Expenses extends Component
 {
+  use WithPagination;
+
   public $code, $amount, $description, $date, $rpo_unit_id, $fiscal_year_id, $economic_code_id, $budget_type_id;
   public $totalReleased = 0;
   public $availableBalance = 0;
   public $isOpen = false;
-  public $expenses, $expense_id; // Retaining $expenses and $expense_id as they are used elsewhere
+  public $expense_id; // Removed $expenses as it's now handled by pagination in render
 
   protected $listeners = ['deleteConfirmed'];
 
   public function render()
   {
     abort_if(auth()->user()->cannot('view-expenses'), 403);
-    $this->expenses = Expense::with(['office', 'fiscalYear', 'economicCode'])->orderBy('id', 'desc')->get();
+    $expenses = Expense::with(['office', 'fiscalYear', 'economicCode'])
+      ->when(!auth()->user()->can('view-all-offices-data'), function ($query) {
+        $query->where('rpo_unit_id', auth()->user()->rpo_unit_id);
+      })
+      ->orderBy('id', 'desc')
+      ->paginate(10);
     //$categories = ExpenseCategory::all();
     $offices = RpoUnit::all();
     $fiscalYears = FiscalYear::orderBy('name', 'desc')->get();
@@ -33,7 +41,7 @@ class Expenses extends Component
     $budgetTypes = \App\Models\BudgetType::all();
 
     return view('livewire.setup.expenses', [
-      'expenses' => $this->expenses,
+      'expenses' => $expenses,
       'offices' => $offices,
       'fiscalYears' => $fiscalYears,
       'economicCodes' => $economicCodes,
@@ -43,33 +51,33 @@ class Expenses extends Component
 
   public function updated($propertyName)
   {
-      if (in_array($propertyName, ['economic_code_id', 'rpo_unit_id', 'fiscal_year_id'])) {
-          $this->calculateBalance();
-      }
+    if (in_array($propertyName, ['economic_code_id', 'rpo_unit_id', 'fiscal_year_id'])) {
+      $this->calculateBalance();
+    }
   }
 
   public function calculateBalance()
   {
-      if ($this->economic_code_id && $this->rpo_unit_id && $this->fiscal_year_id) {
-          $released = BudgetAllocation::where([
-              'economic_code_id' => $this->economic_code_id,
-              'rpo_unit_id' => $this->rpo_unit_id,
-              'fiscal_year_id' => $this->fiscal_year_id,
-          ])->sum('amount');
+    if ($this->economic_code_id && $this->rpo_unit_id && $this->fiscal_year_id) {
+      $released = BudgetAllocation::where([
+        'economic_code_id' => $this->economic_code_id,
+        'rpo_unit_id' => $this->rpo_unit_id,
+        'fiscal_year_id' => $this->fiscal_year_id,
+      ])->sum('amount');
 
-          $spent = Expense::where([
-              'economic_code_id' => $this->economic_code_id,
-              'rpo_unit_id' => $this->rpo_unit_id,
-              'fiscal_year_id' => $this->fiscal_year_id,
-          ])->when($this->expense_id, fn($q) => $q->where('id', '!=', $this->expense_id))
-          ->sum('amount');
+      $spent = Expense::where([
+        'economic_code_id' => $this->economic_code_id,
+        'rpo_unit_id' => $this->rpo_unit_id,
+        'fiscal_year_id' => $this->fiscal_year_id,
+      ])->when($this->expense_id, fn($q) => $q->where('id', '!=', $this->expense_id))
+        ->sum('amount');
 
-          $this->totalReleased = $released;
-          $this->availableBalance = $released - $spent;
-      } else {
-          $this->totalReleased = 0;
-          $this->availableBalance = 0;
-      }
+      $this->totalReleased = $released;
+      $this->availableBalance = $released - $spent;
+    } else {
+      $this->totalReleased = 0;
+      $this->availableBalance = 0;
+    }
   }
 
   public function create()
@@ -107,9 +115,9 @@ class Expenses extends Component
   public function store()
   {
     if ($this->expense_id) {
-        abort_if(auth()->user()->cannot('edit-expenses'), 403);
+      abort_if(auth()->user()->cannot('edit-expenses'), 403);
     } else {
-        abort_if(auth()->user()->cannot('create-expenses'), 403);
+      abort_if(auth()->user()->cannot('create-expenses'), 403);
     }
 
     $this->calculateBalance();
@@ -123,16 +131,16 @@ class Expenses extends Component
       'economic_code_id' => 'required',
     ]);
 
-        Expense::updateOrCreate(['id' => $this->expense_id], [
-            'code' => $this->code ?: 'EXP-' . strtoupper(uniqid()),
-            'amount' => $this->amount,
-            'description' => $this->description,
-            'date' => $this->date,
-            'rpo_unit_id' => $this->rpo_unit_id,
-            'fiscal_year_id' => $this->fiscal_year_id,
-            'economic_code_id' => $this->economic_code_id,
-            'budget_type_id' => $this->budget_type_id,
-        ]);
+    Expense::updateOrCreate(['id' => $this->expense_id], [
+      'code' => $this->code ?: 'EXP-' . strtoupper(uniqid()),
+      'amount' => $this->amount,
+      'description' => $this->description,
+      'date' => $this->date,
+      'rpo_unit_id' => $this->rpo_unit_id,
+      'fiscal_year_id' => $this->fiscal_year_id,
+      'economic_code_id' => $this->economic_code_id,
+      'budget_type_id' => $this->budget_type_id,
+    ]);
 
     session()->flash(
       'message',

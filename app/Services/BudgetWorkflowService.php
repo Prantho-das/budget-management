@@ -131,17 +131,29 @@ class BudgetWorkflowService
      */
     protected function createAllocation(BudgetEstimation $estimation)
     {
-        return BudgetAllocation::updateOrCreate(
-            [
-                'fiscal_year_id' => $estimation->fiscal_year_id,
-                'rpo_unit_id' => $estimation->rpo_unit_id,
-                'economic_code_id' => $estimation->economic_code_id,
-                'budget_type_id' => $estimation->budget_type_id,
-            ],
-            [
-                'amount' => $estimation->amount_approved ?? $estimation->amount_demand,
-                'remarks' => "Automatically released from Demand ID: {$estimation->id}"
-            ]
-        );
+        $allocation = BudgetAllocation::where([
+            'fiscal_year_id' => $estimation->fiscal_year_id,
+            'rpo_unit_id' => $estimation->rpo_unit_id,
+            'economic_code_id' => $estimation->economic_code_id,
+            'budget_type_id' => $estimation->budget_type_id,
+        ])->first();
+
+        $amount = $estimation->amount_approved ?? $estimation->amount_demand;
+
+        if ($allocation) {
+            return $allocation->update([
+                'amount' => $allocation->amount + $amount,
+                'remarks' => ($allocation->remarks ? $allocation->remarks . "\n" : "") . "Added from Demand Batch: {$estimation->id}"
+            ]);
+        }
+
+        return BudgetAllocation::create([
+            'fiscal_year_id' => $estimation->fiscal_year_id,
+            'rpo_unit_id' => $estimation->rpo_unit_id,
+            'economic_code_id' => $estimation->economic_code_id,
+            'budget_type_id' => $estimation->budget_type_id,
+            'amount' => $amount,
+            'remarks' => "Initial allocation from Demand ID: {$estimation->id}"
+        ]);
     }
 }

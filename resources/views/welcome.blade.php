@@ -155,8 +155,8 @@
                         <div class="feature-icon mx-auto">
                             <i class="bx bx-copy-alt"></i>
                         </div>
-                        <h4 class="fw-bold mb-3">Estimation</h4>
-                        <p class="text-muted">Submit precise estimations (Prakkalon) for economic codes with historical comparison data for smarter decisions.</p>
+                        <h4 class="fw-bold mb-3">Budget Demand</h4>
+                        <p class="text-muted">Submit precise budget demands for economic codes with historical comparison data for smarter decisions.</p>
                     </div>
                 </div>
                 <div class="col-lg-4 mb-4">

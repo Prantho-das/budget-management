@@ -23,6 +23,16 @@
                 @endforeach
             </select>
         </div>
+        @if(auth()->user()->can('view-all-offices-data'))
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">{{ __('Office') }}</label>
+                <select wire:model.live="rpo_unit_id" class="form-select">
+                    @foreach($offices as $office)
+                        <option value="{{ $office->id }}">{{ $office->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+        @endif
     </div>
 
     <!-- Budget Status Cards -->

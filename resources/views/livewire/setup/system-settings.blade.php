@@ -86,6 +86,11 @@
                                         <label class="form-label fw-semibold">{{ __('Contact Address') }}</label>
                                         <textarea class="form-control" rows="3" wire:model="settings.contact_address"></textarea>
                                     </div>
+                                    <div class="col-12 mb-3">
+                                        <label class="form-label fw-semibold">{{ __('Footer Text') }}</label>
+                                        <input type="text" class="form-control" wire:model="settings.footer_text">
+                                        <small class="text-muted">{{ __('This text will appear in the footer of the dashboard.') }}</small>
+                                    </div>
                                 </div>
                             @endif
 

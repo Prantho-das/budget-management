@@ -3,10 +3,10 @@
 <head>
         
         <meta charset="utf-8" />
-        <title>@yield('title', 'Dashboard | Skot - Admin & Dashboard Template')</title>
+        <title>@yield('title', get_setting('site_title', 'Dashboard | Skot - Admin & Dashboard Template'))</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
-        <meta content="Themesbrand" name="author" />
+        <meta content="{{ get_setting('meta_description', 'Premium Multipurpose Admin & Dashboard Template') }}" name="description" />
+        <meta content="{{ get_setting('meta_author', 'Themesbrand') }}" name="author" />
         <!-- App favicon -->
         <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
 
@@ -39,21 +39,21 @@
                     <div class="d-flex">
                         <!-- LOGO -->
                         <div class="navbar-brand-box">
-                            <a href="index.html" class="logo logo-dark">
+                            <a href="{{ route('dashboard') }}" class="logo logo-dark">
                                 <span class="logo-sm">
-                                    <img src="{{ asset('assets/images/logo.svg') }}" alt="" height="22">
+                                    <img src="{{ asset("/storage/".get_setting('site_logo')) ?: asset('assets/images/logo.svg') }}" alt="" height="22">
                                 </span>
                                 <span class="logo-lg">
-                                    <img src="{{ asset('assets/images/logo-dark.png') }}" alt="" height="17">
+                                    <img src="{{ asset("/storage/".get_setting('site_logo')) ?: asset('assets/images/logo-dark.png') }}" alt="" height="17">
                                 </span>
                             </a>
 
-                            <a href="index.html" class="logo logo-light">
+                            <a href="{{ route('dashboard') }}" class="logo logo-light">
                                 <span class="logo-sm">
-                                    <img src="{{ asset('assets/images/logo-light.svg') }}" alt="" height="22">
+                                    <img src="{{ asset("/storage/".get_setting('site_logo')) ?: asset('assets/images/logo-light.svg') }}" alt="" height="22">
                                 </span>
                                 <span class="logo-lg">
-                                    <img src="{{ asset('assets/images/logo-light.png') }}" alt="" height="19">
+                                    <img src="{{ asset("/storage/".get_setting('site_logo')) ?: asset('assets/images/logo-light.png') }}" alt="" height="19">
                                 </span>
                             </a>
                         </div>
@@ -61,9 +61,18 @@
                         <button type="button" class="btn btn-sm px-3 font-size-16 header-item waves-effect" id="vertical-menu-btn">
                             <i class="fa fa-fw fa-bars"></i>
                         </button>
+                        
                     </div>
 
-                    <div class="d-flex">
+                    <div class="d-flex align-items-center">
+                        @auth
+                            <div class="d-inline-block">
+                                <h5 class="mb-0 font-size-14 text-uppercase fw-bold text-primary">
+                                    <i class="bx bx-buildings me-1"></i>
+                                    {{ Auth::user()->office->name ?? __('No Office') }}
+                                </h5>
+                            </div>
+                        @endauth
                         <div class="dropdown d-inline-block" x-data="{ open: false }" @click.outside="open = false">
                             <button type="button" class="btn header-item waves-effect"
                             @click="open = !open" :class="{ 'show': open }" aria-haspopup="true" aria-expanded="false">
@@ -139,7 +148,7 @@
                                     <span key="t-utility">{{ __('Budgeting') }}</span>
                                 </a>
                                 <ul class="sub-menu" aria-expanded="false">
-                                    <li><a href="{{ route('budget.estimations') }}" wire:navigate key="t-estimations">{{ __('Estimation') }}</a></li>
+                                    <li><a href="{{ route('budget.estimations') }}" wire:navigate key="t-estimations">{{ __('Budget Demand') }}</a></li>
                                     @canany(['approve-budget', 'reject-budget'])
                                         <li><a href="{{ route('budget.approvals') }}" wire:navigate key="t-approvals">{{ __('Approvals') }}</a></li>
                                     @endcanany
@@ -188,6 +197,7 @@
                                     @endcan
                                     @can('view-system-settings')
                                         <li><a href="{{ route('setup.system-settings') }}" wire:navigate key="t-system-settings">{{ __('System Settings') }}</a></li>
+                                        <li><a href="{{ route('setup.workflow') }}" wire:navigate key="t-workflow">{{ __('Workflow Setup') }}</a></li>
                                     @endcan
                                 </ul>
                             </li>
@@ -308,11 +318,11 @@
                     <div class="container-fluid">
                         <div class="row">
                             <div class="col-sm-6">
-                                {{ date('Y') }} © Skote.
+                                {{ date('Y') }} © {{ get_setting('site_name', 'Budget Management System') }}.
                             </div>
                             <div class="col-sm-6">
                                 <div class="text-sm-end d-none d-sm-block">
-                                    Design & Develop by Themesbrand
+                                    {{ get_setting('footer_text', 'Design & Develop by Themesbrand') }}
                                 </div>
                             </div>
                         </div>

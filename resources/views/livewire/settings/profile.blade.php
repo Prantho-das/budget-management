@@ -1,5 +1,5 @@
 <section class="w-100">
-    <x-settings.layout :heading="__('Profile')" :subheading="__('Update your name and email address')">
+    <x-settings.layout :heading="__('Profile')" :subheading="__('Update your name and phone number')">
         <form wire:submit="updateProfileInformation" class="my-6">
             <!-- Profile Photo -->
             <div class="mb-4">
@@ -36,8 +36,14 @@
             </div>
 
             <div class="mb-3">
+                <label for="phone" class="form-label">{{ __('Phone Number') }}</label>
+                <input type="text" class="form-control" id="phone" wire:model="phone" placeholder="e.g. +880123456789">
+                @error('phone') <span class="text-danger">{{ $message }}</span> @enderror
+            </div>
+
                 <label for="email" class="form-label">{{ __('Email') }}</label>
-                <input type="email" class="form-control" id="email" wire:model="email" required autocomplete="email">
+                <input type="email" class="form-control" id="email" wire:model="email" readonly autocomplete="email">
+                <small class="text-muted">{{ __('Email address cannot be changed.') }}</small>
                 @error('email') <span class="text-danger">{{ $message }}</span> @enderror
 
                 @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail &&! auth()->user()->hasVerifiedEmail())

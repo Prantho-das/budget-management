@@ -54,6 +54,16 @@
                                                 @error('name') <span class="text-danger">{{ $message }}</span>@enderror
                                             </div>
                                             <div class="mb-3">
+                                                <label for="parent_id" class="form-label">{{ __('Parent Code') }}</label>
+                                                <select class="form-control" id="parent_id" wire:model="parent_id">
+                                                    <option value="">{{ __('None (Root Level)') }}</option>
+                                                    @foreach($parentCodes as $pCode)
+                                                        <option value="{{ $pCode->id }}">{{ $pCode->code }} - {{ $pCode->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                                @error('parent_id') <span class="text-danger">{{ $message }}</span>@enderror
+                                            </div>
+                                            <div class="mb-3">
                                                 <label for="description" class="form-label">{{ __('Description') }}</label>
                                                 <textarea class="form-control" id="description" wire:model="description"></textarea>
                                                 @error('description') <span class="text-danger">{{ $message }}</span>@enderror
@@ -75,6 +85,7 @@
                                 <tr>
                                     <th>{{ __('ID') }}</th>
                                     <th>{{ __('Code') }}</th>
+                                    <th>{{ __('Parent') }}</th>
                                     <th>{{ __('Name') }}</th>
                                     <th>{{ __('Description') }}</th>
                                     <th>{{ __('Action') }}</th>
@@ -85,6 +96,13 @@
                                     <tr>
                                         <td>{{ $code->id }}</td>
                                         <td><span class="badge bg-success">{{ $code->code }}</span></td>
+                                        <td>
+                                            @if($code->parent)
+                                                <span class="badge bg-info">{{ $code->parent->code }}</span>
+                                            @else
+                                                <span class="text-muted">{{ __('None') }}</span>
+                                            @endif
+                                        </td>
                                         <td>{{ $code->name }}</td>
                                         <td>{{ $code->description }}</td>
                                         <td>

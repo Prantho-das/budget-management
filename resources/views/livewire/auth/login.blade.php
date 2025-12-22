@@ -8,8 +8,8 @@
             <div class="row">
                 <div class="col-7">
                     <div class="text-primary p-4">
-                        <h5 class="text-primary">Welcome Back !</h5>
-                        <p>Sign in to continue to {{ config('app.name') }}.</p>
+                        <h5 class="text-primary">{{ __('Welcome Back !') }}</h5>
+                        <p>{{ __('Sign in to continue to') }} {{ get_setting('site_name', config('app.name')) }}.</p>
                     </div>
                 </div>
                 <div class="col-5 align-self-end">
@@ -22,7 +22,7 @@
                 <a href="{{ route('home') }}" class="auth-logo-light">
                     <div class="avatar-md profile-user-wid mb-4">
                         <span class="avatar-title rounded-circle bg-light">
-                            <img src="{{ asset('assets/images/logo-light.svg') }}" alt="" class="rounded-circle" height="34">
+                            <img src="{{ get_setting('site_logo') ?: asset('assets/images/logo-light.svg') }}" alt="" class="rounded-circle" height="34">
                         </span>
                     </div>
                 </a>
@@ -30,7 +30,7 @@
                 <a href="{{ route('home') }}" class="auth-logo-dark">
                     <div class="avatar-md profile-user-wid mb-4">
                         <span class="avatar-title rounded-circle bg-light">
-                            <img src="{{ asset('assets/images/logo.svg') }}" alt="" class="rounded-circle" height="34">
+                            <img src="{{ get_setting('site_logo') ?: asset('assets/images/logo.svg') }}" alt="" class="rounded-circle" height="34">
                         </span>
                     </div>
                 </a>
@@ -107,7 +107,7 @@
             @if (Route::has('register'))
                 <p>Don't have an account ? <a href="{{ route('register') }}" class="fw-medium text-primary"> Signup now </a> </p>
             @endif
-            <p>© {{ date('Y') }} Skote. Crafted with <i class="mdi mdi-heart text-danger"></i> by Themesbrand</p>
+            <p>© {{ date('Y') }} {{ get_setting('site_name', 'Budget Management System') }}. {{ get_setting('footer_text', 'Crafted with heart by Themesbrand') }}</p>
         </div>
     </div>
 @endsection

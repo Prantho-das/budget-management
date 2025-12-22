@@ -15,7 +15,7 @@ class Profile extends Component
     public string $name = '';
 
     public string $email = '';
-
+    public string $phone = '';
     public $photo;
 
     /**
@@ -25,6 +25,7 @@ class Profile extends Component
     {
         $this->name = Auth::user()->name;
         $this->email = Auth::user()->email;
+        $this->phone = Auth::user()->phone ?? '';
     }
 
     /**
@@ -36,15 +37,7 @@ class Profile extends Component
 
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],
-
-            'email' => [
-                'required',
-                'string',
-                'lowercase',
-                'email',
-                'max:255',
-                Rule::unique(User::class)->ignore($user->id),
-            ],
+            'phone' => ['nullable', 'string', 'max:20'],
             'photo' => ['nullable', 'image', 'max:1024'], // 1MB Max
         ]);
 
@@ -56,11 +49,7 @@ class Profile extends Component
         }
 
         $user->name = $this->name;
-        $user->email = $this->email;
-
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
-        }
+        $user->phone = $this->phone;
 
         $user->save();
 

@@ -24,6 +24,8 @@ class BudgetEstimation extends Model
         'target_office_id',
         'approval_log',
         'remarks',
+        'approver_remarks',
+        'batch_id',
     ];
 
     protected $casts = [

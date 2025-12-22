@@ -19,7 +19,7 @@
                 <div class="card-body">
                     <div class="row mb-4">
                         <div class="col-md-4">
-                            <label class="form-label">{{ __('Fiscal Year') }}</label>
+                            <label class="form-label fw-semibold">{{ __('Fiscal Year') }}</label>
                             <select wire:model.live="fiscal_year_id" class="form-select">
                                 @foreach($fiscalYears as $fy)
                                     <option value="{{ $fy->id }}">{{ $fy->name }}</option>
@@ -27,13 +27,23 @@
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">{{ __('Budget Type') }}</label>
+                            <label class="form-label fw-semibold">{{ __('Budget Type') }}</label>
                             <select wire:model.live="budget_type_id" class="form-select">
                                 @foreach($budgetTypes as $type)
                                     <option value="{{ $type->id }}">{{ __($type->name) }}</option>
                                 @endforeach
                             </select>
                         </div>
+                        @if(auth()->user()->can('view-all-offices-data'))
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">{{ __('Office') }}</label>
+                                <select wire:model.live="rpo_unit_id" class="form-select">
+                                    @foreach($offices as $office)
+                                        <option value="{{ $office->id }}">{{ $office->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
                     </div>
 
                     <div class="table-responsive">

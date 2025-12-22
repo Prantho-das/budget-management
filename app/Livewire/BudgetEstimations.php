@@ -8,6 +8,7 @@ use App\Models\EconomicCode;
 use App\Models\FiscalYear;
 use App\Models\RpoUnit;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\Models\BudgetType;
 use App\Services\BudgetWorkflowService;
 
@@ -16,10 +17,13 @@ class BudgetEstimations extends Component
   public $fiscal_year_id;
   public $rpo_unit_id;
   public $demands = []; // [economic_code_id => amount]
+  public $remarks = []; // [economic_code_id => remark]
   public $previousDemands = []; // [economic_code_id => amount]
   public $budget_type_id;
   public $status = 'draft';
   public $current_stage = 'Draft';
+  public $batch_id;
+  public $allBatches = [];
 
   public function mount()
   {
@@ -36,24 +40,56 @@ class BudgetEstimations extends Component
 
   public function updatedBudgetTypeId()
   {
+    $this->batch_id = null; // Clear batch when budget type changes to reload latest
     $this->loadDemands();
+  }
+
+  public function updatedBatchId()
+  {
+    $this->loadDemands();
+  }
+
+  public function startNewDemand()
+  {
+    $this->batch_id = (string) \Illuminate\Support\Str::uuid();
+    $this->demands = [];
+    $this->remarks = [];
+    $this->status = 'draft';
+    $this->current_stage = 'Draft';
   }
 
   public function loadDemands()
   {
-    $this->demands = [];
     if (!$this->fiscal_year_id || !$this->rpo_unit_id || !$this->budget_type_id) return;
+
+    // Load available batches for selector
+    $this->allBatches = BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id)
+      ->where('rpo_unit_id', $this->rpo_unit_id)
+      ->where('budget_type_id', $this->budget_type_id)
+      ->select('batch_id', 'status', 'current_stage', DB::raw('MIN(created_at) as created_at'))
+      ->groupBy('batch_id', 'status', 'current_stage')
+      ->orderBy('created_at', 'desc')
+      ->get()
+      ->toArray();
+
+    if (!$this->batch_id) {
+      $latestBatch = collect($this->allBatches)->first();
+      if ($latestBatch) {
+        $this->batch_id = $latestBatch['batch_id'];
+      } else {
+        $this->batch_id = (string) \Illuminate\Support\Str::uuid();
+      }
+    }
 
     $currentFiscalYear = FiscalYear::find($this->fiscal_year_id);
 
-    // Current Year Demands
-    $estimations = BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id)
-      ->where('rpo_unit_id', $this->rpo_unit_id)
-      ->where('budget_type_id', $this->budget_type_id)
+    // Current Year Demands for selected batch
+    $estimations = BudgetEstimation::where('batch_id', $this->batch_id)
       ->get();
 
     foreach ($estimations as $estimation) {
       $this->demands[$estimation->economic_code_id] = $estimation->amount_demand;
+      $this->remarks[$estimation->economic_code_id] = $estimation->remarks;
     }
 
     // Previous 3 Years Expense Data
@@ -95,6 +131,7 @@ class BudgetEstimations extends Component
   {
     abort_if(auth()->user()->cannot('create-budget-estimations'), 403);
     $this->persist('draft');
+    $this->loadDemands(); // Refresh batch list and status
     session()->flash('message', __('Budget Draft Saved Successfully.'));
   }
 
@@ -103,9 +140,7 @@ class BudgetEstimations extends Component
     abort_if(auth()->user()->cannot('submit-budget-estimations'), 403);
     $this->persist('submitted');
 
-    $estimations = BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id)
-      ->where('rpo_unit_id', $this->rpo_unit_id)
-      ->where('budget_type_id', $this->budget_type_id)
+    $estimations = BudgetEstimation::where('batch_id', $this->batch_id)
       ->get();
 
     $workflow = new BudgetWorkflowService();
@@ -127,11 +162,10 @@ class BudgetEstimations extends Component
     }
 
     foreach ($this->demands as $code_id => $amount) {
-      if ($amount > 0 || BudgetEstimation::where([
-        'fiscal_year_id' => $this->fiscal_year_id,
-        'rpo_unit_id' => $this->rpo_unit_id,
+      $remark = $this->remarks[$code_id] ?? null;
+      if ($amount > 0 || $remark || BudgetEstimation::where([
+        'batch_id' => $this->batch_id,
         'economic_code_id' => $code_id,
-        'budget_type_id' => $this->budget_type_id,
       ])->exists()) {
         BudgetEstimation::updateOrCreate(
           [
@@ -139,9 +173,11 @@ class BudgetEstimations extends Component
             'budget_type_id' => $this->budget_type_id,
             'rpo_unit_id'    => $this->rpo_unit_id,
             'economic_code_id' => $code_id,
+            'batch_id' => $this->batch_id,
           ],
           [
             'amount_demand' => $amount ?: 0,
+            'remarks' => $remark,
             'status' => $status,
             'current_stage' => 'Draft'
           ]
@@ -154,7 +190,21 @@ class BudgetEstimations extends Component
   public function render()
   {
     abort_if(auth()->user()->cannot('view-budget-estimations'), 403);
-    $economicCodes = EconomicCode::all();
+    $economicCodes = EconomicCode::with(['children', 'parent'])
+      ->orderByRaw('CASE WHEN parent_id IS NULL THEN id ELSE parent_id END, id')
+      ->get();
+
+    // Re-order to ensure children always follow parents
+    $orderedCodes = [];
+    $roots = $economicCodes->whereNull('parent_id')->sortBy('code');
+    foreach ($roots as $root) {
+      $orderedCodes[] = $root;
+      $children = $economicCodes->where('parent_id', $root->id)->sortBy('code');
+      foreach ($children as $child) {
+        $orderedCodes[] = $child;
+      }
+    }
+    $economicCodes = $orderedCodes;
     $fiscalYear = FiscalYear::find($this->fiscal_year_id);
     $office = RpoUnit::find($this->rpo_unit_id);
 
@@ -181,7 +231,8 @@ class BudgetEstimations extends Component
       'economicCodes' => $economicCodes,
       'currentFiscalYear' => $fiscalYear,
       'currentOffice' => $office,
-      'budgetTypes' => $availableTypes
+      'budgetTypes' => $availableTypes,
+      'totalDemand' => array_sum($this->demands)
     ])->extends('layouts.skot')->section('content');
   }
 }

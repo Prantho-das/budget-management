@@ -12,35 +12,41 @@ use Illuminate\Support\Facades\Auth;
 class BudgetSummary extends Component
 {
     public $fiscal_year_id;
+    public $rpo_unit_id;
 
     public function mount()
     {
         abort_if(auth()->user()->cannot('view-budget-estimations'), 403);
-        
+
         $fiscalYear = FiscalYear::where('status', true)->latest()->first();
         $this->fiscal_year_id = $fiscalYear ? $fiscalYear->id : null;
+        $this->rpo_unit_id = auth()->user()->rpo_unit_id;
     }
 
     public function render()
     {
-        $userOfficeId = Auth::user()->rpo_unit_id;
-        
+        if (!auth()->user()->can('view-all-offices-data')) {
+            $this->rpo_unit_id = auth()->user()->rpo_unit_id;
+        }
+
+        $userOfficeId = $this->rpo_unit_id;
+
         // Budget Statistics
         $totalDraft = BudgetEstimation::where('rpo_unit_id', $userOfficeId)
             ->where('fiscal_year_id', $this->fiscal_year_id)
             ->where('status', 'draft')
             ->count();
-            
+
         $totalSubmitted = BudgetEstimation::where('rpo_unit_id', $userOfficeId)
             ->where('fiscal_year_id', $this->fiscal_year_id)
             ->where('status', 'submitted')
             ->count();
-            
+
         $totalReleased = BudgetEstimation::where('rpo_unit_id', $userOfficeId)
             ->where('fiscal_year_id', $this->fiscal_year_id)
             ->where('current_stage', 'Released')
             ->count();
-            
+
         $totalRejected = BudgetEstimation::where('rpo_unit_id', $userOfficeId)
             ->where('fiscal_year_id', $this->fiscal_year_id)
             ->where('status', 'draft')
@@ -51,11 +57,11 @@ class BudgetSummary extends Component
         $totalAllocated = BudgetAllocation::where('rpo_unit_id', $userOfficeId)
             ->where('fiscal_year_id', $this->fiscal_year_id)
             ->sum('amount');
-            
+
         $totalExpenses = Expense::where('rpo_unit_id', $userOfficeId)
             ->where('fiscal_year_id', $this->fiscal_year_id)
             ->sum('amount');
-            
+
         $availableBalance = $totalAllocated - $totalExpenses;
 
         // Budget by Economic Code
@@ -68,7 +74,7 @@ class BudgetSummary extends Component
                     ->where('fiscal_year_id', $this->fiscal_year_id)
                     ->where('economic_code_id', $allocation->economic_code_id)
                     ->sum('amount');
-                    
+
                 return [
                     'code' => $allocation->economicCode->code,
                     'name' => $allocation->economicCode->name,
@@ -80,6 +86,7 @@ class BudgetSummary extends Component
             });
 
         $fiscalYears = FiscalYear::orderBy('name', 'desc')->get();
+        $offices = \App\Models\RpoUnit::all();
 
         return view('livewire.budget-summary', [
             'totalDraft' => $totalDraft,
@@ -90,7 +97,8 @@ class BudgetSummary extends Component
             'totalExpenses' => $totalExpenses,
             'availableBalance' => $availableBalance,
             'budgetByCode' => $budgetByCode,
-            'fiscalYears' => $fiscalYears
+            'fiscalYears' => $fiscalYears,
+            'offices' => $offices
         ])->extends('layouts.skot')->section('content');
     }
 }

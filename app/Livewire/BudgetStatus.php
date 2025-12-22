@@ -15,14 +15,14 @@ class BudgetStatus extends Component
     public $fiscal_year_id;
     public $rpo_unit_id;
     public $budget_type_id;
-    
+
     public $selectedLog = [];
     public $showLogModal = false;
 
     public function mount()
     {
         abort_if(auth()->user()->cannot('view-budget-estimations'), 403);
-        
+
         $fiscalYear = FiscalYear::where('status', true)->latest()->first();
         $this->fiscal_year_id = $fiscalYear ? $fiscalYear->id : null;
         $this->rpo_unit_id = Auth::user()->rpo_unit_id;
@@ -50,6 +50,10 @@ class BudgetStatus extends Component
 
     public function render()
     {
+        if (!auth()->user()->can('view-all-offices-data')) {
+            $this->rpo_unit_id = auth()->user()->rpo_unit_id;
+        }
+
         $allocations = BudgetAllocation::with(['economicCode', 'budgetType'])
             ->where('fiscal_year_id', $this->fiscal_year_id)
             ->where('rpo_unit_id', $this->rpo_unit_id)
@@ -58,11 +62,13 @@ class BudgetStatus extends Component
 
         $fiscalYears = FiscalYear::orderBy('name', 'desc')->get();
         $budgetTypes = BudgetType::where('status', true)->orderBy('order_priority')->get();
+        $offices = \App\Models\RpoUnit::all();
 
         return view('livewire.budget-status', [
             'allocations' => $allocations,
             'fiscalYears' => $fiscalYears,
-            'budgetTypes' => $budgetTypes
+            'budgetTypes' => $budgetTypes,
+            'offices' => $offices
         ])->extends('layouts.skot')->section('content');
     }
 }

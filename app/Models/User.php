@@ -54,6 +54,7 @@ class User extends Authenticatable
         'password',
         'rpo_unit_id',
         'profile_photo_path',
+        'phone',
     ];
 
     /**

@@ -7,7 +7,7 @@ use App\Models\EconomicCode;
 
 class EconomicCodes extends Component
 {
-  public $codes, $name, $code, $description, $economic_code_id;
+  public $codes, $name, $code, $description, $economic_code_id, $parent_id;
   public $isOpen = false;
 
   protected $listeners = ['deleteConfirmed'];
@@ -15,8 +15,17 @@ class EconomicCodes extends Component
   public function render()
   {
     abort_if(auth()->user()->cannot('view-economic-codes'), 403);
-    $this->codes = EconomicCode::orderBy('id', 'desc')->get();
-    return view('livewire.setup.economic-codes')
+    $this->codes = EconomicCode::with('parent')->orderBy('code', 'asc')->get();
+    $parentCodes = EconomicCode::whereNull('parent_id')
+      ->when($this->economic_code_id, function ($query) {
+        return $query->where('id', '!=', $this->economic_code_id);
+      })
+      ->orderBy('code', 'asc')
+      ->get();
+
+    return view('livewire.setup.economic-codes', [
+      'parentCodes' => $parentCodes
+    ])
       ->extends('layouts.skot')
       ->section('content');
   }
@@ -44,25 +53,28 @@ class EconomicCodes extends Component
     $this->code = '';
     $this->description = '';
     $this->economic_code_id = '';
+    $this->parent_id = '';
   }
 
   public function store()
   {
     if ($this->economic_code_id) {
-        abort_if(auth()->user()->cannot('edit-economic-codes'), 403);
+      abort_if(auth()->user()->cannot('edit-economic-codes'), 403);
     } else {
-        abort_if(auth()->user()->cannot('create-economic-codes'), 403);
+      abort_if(auth()->user()->cannot('create-economic-codes'), 403);
     }
 
     $this->validate([
       'name' => 'required',
       'code' => 'required|unique:economic_codes,code,' . $this->economic_code_id,
+      'parent_id' => 'nullable|exists:economic_codes,id',
     ]);
 
     EconomicCode::updateOrCreate(['id' => $this->economic_code_id], [
       'name' => $this->name,
       'code' => $this->code,
-      'description' => $this->description
+      'description' => $this->description,
+      'parent_id' => $this->parent_id ?: null,
     ]);
 
     session()->flash(
@@ -82,6 +94,7 @@ class EconomicCodes extends Component
     $this->name = $code->name;
     $this->code = $code->code;
     $this->description = $code->description;
+    $this->parent_id = $code->parent_id;
 
     $this->openModal();
   }

@@ -43,6 +43,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/setup/economic-codes', \App\Livewire\Setup\EconomicCodes::class)->middleware('can:view-economic-codes')->name('setup.economic-codes');
     Route::get('/setup/budget-types', \App\Livewire\Setup\BudgetTypes::class)->middleware('can:view-budget-types')->name('setup.budget-types');
     Route::get('/setup/users', \App\Livewire\Setup\Users::class)->middleware('can:view-users')->name('setup.users');
+    Route::get('/setup/workflow', \App\Livewire\Setup\WorkflowManagement::class)->middleware('can:view-system-settings')->name('setup.workflow');
     Route::get('settings/two-factor', TwoFactor::class)
         ->middleware(
             when(
