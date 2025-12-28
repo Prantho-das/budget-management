@@ -73,12 +73,15 @@ class Dashboard extends Component
     ];
 
     // 2. Expense Trends (Monthly)
+    $driver = DB::getDriverName();
+
+    $dateExpression = $driver === 'sqlite'
+      ? "strftime('%Y-%m', date)"
+      : "DATE_FORMAT(date, '%Y-%m')";
+
     $monthlyExpenses = Expense::where('fiscal_year_id', $this->fiscalYear->id)
-      ->select(
-        DB::raw('SUM(amount) as total'),
-        DB::raw("strftime('%Y-%m', date) as month") // SQLite compatible for serving? adjust for MySQL if needed
-      )
-      ->groupBy('month')
+      ->selectRaw("SUM(amount) as total, {$dateExpression} as month")
+      ->groupByRaw($dateExpression)
       ->orderBy('month')
       ->get();
 
