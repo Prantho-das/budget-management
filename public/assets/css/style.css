@@ -20,6 +20,7 @@ body {
 .unitoffice-entry-table .card .table-responsive table td {
   font-size: 14px;
   padding: 5px 5px;
+  vertical-align: middle;
 }
 .unitoffice-entry-table .card .table-responsive table th span.badge,
 .unitoffice-entry-table .card .table-responsive table td span.badge {
