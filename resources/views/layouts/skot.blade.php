@@ -18,7 +18,18 @@
         <link href="{{ asset('assets/css/app.min.css') }}" id="app-style" rel="stylesheet" type="text/css" />
         <!-- App js -->
         {{-- <script src="{{ asset('assets/js/plugin.js') }}"></script> --}}
-
+        
+        <style>
+@if(app()->getLocale() == 'bn')
+        :lang(en) {
+  font-family: "Inter", "Arial", sans-serif;
+}
+@else
+:lang(bn) {
+  font-family: "Noto Sans Bengali", "SolaimanLipi", sans-serif;
+}
+@endif
+</style>
         @stack('head')
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
