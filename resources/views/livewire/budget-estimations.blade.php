@@ -68,7 +68,7 @@
         </div>
 
         <!-- Selection Controls -->
-        <div class="card shadow-sm border-0 mb-4">
+        <div class="card shadow-sm border-0 mb-4 d-none">
             <div class="card-body">
                 <div class="row align-items-end">
                     <div class="col-md-3 mb-3 mb-md-0">
@@ -200,6 +200,8 @@
             </div>
         @endif
 
+        
+        @if ($status == 'draft' || $status == 'rejected')
         <div class="unitoffice-entry-table">
             <div class="card shadow-sm border-0">
                 <div class="card-body">
@@ -296,8 +298,18 @@
                     </div>
                 </div>
             </div>
-        </div>
-
+        </div>          
+         @else
+         <div class="card">
+            <div class="card-body">
+            <div class="text-success fw-bold d-inline-flex align-items-center justify-content-center text-center">
+              <i class="bx bxs-check-circle font-size-24 me-2"></i>
+              <span>{{ __('Successfully Submitted') }}</span>
+         </div>
+            </div>
+         </div>
+        
+         @endif
 
 
 </div>
