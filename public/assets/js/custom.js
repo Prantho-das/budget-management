@@ -20,11 +20,32 @@ document.addEventListener("livewire:initialized", () => {
 
 // table sticky on scroll
 
-$(window).scroll(function () {
-    var navbar = $(".unitoffice-entry-table .table-responsive thead");
-    if ($(window).scrollTop() >= 250) {
-        navbar.addClass("sticky");
-    } else {
-        navbar.removeClass("sticky");
-    }
-});
+// $(window).scroll(function () {
+//     var navbar = $(".unitoffice-entry-table .table-responsive thead");
+//     if ($(window).scrollTop() >= 150) {
+//         navbar.addClass("sticky");
+//     } else {
+//         navbar.removeClass("sticky");
+//     }
+// });
+// $(document).ready(function () {
+//     var $tableContainer = $(".unitoffice-entry-table .table-responsive");
+//     var $thead = $tableContainer.find("thead");
+
+//     $tableContainer.on("scroll", function () {
+//         if ($(this).scrollTop() >= 150) {
+//             $thead.addClass("sticky");
+//         } else {
+//             $thead.removeClass("sticky");
+//         }
+//     });
+// });
+
+// $(window).scroll(function () {
+//     var navbar = $(".floating-budget-card");
+//     if ($(window).scrollTop() >= 50) {
+//         navbar.addClass("sticky");
+//     } else {
+//         navbar.removeClass("sticky");
+//     }
+// });

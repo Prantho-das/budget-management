@@ -67,57 +67,6 @@
             </div>
         </div>
 
-        <!-- Selection Controls -->
-        <div class="card shadow-sm border-0 mb-4 ">
-            <div class="card-body">
-                <div class="row align-items-end">
-                    <div class="col-md-3 mb-3 mb-md-0 d-none">
-                        <label class="form-label fw-bold text-muted small">{{ __('Budget Request Type') }}</label>
-                        <select wire:model.live="budget_type_id" class="form-select border-light shadow-none"
-                            {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
-                            @foreach ($budgetTypes as $type)
-                                <option value="{{ $type->id }}">{{ $type->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-4 mb-3 mb-md-0 d-none">
-                        <label class="form-label fw-bold text-muted small">{{ __('Submission Batch') }}</label>
-                        <div class="input-group">
-                            <select wire:model.live="batch_id" class="form-select border-light shadow-none">
-                                @foreach ($allBatches as $batch)
-                                    <option value="{{ $batch['batch_id'] }}">
-                                        {{ date('d M Y', strtotime($batch['created_at'])) }}
-                                        ({{ __($batch['status']) }})
-                                    </option>
-                                @endforeach
-                                @if (!collect($allBatches)->pluck('batch_id')->contains($batch_id))
-                                    <option value="{{ $batch_id }}">{{ __('New Submission') }}</option>
-                                @endif
-                            </select>
-                            <button wire:click="startNewDemand" class="btn btn-primary shadow-none" type="button"
-                                title="{{ __('New Demand') }}">
-                                <i class="bx bx-plus"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-md-5 text-md-end">
-                        @if ($status === 'draft' || $status === 'rejected')
-                            <button wire:click="saveDraft"
-                                class="btn btn-outline-secondary px-4 waves-effect">{{ __('Save Draft') }}</button>
-                            <button wire:click="submitForApproval"
-                                class="btn btn-primary px-4 ms-2 waves-effect waves-light">{{ __('Submit for Approval') }}</button>
-                        @else
-                            <div class="text-success fw-bold d-inline-flex align-items-center">
-                                <i class="bx bxs-check-circle font-size-24 me-2"></i>
-                                <span>{{ __('Successfully Submitted') }}</span>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
 
         <div class="d-none card shadow-sm border-0 mb-4 overflow-hidden">
             <div class="card-header bg-transparent border-0 pt-4 pb-0">
@@ -200,117 +149,167 @@
             </div>
         @endif
 
-        
+
         @if ($status == 'draft' || $status == 'rejected')
-        <div class="unitoffice-entry-table">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered align-middle custom-budget-table">
-                            <thead>
-                                <tr class="table-primary text-center">
-                                    <th rowspan="2">{{ __('Economic Code') }}</th>
-                                    <th rowspan="2">{{ __('Description') }}</th>
-                                    <th colspan="3">{{ __('Original') }}</th>
-                                    <th rowspan="2">{{ __('Demand') }}<br>{{ current_fiscal_year() }}</th>
-                                    <th rowspan="2">{{ __('Remarks') }}</th>
-                                </tr>
-                                </tr>
-                                <tr class="table-primary text-center">
+            <div class="unitoffice-entry-table">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle custom-budget-table">
+                                <thead>
+                                    <tr class="table-primary text-center">
+                                        <th rowspan="2">{{ __('Economic Code') }}</th>
+                                        <th rowspan="2">{{ __('Description') }}</th>
+                                        <th colspan="3">{{ __('Original') }}</th>
+                                        <th rowspan="2">{{ __('Demand') }}<br>{{ current_fiscal_year() }}</th>
+                                        <th rowspan="2">{{ __('Remarks') }}</th>
+                                    </tr>
+
+                                    <tr class="table-primary text-center">
+                                        @php
+                                            $prevYears = \App\Models\FiscalYear::where(
+                                                'end_date',
+                                                '<',
+                                                $currentFiscalYear->start_date,
+                                            )
+                                                ->orderBy('end_date', 'desc')
+                                                ->take(3)
+                                                ->get();
+                                        @endphp
+                                        @foreach ($prevYears as $py)
+                                            <th>{{ $py->name }}</th>
+                                        @endforeach
+                                    </tr>
+                                </thead>
+
+                                <tbody>
                                     @php
-                                        $prevYears = \App\Models\FiscalYear::where(
-                                            'end_date',
-                                            '<',
-                                            $currentFiscalYear->start_date,
-                                        )
-                                            ->orderBy('end_date', 'desc')
-                                            ->take(3)
-                                            ->get();
+                                        $estMap = \App\Models\BudgetEstimation::where('batch_id', $batch_id)
+                                            ->get()
+                                            ->keyBy('economic_code_id');
                                     @endphp
-                                    @foreach ($prevYears as $py)
-                                        <th>{{ $py->name }}</th>
-                                    @endforeach
-                                </tr>
-                            </thead>
 
-                            <tbody>
-                                @php
-                                    $estMap = \App\Models\BudgetEstimation::where('batch_id', $batch_id)
-                                        ->get()
-                                        ->keyBy('economic_code_id');
-                                @endphp
-
-                                @foreach ($economicCodes as $code)
-                                    <tr class="{{ $code->parent_id == null ? 'parent-expense-code' : '' }}">
-                                        <td>
-                                            <span
-                                                class="badge  bg-{{ $code->parent_id ? 'secondary' : 'primary' }}-subtle text-{{ $code->parent_id ? 'secondary' : 'primary' }} p-2">
-                                                {{ $code->code }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="text-dark">{{ $code->name }}</div>
-                                            @if ($code->description)
-                                                <small class="text-muted d-block text-truncate"
-                                                    style="max-width: 200px;">
-                                                    {{ $code->description }}
-                                                </small>
-                                            @endif
-                                        </td>
-
-                                        <!-- Previous 3 years actual expenditure -->
-                                        @for ($i = 0; $i < 3; $i++)
-                                            <td class="text-end">
-                                                @if (isset($previousDemands[$code->id]["year_{$i}"]))
-                                                    {{ number_format($previousDemands[$code->id]["year_{$i}"]['amount'], 0) }}
-                                                @else
-                                                    <span class="opacity-25">-</span>
+                                    @foreach ($economicCodes as $code)
+                                        <tr class="{{ $code->parent_id == null ? 'parent-expense-code' : '' }}">
+                                            <td>
+                                                <span
+                                                    class="badge  bg-{{ $code->parent_id ? 'secondary' : 'primary' }}-subtle text-{{ $code->parent_id ? 'secondary' : 'primary' }} p-2">
+                                                    {{ $code->code }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="text-dark">{{ $code->name }}</div>
+                                                @if ($code->description)
+                                                    <small class="text-muted d-block text-truncate"
+                                                        style="max-width: 200px;">
+                                                        {{ $code->description }}
+                                                    </small>
                                                 @endif
                                             </td>
-                                        @endfor
 
-                                        <!-- Current demand input -->
-                                        <td>
-                                            <div class="input-group input-group-sm">
+                                            <!-- Previous 3 years actual expenditure -->
+                                            @for ($i = 0; $i < 3; $i++)
+                                                <td class="text-end">
+                                                    @if (isset($previousDemands[$code->id]["year_{$i}"]))
+                                                        {{ number_format($previousDemands[$code->id]["year_{$i}"]['amount'], 0) }}
+                                                    @else
+                                                        <span class="opacity-25">-</span>
+                                                    @endif
+                                                </td>
+                                            @endfor
+
+                                            <!-- Current demand input -->
+                                            <td>
+                                                <div class="input-group input-group-sm">
+                                                    @if ($code->parent_id != null)
+                                                        <input type="text"
+                                                            class="form-control form-control-sm text-end"
+                                                            wire:model.defer="demands.{{ $code->id }}"
+                                                            placeholder="0"
+                                                            {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
+                                                    @endif
+                                                </div>
+                                            </td>
+
+                                            <!-- Remarks -->
+                                            <td>
                                                 @if ($code->parent_id != null)
-                                                    <input type="text"
-                                                        class="form-control form-control-sm text-end"
-                                                        wire:model.defer="demands.{{ $code->id }}"
-                                                        placeholder="0"
+                                                    <input type="text" class="form-control form-control-sm"
+                                                        wire:model.defer="remarks.{{ $code->id }}"
+                                                        placeholder="{{ __('Note...') }}"
                                                         {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
                                                 @endif
-                                            </div>
-                                        </td>
-
-                                        <!-- Remarks -->
-                                        <td>
-                                            @if ($code->parent_id != null)
-                                                <input type="text" class="form-control form-control-sm"
-                                                    wire:model.defer="remarks.{{ $code->id }}"
-                                                    placeholder="{{ __('Note...') }}"
-                                                    {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>          
-         @else
-         <div class="card">
-            <div class="card-body">
-            <div class="text-success fw-bold d-inline-flex align-items-center justify-content-center text-center">
-              <i class="bx bxs-check-circle font-size-24 me-2"></i>
-              <span>{{ __('Previous demand already submitted. Now pending for approval.') }}</span>
-         </div>
+        @else
+            <div class="card">
+                <div class="card-body">
+                    <div
+                        class="text-success fw-bold d-inline-flex align-items-center justify-content-center text-center">
+                        <i class="bx bxs-check-circle font-size-24 me-2"></i>
+                        <span>{{ __('Previous demand already submitted. Now pending for approval.') }}</span>
+                    </div>
+                </div>
             </div>
-         </div>
-        
-         @endif
 
+        @endif
+        <!-- Selection Controls -->
+        <div class="card shadow-sm border-0 mb-4 floating-budget-card sticky">
+            <div class="card-body">
+                <div class="row align-items-end">
+                    <div class="col-md-3 mb-3 mb-md-0 d-none">
+                        <label class="form-label fw-bold text-muted small">{{ __('Budget Request Type') }}</label>
+                        <select wire:model.live="budget_type_id" class="form-select border-light shadow-none"
+                            {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
+                            @foreach ($budgetTypes as $type)
+                                <option value="{{ $type->id }}">{{ $type->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3 mb-md-0 d-none">
+                        <label class="form-label fw-bold text-muted small">{{ __('Submission Batch') }}</label>
+                        <div class="input-group">
+                            <select wire:model.live="batch_id" class="form-select border-light shadow-none">
+                                @foreach ($allBatches as $batch)
+                                    <option value="{{ $batch['batch_id'] }}">
+                                        {{ date('d M Y', strtotime($batch['created_at'])) }}
+                                        ({{ __($batch['status']) }})
+                                    </option>
+                                @endforeach
+                                @if (!collect($allBatches)->pluck('batch_id')->contains($batch_id))
+                                    <option value="{{ $batch_id }}">{{ __('New Submission') }}</option>
+                                @endif
+                            </select>
+                            <button wire:click="startNewDemand" class="btn btn-primary shadow-none" type="button"
+                                title="{{ __('New Demand') }}">
+                                <i class="bx bx-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-7"></div>
+                    <div class="col-md-5 text-md-end">
+                        @if ($status === 'draft' || $status === 'rejected')
+                            <button wire:click="saveDraft"
+                                class="btn btn-outline-secondary px-4 waves-effect">{{ __('Save Draft') }}</button>
+                            <button wire:click="submitForApproval"
+                                class="btn btn-primary px-4 ms-2 waves-effect waves-light">{{ __('Submit for Approval') }}</button>
+                        @else
+                            <div class="text-success fw-bold d-inline-flex align-items-center">
+                                <i class="bx bxs-check-circle font-size-24 me-2"></i>
+                                <span>{{ __('Successfully Submitted') }}</span>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
 
 </div>
 </div>
