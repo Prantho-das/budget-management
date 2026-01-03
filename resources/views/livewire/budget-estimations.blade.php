@@ -301,106 +301,90 @@
         @endif
 
         <div class="unitoffice-entry-table">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered align-middle custom-budget-table">
-                            <thead>
-                                <tr class="table-primary text-center">
-                                    <th rowspan="2">{{ __('Economic Code') }}</th>
-                                    <th rowspan="2">{{ __('Description') }}</th>
-                                    <th colspan="3">প্রকৃত ব্যয়</th>
-                                    <th rowspan="2">চাহিদা<br>২০২৪-২৫</th>
-                                    <th rowspan="2">মন্তব্য</th>
-                                </tr>
-                                <tr class="table-primary text-center">
-                                    <th>২০২১-২২</th>
-                                    <th>২০২২-২৩</th>
-                                    <th>২০২৩-২৪</th>
-                                </tr>
-                            </thead>
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle custom-budget-table">
+                    <thead>
+                        <tr class="table-primary text-center">
+                            <th rowspan="2">{{ __('Economic Code') }}</th>
+                            <th rowspan="2">{{ __('Description') }}</th>
+                            <th colspan="3">প্রকৃত ব্যয়</th>
+                            <th rowspan="2">চাহিদা<br>২০২৪-২৫</th>
+                            <th rowspan="2">মন্তব্য</th>
+                        </tr>
+                        <tr class="table-primary text-center">
+                            @php
+                                $prevYears = \App\Models\FiscalYear::where('end_date', '<', $currentFiscalYear->start_date)
+                                    ->orderBy('end_date', 'desc')
+                                    ->take(3)
+                                    ->get();
+                            @endphp
+                            @foreach ($prevYears as $py)
+                                <th>{{ $py->name }}</th>
+                            @endforeach
+                        </tr>
+                    </thead>
 
-                            <tbody>
-                                <tr>
-                                    <td class="text-center">৩১১১০১</td>
-                                    <td>মূল বেতন</td>
-                                    <td class="text-end">1232080</td>
-                                    <td class="text-end">1232080</td>
-                                    <td class="text-end">1234080</td>
-                                    <td>
-                                        <input type="text" class="form-control form-control-sm text-end"
-                                            value="2234080">
-                                    </td>
-                                    <td>
-                                        <input type="text" class="form-control form-control-sm">
-                                    </td>
-                                </tr>
+                    <tbody>
+                        @php
+                            $estMap = \App\Models\BudgetEstimation::where('batch_id', $batch_id)
+                                ->get()
+                                ->keyBy('economic_code_id');
+                        @endphp
 
-                                <tr>
-                                    <td class="text-center">৩১১১০৩</td>
-                                    <td>বাড়ি ভাড়া ভাতা</td>
-                                    <td class="text-end">1132080</td>
-                                    <td class="text-end">1132080</td>
-                                    <td class="text-end">1133080</td>
-                                    <td>
-                                        <input type="text" class="form-control form-control-sm text-end"
-                                            value="3133080">
-                                    </td>
-                                    <td>
-                                        <input type="text" class="form-control form-control-sm">
-                                    </td>
-                                </tr>
+                        @foreach ($economicCodes as $code)
+                            <tr>
+                                <td class="text-center">
+                                    <span class="badge bg-{{ $code->parent_id ? 'secondary' : 'primary' }}-subtle text-{{ $code->parent_id ? 'secondary' : 'primary' }} p-2">
+                                        {{ $code->code }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="text-dark">{{ $code->name }}</div>
+                                    @if ($code->description)
+                                        <small class="text-muted d-block text-truncate" style="max-width: 200px;">
+                                            {{ $code->description }}
+                                        </small>
+                                    @endif
+                                </td>
 
-                                <tr>
-                                    <td class="text-center">৩১১১১১</td>
-                                    <td>চিকিৎসা ভাতা</td>
-                                    <td class="text-end">1032080</td>
-                                    <td class="text-end">1032080</td>
-                                    <td class="text-end">1032080</td>
-                                    <td>
-                                        <input type="text" class="form-control form-control-sm text-end"
-                                            value="4032080">
+                                <!-- Previous 3 years actual expenditure -->
+                                @for ($i = 0; $i < 3; $i++)
+                                    <td class="text-end">
+                                        @if (isset($previousDemands[$code->id]["year_{$i}"]))
+                                            {{ number_format($previousDemands[$code->id]["year_{$i}"]['amount'], 0) }}
+                                        @else
+                                            <span class="opacity-25">-</span>
+                                        @endif
                                     </td>
-                                    <td>
-                                        <input type="text" class="form-control form-control-sm">
-                                    </td>
-                                </tr>
+                                @endfor
 
-                                <tr>
-                                    <td class="text-center">৩১১১২৫</td>
-                                    <td>উৎসব ভাতা</td>
-                                    <td class="text-end">12320</td>
-                                    <td class="text-end">12320</td>
-                                    <td class="text-end">12220</td>
-                                    <td>
+                                <!-- Current demand input -->
+                                <td>
+                                    <div class="input-group input-group-sm">
                                         <input type="text" class="form-control form-control-sm text-end"
-                                            value="52220">
-                                    </td>
-                                    <td>
-                                        <input type="text" class="form-control form-control-sm">
-                                    </td>
-                                </tr>
+                                            wire:model.defer="demands.{{ $code->id }}"
+                                            placeholder="0"
+                                            {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
+                                    </div>
+                                </td>
 
-                                <tr>
-                                    <td class="text-center">৩২১১০৪</td>
-                                    <td>অস্থায়ী কর্মচারী/প্রতিষ্ঠান</td>
-                                    <td class="text-end">37646</td>
-                                    <td class="text-end">37646</td>
-                                    <td class="text-end">37746</td>
-                                    <td>
-                                        <input type="text" class="form-control form-control-sm text-end"
-                                            value="67746">
-                                    </td>
-                                    <td>
-                                        <input type="text" class="form-control form-control-sm">
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                                <!-- Remarks -->
+                                <td>
+                                    <input type="text" class="form-control form-control-sm"
+                                        wire:model.defer="remarks.{{ $code->id }}"
+                                        placeholder="{{ __('Note...') }}"
+                                        {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
         </div>
+    </div>
+</div>
 
         <div class="card shadow-sm border-0">
             <div class="card-body">
