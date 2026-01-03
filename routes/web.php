@@ -22,7 +22,7 @@ Route::get('lang/{locale}', function ($locale) {
     return redirect()->back();
 })->name('lang.switch');
 Route::get('debug', function () {
-    print_r(\App\Models\BudgetEstimation::latest()->first(['current_stage', 'target_office_id', 'status'])->toArray());
+   print_r(\App\Models\User::with(['roles', 'office'])->get(['id', 'name', 'email', 'rpo_unit_id'])->toArray());
 });
 Route::get('/current-fiscal-year', function () {
     // 1. Current fiscal year only

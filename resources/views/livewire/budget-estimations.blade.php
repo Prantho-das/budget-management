@@ -288,8 +288,10 @@
                                             @endfor
 
                                             <!-- Current demand input -->
-                                            <td>
-                                                <div class="input-group input-group-sm">
+                                            <td style="
+    text-align: end;
+">
+                                                <div class="form-group ">
                                                     @if ($code->parent_id != null)
                                                         <input type="text"
                                                             class="form-control form-control-sm text-end"
@@ -305,6 +307,12 @@
                                                                 );
                                                             @endphp
                                                            
+                                                            <button class="btn btn-soft-info btn-sm px-2 py-0 border-0" 
+                                                                type="button" 
+                                                                wire:click="applySuggestion({{ $code->id }})"
+                                                                title="{{ __('Click to apply 10% increase') }}">
+                                                                <small class="fw-bold">{{ __('Suggest: ') . number_format($suggested) }}</small>
+                                                            </button>
                                                         @endif
                                                     @endif
                                                 </div>
@@ -322,12 +330,7 @@
                                                         @php
                                                             $suggested = round($previousDemands[$code->id]['year_0']['amount'] * 1.10);
                                                         @endphp
-                                                        <button class="btn btn-soft-info btn-sm px-2 py-0 border-0" 
-                                                            type="button" 
-                                                            wire:click="applySuggestion({{ $code->id }})"
-                                                            title="{{ __('Click to apply 10% increase') }}">
-                                                            <small class="fw-bold">{{ __('Suggest: ') . number_format($suggested) }}</small>
-                                                        </button>
+                                                        
                                                     @endif
                                                 @endif
                                             </td>
