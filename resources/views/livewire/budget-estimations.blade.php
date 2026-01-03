@@ -341,7 +341,7 @@
                                     <tr>
                                         <td>
                                             <span
-                                                class="badge {{ $code->parent_id ? 'parent-expense-code' : '' }} bg-{{ $code->parent_id ? 'secondary' : 'primary' }}-subtle text-{{ $code->parent_id ? 'secondary' : 'primary' }} p-2">
+                                                class="badge {{ $code->parent_id==null ? 'parent-expense-code' : '' }} bg-{{ $code->parent_id ? 'secondary' : 'primary' }}-subtle text-{{ $code->parent_id ? 'secondary' : 'primary' }} p-2">
                                                 {{ $code->code }}
                                             </span>
                                         </td>
