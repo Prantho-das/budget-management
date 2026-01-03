@@ -209,9 +209,10 @@
                                 <tr class="table-primary text-center">
                                     <th rowspan="2">{{ __('Economic Code') }}</th>
                                     <th rowspan="2">{{ __('Description') }}</th>
-                                    <th colspan="3">প্রকৃত ব্যয়</th>
-                                    <th rowspan="2">চাহিদা<br>২০২৪-২৫</th>
-                                    <th rowspan="2">মন্তব্য</th>
+                                    <th colspan="3">{{ __('Original') }}</th>
+                                    <th rowspan="2">{{ __('Demand') }}<br>{{ current_fiscal_year() }}</th>
+                                    <th rowspan="2">{{ __('Remarks') }}</th>
+                                </tr>
                                 </tr>
                                 <tr class="table-primary text-center">
                                     @php
