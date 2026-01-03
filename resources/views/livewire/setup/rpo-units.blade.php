@@ -69,11 +69,6 @@
                                                 @error('parent_id') <span class="text-danger">{{ $message }}</span>@enderror
                                             </div>
 
-                                            <div class="mb-3">
-                                                <label for="district" class="form-label">{{ __('District') }}</label>
-                                                <input type="text" class="form-control" id="district" wire:model="district" placeholder="{{ __('District Name') }}">
-                                                @error('district') <span class="text-danger">{{ $message }}</span>@enderror
-                                            </div>
 
                                         </form>
                                     </div>
@@ -94,7 +89,7 @@
                                     <th>{{ __('Name') }}</th>
                                     <th>{{ __('Code') }}</th>
                                     <th>{{ __('Parent Office') }}</th>
-                                    <th>{{ __('District') }}</th>
+                                    <th>{{ __('Parent Office') }}</th>
                                     <th>{{ __('Action') }}</th>
                                 </tr>
                             </thead>
@@ -105,7 +100,6 @@
                                         <td>{{ $unit->name }}</td>
                                         <td><span class="badge bg-primary">{{ $unit->code }}</span></td>
                                         <td>{{ $unit->parent ? $unit->parent->name : '-' }}</td>
-                                        <td>{{ $unit->district }}</td>
                                         <td>
                                             @can('edit-offices')
                                                 <button wire:click="edit({{ $unit->id }})" class="btn btn-sm btn-info">{{ __('Edit') }}</button>

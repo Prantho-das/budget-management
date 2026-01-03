@@ -27,8 +27,7 @@ class BudgetApprovals extends Component
     public function mount()
     {
         abort_if(auth()->user()->cannot('view-budget-estimations'), 403);
-        $fiscalYear = FiscalYear::where('status', true)->latest()->first();
-        $this->fiscal_year_id = $fiscalYear ? $fiscalYear->id : null;
+        $this->fiscal_year_id = get_active_fiscal_year_id();
         $this->loadChildSubmissions();
     }
 

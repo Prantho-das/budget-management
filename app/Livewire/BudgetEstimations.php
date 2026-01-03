@@ -28,12 +28,32 @@ class BudgetEstimations extends Component
   public function mount()
   {
     abort_if(auth()->user()->cannot('view-budget-estimations'), 403);
-    $fiscalYear = FiscalYear::where('status', true)->latest()->first();
-    $this->fiscal_year_id = $fiscalYear ? $fiscalYear->id : null;
+    $this->fiscal_year_id = get_active_fiscal_year_id();
 
     $this->rpo_unit_id = Auth::user()->rpo_unit_id;
 
-    $this->budget_type_id = BudgetType::where('status', true)->orderBy('order_priority')->first()?->id;
+    // Determine default budget type: Original if first time, otherwise next active type
+    $activeTypes = BudgetType::where('status', true)->orderBy('order_priority')->get();
+    $defaultTypeId = null;
+
+    foreach ($activeTypes as $type) {
+        $exists = BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id)
+            ->where('rpo_unit_id', $this->rpo_unit_id)
+            ->where('budget_type_id', $type->id)
+            ->exists();
+        
+        if (!$exists) {
+            $defaultTypeId = $type->id;
+            break;
+        }
+    }
+
+    // Fallback if all are submitted or none found
+    if (!$defaultTypeId && $activeTypes->count() > 0) {
+        $defaultTypeId = $activeTypes->first()->id;
+    }
+
+    $this->budget_type_id = $defaultTypeId;
 
     $this->loadDemands();
   }
@@ -118,12 +138,30 @@ class BudgetEstimations extends Component
       }
     }
 
+    // Auto-populate for new drafts (10% increase from previous year)
+    if ($estimations->isEmpty()) {
+      foreach ($this->previousDemands as $codeId => $years) {
+        if (isset($years['year_0']['amount'])) {
+          $this->demands[$codeId] = round($years['year_0']['amount'] * 1.10);
+        }
+      }
+    }
+
     if ($estimations->isNotEmpty()) {
       $this->status = $estimations->first()->status;
       $this->current_stage = $estimations->first()->current_stage;
     } else {
       $this->status = 'draft';
       $this->current_stage = 'Draft';
+    }
+  }
+
+  public function applySuggestion($codeId)
+  {
+    if (isset($this->previousDemands[$codeId]['year_0']['amount'])) {
+      $baseline = $this->previousDemands[$codeId]['year_0']['amount'];
+      $suggested = round($baseline * 1.10);
+      $this->demands[$codeId] = $suggested;
     }
   }
 

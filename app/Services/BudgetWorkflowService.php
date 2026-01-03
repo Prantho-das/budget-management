@@ -91,7 +91,9 @@ class BudgetWorkflowService
             'action_name' => Auth::user()->name ?? 'System',
             'action_role' => Auth::user()->roles->first()->name ?? 'N/A',
             'action_at' => now()->toDateTimeString(),
-            'remarks' => $remarks
+            'remarks' => $remarks,
+            'amount_demand' => $estimation->amount_demand,
+            'amount_approved' => $estimation->amount_approved ?? $estimation->amount_demand
         ];
 
         $estimation->update([

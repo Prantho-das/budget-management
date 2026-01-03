@@ -59,3 +59,19 @@ if (!function_exists('current_fiscal_year')) {
         return fiscal_years(0, 0, $date)[0] ?? '';
     }
 }
+
+if (!function_exists('get_active_fiscal_year_id')) {
+    /**
+     * Get the database ID of the current active fiscal year based on Bangladesh timing (July-June)
+     */
+    function get_active_fiscal_year_id()
+    {
+        $name = current_fiscal_year();
+        $fy = \App\Models\FiscalYear::where('name', $name)->first();
+        if (!$fy) {
+            // Fallback to active status if name does not match exactly
+            $fy = \App\Models\FiscalYear::where('status', true)->latest()->first();
+        }
+        return $fy ? $fy->id : null;
+    }
+}
