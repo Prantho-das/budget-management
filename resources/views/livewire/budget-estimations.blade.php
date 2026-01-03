@@ -338,10 +338,10 @@
                                 @endphp
 
                                 @foreach ($economicCodes as $code)
-                                    <tr>
+                                    <tr class="{{ $code->parent_id==null ? 'parent-expense-code' : '' }}">
                                         <td>
                                             <span
-                                                class="badge {{ $code->parent_id==null ? 'parent-expense-code' : '' }} bg-{{ $code->parent_id ? 'secondary' : 'primary' }}-subtle text-{{ $code->parent_id ? 'secondary' : 'primary' }} p-2">
+                                                class="badge  bg-{{ $code->parent_id ? 'secondary' : 'primary' }}-subtle text-{{ $code->parent_id ? 'secondary' : 'primary' }} p-2">
                                                 {{ $code->code }}
                                             </span>
                                         </td>
