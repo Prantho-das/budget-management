@@ -88,6 +88,8 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/budget/estimations', \App\Livewire\BudgetEstimations::class)->middleware('can:view-budget-estimations')->name('budget.estimations');
     Route::get('/budget/approvals', \App\Livewire\BudgetApprovals::class)->name('budget.approvals');
+    Route::get('/budget/release', \App\Livewire\BudgetRelease::class)->middleware('can:release-budget')->name('budget.release');
+    Route::get('/budget/office-wise', \App\Livewire\OfficeWiseBudget::class)->middleware('can:release-budget')->name('budget.office-wise');
     Route::get('/budget/status', \App\Livewire\BudgetStatus::class)->middleware('can:view-budget-estimations')->name('budget.status');
     Route::get('/budget/summary', \App\Livewire\BudgetSummary::class)->middleware('can:view-budget-estimations')->name('budget.summary');
 });
