@@ -54,6 +54,9 @@ Route::get('/dashboard', \App\Livewire\Dashboard::class)
     ->name('dashboard');
 
 Route::middleware(['auth'])->group(function () {
+
+
+
     Route::redirect('settings', 'settings/profile');
 
     Route::get('settings/profile', Profile::class)->name('profile.edit');

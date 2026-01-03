@@ -113,7 +113,7 @@ class BudgetWorkflowService
 
         switch ($step->office_level) {
             case 'origin':
-                return $originOffice->id;
+                return $estimation->rpo_unit_id;
             case 'parent':
                 // Simple parent logic: move up from current target if exists, else move from origin.
                 // This allows sequential parent steps to climb the tree.

@@ -51,7 +51,7 @@ class BudgetApprovals extends Component
             })
             ->select('rpo_unit_id', 'budget_type_id', 'status', 'current_stage', 'workflow_step_id', 'batch_id', DB::raw('SUM(amount_demand) as total_demand'), DB::raw('MIN(created_at) as created_at'))
             ->groupBy('rpo_unit_id', 'budget_type_id', 'status', 'current_stage', 'workflow_step_id', 'batch_id')
-            ->with(['office', 'workflowStep'])
+            ->with(['office', 'workflowStep', 'budgetType'])
             ->get();
 
         $this->childOffices = [];
@@ -61,6 +61,7 @@ class BudgetApprovals extends Component
                 'name' => $sub->office->name,
                 'code' => $sub->office->code,
                 'budget_type_id' => $sub->budget_type_id,
+                'budget_type_name' => $sub->budgetType->name ?? 'N/A',
                 'total_demand' => $sub->total_demand,
                 'status' => $sub->status,
                 'current_stage' => $sub->workflowStep ? $sub->workflowStep->name : $sub->current_stage,
