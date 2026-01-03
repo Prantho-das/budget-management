@@ -34,6 +34,7 @@ body {
                 td {
                     font-size: 14px;
                     padding: 5px 5px;
+                    vertical-align: middle;
                     span.badge {
                         width: 100%;
                     }
@@ -41,7 +42,6 @@ body {
                 tr.parent-expense-code {
                     td {
                         font-weight: 600;
-
                         background-color: #dde2fa;
                         span.badge {
                             font-weight: 600;
