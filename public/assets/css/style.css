@@ -12,45 +12,58 @@ body {
   font-size: 16px;
 }
 
-.unitoffice-entry-table .card .table-responsive table thead {
-  transition: all 0.4s ease-in-out;
-  -webkit-transition: all 0.4s ease-in-out;
-  -moz-transition: all 0.4s ease-in-out;
-  -ms-transition: all 0.4s ease-in-out;
-  -o-transition: all 0.4s ease-in-out;
+.unitoffice-entry-table .card .table-responsive {
+  max-height: 65vh;
+  overflow: auto;
+  width: 100%;
+  /* ===== Custom scrollbar ===== */
+  scrollbar-width: thin;
+  scrollbar-color: #adb5bd #f1f3f5;
 }
-.unitoffice-entry-table .card .table-responsive table thead.sticky {
+.unitoffice-entry-table .card .table-responsive::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.unitoffice-entry-table .card .table-responsive::-webkit-scrollbar-track {
+  background: #f1f3f5;
+  border-radius: 10px;
+}
+.unitoffice-entry-table .card .table-responsive::-webkit-scrollbar-thumb {
+  background-color: #adb5bd;
+  border-radius: 10px;
+  -webkit-transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease;
+}
+.unitoffice-entry-table .card .table-responsive::-webkit-scrollbar-thumb:hover {
+  background-color: #868e96;
+}
+.unitoffice-entry-table .card .table-responsive table {
+  min-width: 1200px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.unitoffice-entry-table .card .table-responsive table thead th {
   position: sticky;
-  top: 41px;
+  top: 0;
   z-index: 10;
-}
-.unitoffice-entry-table .card .table-responsive table .table-primary th {
   background-color: #556ee6;
   color: #fff;
+  transition: all 0.4s ease-in-out;
 }
-.unitoffice-entry-table .card .table-responsive table th {
+.unitoffice-entry-table .card .table-responsive table thead tr:nth-child(2) th {
+  top: 31px;
+}
+.unitoffice-entry-table .card .table-responsive table th,
+.unitoffice-entry-table .card .table-responsive table td {
   font-size: 14px;
-  padding: 5px 5px;
+  padding: 5px;
   vertical-align: middle;
+  white-space: nowrap;
 }
 .unitoffice-entry-table .card .table-responsive table th:nth-child(4) {
   width: 150px;
 }
-.unitoffice-entry-table .card .table-responsive table th .form-control {
-  font-size: 14px;
-  height: 30px;
-  padding: 4px 8px;
-}
-.unitoffice-entry-table .card .table-responsive table td {
-  font-size: 14px;
-  padding: 5px 5px;
-  vertical-align: middle;
-}
-.unitoffice-entry-table .card .table-responsive table td span.badge {
-  width: 100%;
-  font-size: 14px;
-}
-.unitoffice-entry-table .card .table-responsive table td .form-control {
+.unitoffice-entry-table .card .table-responsive table .form-control {
   font-size: 14px;
   height: 30px;
   padding: 4px 8px;
@@ -154,4 +167,17 @@ body {
 
 .card .card-body {
   padding: 10px;
+}
+
+.floating-budget-card.sticky {
+  position: fixed;
+  bottom: 0px;
+  left: 270px;
+  width: calc(100% - 290px);
+  max-width: 1200px;
+  z-index: 1050;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  animation: slideUp 0.3s ease-in-out;
+  margin: 0 !important;
 }/*# sourceMappingURL=style.css.map */

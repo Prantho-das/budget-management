@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link href="{{ asset('assets/css/bootstrap.min.css') }}" id="bootstrap-style" rel="stylesheet" type="text/css" />
     <!-- Icons Css -->
@@ -81,7 +82,7 @@
                                 <span class="align-middle fw-bold">En</span>
                             @endif
                         </button>
-                        <div class="dropdown-menu dropdown-menu-end" :class="{ 'show': open }" style="display: none;"
+                        <div class="dropdown-menu dropdown-menu-en" :class="{ 'show': open }" style="display: none;"
                             x-show="open" x-transition>
 
                             <!-- item-->
@@ -108,7 +109,7 @@
                             <span class="d-none d-xl-inline-block ms-1" key="t-henry">{{ Auth::user()->name }}</span>
                             <i class="mdi mdi-chevron-down d-none d-xl-inline-block"></i>
                         </button>
-                        <div class="dropdown-menu dropdown-menu-end" :class="{ 'show': open }" style="display: none;"
+                        <div class="dropdown-menu dropdown-menu-en" :class="{ 'show': open }" style="display: none;"
                             x-show="open" x-transition>
                             <!-- item-->
                             <a class="dropdown-item" href="{{ route('profile.edit') }}"><i

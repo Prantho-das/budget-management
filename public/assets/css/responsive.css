@@ -1,1 +1,6 @@
-/*# sourceMappingURL=responsive.css.map */
+@media (max-width: 992px) {
+  .floating-budget-card.sticky {
+    width: 100%;
+    left: 0;
+  }
+}/*# sourceMappingURL=responsive.css.map */

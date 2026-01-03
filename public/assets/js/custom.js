@@ -19,12 +19,3 @@ document.addEventListener("livewire:initialized", () => {
 });
 
 // table sticky on scroll
-
-$(window).scroll(function () {
-    var navbar = $(".unitoffice-entry-table .table-responsive thead");
-    if ($(window).scrollTop() >= 250) {
-        navbar.addClass("sticky");
-    } else {
-        navbar.removeClass("sticky");
-    }
-});
