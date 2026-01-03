@@ -68,10 +68,10 @@
         </div>
 
         <!-- Selection Controls -->
-        <div class="card shadow-sm border-0 mb-4 d-none">
+        <div class="card shadow-sm border-0 mb-4 ">
             <div class="card-body">
                 <div class="row align-items-end">
-                    <div class="col-md-3 mb-3 mb-md-0">
+                    <div class="col-md-3 mb-3 mb-md-0 d-none">
                         <label class="form-label fw-bold text-muted small">{{ __('Budget Request Type') }}</label>
                         <select wire:model.live="budget_type_id" class="form-select border-light shadow-none"
                             {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
@@ -80,7 +80,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-4 mb-3 mb-md-0">
+                    <div class="col-md-4 mb-3 mb-md-0 d-none">
                         <label class="form-label fw-bold text-muted small">{{ __('Submission Batch') }}</label>
                         <div class="input-group">
                             <select wire:model.live="batch_id" class="form-select border-light shadow-none">
@@ -304,7 +304,7 @@
             <div class="card-body">
             <div class="text-success fw-bold d-inline-flex align-items-center justify-content-center text-center">
               <i class="bx bxs-check-circle font-size-24 me-2"></i>
-              <span>{{ __('Successfully Submitted Waiting for Approval') }}</span>
+              <span>{{ __('Previous demand already submitted. Now pending for approval.') }}</span>
          </div>
             </div>
          </div>
