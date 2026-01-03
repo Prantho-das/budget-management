@@ -16,4 +16,92 @@ body {
 .unitoffice-entry-table .card .table-responsive table td {
   font-size: 14px;
   padding: 5px 5px;
+}
+
+.workflow-stepper {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  padding: 40px 0;
+  margin: 0 auto;
+  max-width: 900px;
+}
+.workflow-stepper .step-line-bg {
+  position: absolute;
+  top: 65px;
+  left: 50px;
+  right: 50px;
+  height: 4px;
+  background: #f1f3f7;
+  border-radius: 4px;
+  z-index: 1;
+}
+.workflow-stepper .step-line-progress {
+  position: absolute;
+  top: 65px;
+  left: 50px;
+  height: 4px;
+  background: linear-gradient(to right, #34c38f, #556ee6);
+  border-radius: 4px;
+  z-index: 2;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.workflow-stepper .workflow-step {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  width: 120px;
+}
+.workflow-stepper .workflow-step .step-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 12px;
+  background: #fff;
+  border: 2px solid #eff2f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 15px;
+  transition: all 0.4s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+  color: #adb5bd;
+}
+.workflow-stepper .workflow-step .step-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #495057;
+  margin-bottom: 4px;
+  transition: color 0.3s;
+}
+.workflow-stepper .workflow-step .step-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 50px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: #f8f9fa;
+  color: #74788d;
+}
+.workflow-stepper .workflow-step.active .step-icon {
+  border-color: #556ee6;
+  background: #556ee6;
+  color: #fff;
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(85, 110, 230, 0.2);
+}
+.workflow-stepper .workflow-step.active .step-label {
+  color: #556ee6;
+}
+.workflow-stepper .workflow-step.active .step-badge {
+  background: rgba(85, 110, 230, 0.1);
+  color: #556ee6;
+}
+.workflow-stepper .workflow-step.completed .step-icon {
+  border-color: #34c38f;
+  background: #34c38f;
+  color: #fff;
+}
+.workflow-stepper .workflow-step.completed .step-badge {
+  background: rgba(52, 195, 143, 0.1);
+  color: #34c38f;
 }/*# sourceMappingURL=style.css.map */
