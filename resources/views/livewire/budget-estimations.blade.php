@@ -104,7 +104,8 @@
                         @if ($status === 'draft' || $status === 'rejected')
                             <button wire:click="saveDraft"
                                 class="btn btn-outline-secondary px-4 waves-effect">{{ __('Save Draft') }}</button>
-                            <button wire:click="submitForApproval"
+                            <button type="button" 
+                                onclick="confirmSubmission()"
                                 class="btn btn-primary px-4 ms-2 waves-effect waves-light">{{ __('Submit for Approval') }}</button>
                         @else
                             <div class="text-success fw-bold d-inline-flex align-items-center">
@@ -302,8 +303,8 @@
          @else
          <div class="card">
             <div class="card-body">
-            <div class="text-success fw-bold d-inline-flex align-items-center justify-content-center text-center">
-              <i class="bx bxs-check-circle font-size-24 me-2"></i>
+            <div class="text-warning fw-bold d-inline-flex align-items-center justify-content-center text-center">
+              <i class="bx bxs-check-circle font-size-24 me-2 "></i>
               <span>{{ __('Previous demand already submitted. Now pending for approval.') }}</span>
          </div>
             </div>
@@ -318,3 +319,23 @@
 </div>
 @endif
 </div>
+@push('scripts')
+<script>
+    function confirmSubmission() {
+        Swal.fire({
+            title: "{{ __('Are you sure?') }}",
+            text: "{{ __('You want to submit this budget demand for approval?') }}",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#34c38f',
+            cancelButtonColor: '#f46a6a',
+            confirmButtonText: "{{ __('Yes, submit it!') }}",
+            cancelButtonText: "{{ __('Cancel') }}"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                @this.call('submitForApproval');
+            }
+        })
+    }
+</script>
+@endpush
