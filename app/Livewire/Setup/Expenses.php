@@ -99,17 +99,22 @@ class Expenses extends Component
 
   private function resetInputFields()
   {
-    $this->code = '';
+    $this->code = 'EXP-' . strtoupper(uniqid());
     $this->amount = '';
     $this->description = '';
     $this->date = date('Y-m-d');
-    $this->rpo_unit_id = '';
-    $this->fiscal_year_id = '';
+    $this->rpo_unit_id = auth()->user()->rpo_unit_id;
+    $activeFy = FiscalYear::where('status', true)->first();
+    $this->fiscal_year_id = $activeFy ? $activeFy->id : '';
     $this->economic_code_id = '';
     $this->budget_type_id = '';
     $this->expense_id = '';
     $this->availableBalance = 0;
     $this->totalReleased = 0;
+
+    if ($this->rpo_unit_id && $this->fiscal_year_id) {
+        $this->calculateBalance();
+    }
   }
 
   public function store()
@@ -132,7 +137,7 @@ class Expenses extends Component
     ]);
 
     Expense::updateOrCreate(['id' => $this->expense_id], [
-      'code' => $this->code ?: 'EXP-' . strtoupper(uniqid()),
+      'code' => $this->code,
       'amount' => $this->amount,
       'description' => $this->description,
       'date' => $this->date,

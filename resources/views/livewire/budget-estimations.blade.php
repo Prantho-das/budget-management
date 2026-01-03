@@ -243,7 +243,8 @@
                                             )
                                                 ->orderBy('end_date', 'desc')
                                                 ->take(3)
-                                                ->get();
+                                                ->get()
+                                                ->reverse();
                                         @endphp
                                         @foreach ($prevYears as $py)
                                             <th>{{ $py->name }}</th>
@@ -299,10 +300,14 @@
                                                             placeholder="0"
                                                             {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
 
-                                                        @if (($status === 'draft' || $status === 'rejected') && isset($previousDemands[$code->id]['year_0']))
+                                                        @php
+                                                            $yCount = count($prevYears);
+                                                            $latestIdx = $yCount - 1;
+                                                        @endphp
+                                                        @if (($status === 'draft' || $status === 'rejected') && $latestIdx >= 0 && isset($previousDemands[$code->id]["year_{$latestIdx}"]))
                                                             @php
                                                                 $suggested = round(
-                                                                    $previousDemands[$code->id]['year_0']['amount'] *
+                                                                    $previousDemands[$code->id]["year_{$latestIdx}"]['amount'] *
                                                                         1.1,
                                                                 );
                                                             @endphp

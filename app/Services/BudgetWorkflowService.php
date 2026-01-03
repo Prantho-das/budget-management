@@ -110,22 +110,41 @@ class BudgetWorkflowService
     protected function determineTargetOffice(BudgetEstimation $estimation, $step)
     {
         $originOffice = $estimation->office;
+        $targetOfficeId = null;
 
         switch ($step->office_level) {
             case 'origin':
-                return $estimation->rpo_unit_id;
+                $targetOfficeId = $estimation->rpo_unit_id;
+                break;
             case 'parent':
-                // Simple parent logic: move up from current target if exists, else move from origin.
-                // This allows sequential parent steps to climb the tree.
                 $currentOfficeId = $estimation->target_office_id ?: $originOffice->id;
                 $currentOffice = \App\Models\RpoUnit::find($currentOfficeId);
-                return $currentOffice->parent_id ?: $currentOfficeId;
+                $targetOfficeId = $currentOffice->parent_id ?: $currentOfficeId;
+                break;
             case 'hq':
                 $hq = \App\Models\RpoUnit::whereNull('parent_id')->first();
-                return $hq ? $hq->id : $originOffice->id;
+                $targetOfficeId = $hq ? $hq->id : $originOffice->id;
+                break;
             default:
-                return $originOffice->id;
+                $targetOfficeId = $originOffice->id;
         }
+
+        // Optimization: Automatic Escalation
+        // If the office has no users with the required permission, climb to HQ
+        if ($step->required_permission && $step->office_level !== 'origin') {
+            $hasUsers = \App\Models\User::where('rpo_unit_id', $targetOfficeId)
+                ->where(function($query) use ($step) {
+                    $query->whereHas('permissions', fn($q) => $q->where('name', $step->required_permission))
+                          ->orWhereHas('roles.permissions', fn($q) => $q->where('name', $step->required_permission));
+                })->exists();
+
+            if (!$hasUsers) {
+                $hq = \App\Models\RpoUnit::whereNull('parent_id')->first();
+                return $hq ? $hq->id : $targetOfficeId;
+            }
+        }
+
+        return $targetOfficeId;
     }
 
     /**

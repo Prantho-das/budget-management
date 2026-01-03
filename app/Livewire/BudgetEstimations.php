@@ -142,7 +142,9 @@ class BudgetEstimations extends Component
     $previousYears = FiscalYear::where('end_date', '<', $currentFiscalYear->start_date)
       ->orderBy('end_date', 'desc')
       ->take(3)
-      ->get();
+      ->get()
+      ->reverse()
+      ->values();
 
     foreach ($previousYears as $index => $prevYear) {
       $expenses = \App\Models\Expense::where('fiscal_year_id', $prevYear->id)
@@ -164,9 +166,10 @@ class BudgetEstimations extends Component
 
     // Auto-populate for new drafts (10% increase from previous year)
     if ($estimations->isEmpty()) {
+      $latestIndex = count($previousYears) - 1;
       foreach ($this->previousDemands as $codeId => $years) {
-        if (isset($years['year_0']['amount'])) {
-          $this->demands[$codeId] = round($years['year_0']['amount'] * 1.10);
+        if ($latestIndex >= 0 && isset($years["year_{$latestIndex}"]['amount'])) {
+          $this->demands[$codeId] = round($years["year_{$latestIndex}"]['amount'] * 1.10);
         }
       }
     }
@@ -182,8 +185,20 @@ class BudgetEstimations extends Component
 
   public function applySuggestion($codeId)
   {
-    if (isset($this->previousDemands[$codeId]['year_0']['amount'])) {
-      $baseline = $this->previousDemands[$codeId]['year_0']['amount'];
+    $currentFiscalYear = FiscalYear::find($this->fiscal_year_id);
+    $prevYears = FiscalYear::where('end_date', '<', $currentFiscalYear->start_date)
+        ->orderBy('end_date', 'desc')
+        ->take(3)
+        ->get();
+    
+    $latestIndex = count($prevYears) - 1; 
+    // We reverse earlier in logic, but internal index is stable if we use the right key.
+    // In loadDemands we use reverse()->values(), so year_2 is latest.
+    
+    $latestYearKey = "year_" . (count($prevYears) - 1);
+
+    if (isset($this->previousDemands[$codeId][$latestYearKey]['amount'])) {
+      $baseline = $this->previousDemands[$codeId][$latestYearKey]['amount'];
       $suggested = round($baseline * 1.10);
       $this->demands[$codeId] = $suggested;
     }
