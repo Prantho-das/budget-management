@@ -36,22 +36,22 @@
                         <a href="{{ route('dashboard') }}" class="logo logo-dark">
                             <span class="logo-sm">
                                 <img src="{{ asset('/storage/' . get_setting('site_logo')) ?: asset('assets/images/logo.svg') }}"
-                                    alt="" height="22">
+                                    alt="">
                             </span>
                             <span class="logo-lg">
                                 <img src="{{ asset('/storage/' . get_setting('site_logo')) ?: asset('assets/images/logo-dark.png') }}"
-                                    alt="" height="17">
+                                    alt="">
                             </span>
                         </a>
 
                         <a href="{{ route('dashboard') }}" class="logo logo-light">
                             <span class="logo-sm">
                                 <img src="{{ asset('/storage/' . get_setting('site_logo')) ?: asset('assets/images/logo-light.svg') }}"
-                                    alt="" height="22">
+                                    alt="">
                             </span>
                             <span class="logo-lg">
                                 <img src="{{ asset('/storage/' . get_setting('site_logo')) ?: asset('assets/images/logo-light.png') }}"
-                                    alt="" height="19">
+                                    alt="">
                             </span>
                         </a>
                     </div>

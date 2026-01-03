@@ -20,107 +20,13 @@ body {
     }
 }
 
-// .unitoffice-entry-table {
-//     .card {
-//         .table-responsive {
-//             table {
-//                 max-height: 65vh;
-//                 overflow: auto;
-//                 thead {
-//                     transition: $transition-4-einout;
-//                     -webkit-transition: $transition-4-einout;
-//                     -moz-transition: $transition-4-einout;
-//                     -ms-transition: $transition-4-einout;
-//                     -o-transition: $transition-4-einout;
-//                 }
-//                 thead.sticky {
-//                     position: sticky;
-//                     top: 0px;
-//                     z-index: 10;
-//                 }
-//                 .table-primary {
-//                     th {
-//                         background-color: #556ee6;
-//                         color: #fff;
-//                     }
-//                 }
-
-//                 th {
-//                     font-size: 14px;
-//                     padding: 5px 5px;
-//                     vertical-align: middle;
-//                     &:nth-child(4) {
-//                         width: 150px;
-//                     }
-//                     .form-control {
-//                         font-size: 14px;
-//                         height: 30px;
-//                         padding: 4px 8px;
-//                     }
-//                 }
-
-//                 td {
-//                     font-size: 14px;
-//                     padding: 5px 5px;
-//                     vertical-align: middle;
-//                     span.badge {
-//                         width: 100%;
-//                         font-size: 14px;
-//                     }
-//                     .form-control {
-//                         font-size: 14px;
-//                         height: 30px;
-//                         padding: 4px 8px;
-//                     }
-//                 }
-//                 tr.parent-expense-code {
-//                     td {
-//                         font-weight: 600;
-//                         background-color: #dde2fa;
-//                         span.badge {
-//                             font-weight: 600;
-
-//                             color: rgba(
-//                                 var(--bs-dark-rgb),
-//                                 var(--bs-text-opacity)
-//                             ) !important;
-//                         }
-//                     }
-//                 }
-//             }
-//             &::-webkit-scrollbar {
-//                 width: 8px;
-//                 height: 8px;
-//             }
-
-//             &::-webkit-scrollbar-track {
-//                 background: #f1f3f5;
-//                 border-radius: 10px;
-//             }
-
-//             &::-webkit-scrollbar-thumb {
-//                 background-color: #adb5bd;
-//                 border-radius: 10px;
-//                 transition: background-color 0.2s ease;
-//             }
-
-//             &::-webkit-scrollbar-thumb:hover {
-//                 background-color: #868e96;
-//             }
-
-//             scrollbar-width: thin;
-//             scrollbar-color: #adb5bd #f1f3f5;
-//         }
-//     }
-// }
 .unitoffice-entry-table {
     .card {
         .table-responsive {
-            max-height: 65vh; // ✅ vertical scroll here
+            max-height: 65vh;
             overflow: auto;
             width: 100%;
 
-            /* ===== Custom scrollbar ===== */
             &::-webkit-scrollbar {
                 width: 8px;
                 height: 8px;
@@ -145,8 +51,8 @@ body {
             scrollbar-color: #adb5bd #f1f3f5;
 
             table {
-                min-width: 1200px; // ✅ force responsive scroll
-                border-collapse: separate;
+                min-width: 1200px;
+                border-collapse: collapse;
                 border-spacing: 0;
 
                 thead {
@@ -158,6 +64,10 @@ body {
                         color: #fff;
 
                         transition: $transition-4-einout;
+                        span.badge {
+                            width: 100%;
+                            font-size: 14px;
+                        }
                     }
                     tr {
                         &:nth-child(2) {
@@ -174,6 +84,10 @@ body {
                     padding: 5px;
                     vertical-align: middle;
                     white-space: nowrap;
+                    span.badge {
+                        width: 100%;
+                        font-size: 14px;
+                    }
                 }
 
                 th:nth-child(4) {
@@ -325,4 +239,11 @@ body {
     border-radius: 8px;
     animation: slideUp 0.3s ease-in-out;
     margin: 0 !important;
+}
+
+.navbar-brand-box {
+    img {
+        max-width: 100%;
+        max-height: 50px;
+    }
 }
