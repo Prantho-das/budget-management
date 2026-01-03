@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
 use Laravel\Fortify\Features;
-
+use App\Models\BudgetEstimation;
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
@@ -21,6 +21,9 @@ Route::get('lang/{locale}', function ($locale) {
     Session::put('locale', $locale);
     return redirect()->back();
 })->name('lang.switch');
+Route::get('debug', function () {
+    print_r(\App\Models\BudgetEstimation::latest()->first(['current_stage', 'target_office_id', 'status'])->toArray());
+});
 Route::get('/current-fiscal-year', function () {
     // 1. Current fiscal year only
     dump(current_fiscal_year());
@@ -54,11 +57,7 @@ Route::get('/dashboard', \App\Livewire\Dashboard::class)
     ->name('dashboard');
 
 Route::middleware(['auth'])->group(function () {
-
-
-
     Route::redirect('settings', 'settings/profile');
-
     Route::get('settings/profile', Profile::class)->name('profile.edit');
     Route::get('settings/password', Password::class)->name('user-password.edit');
     Route::get('/settings/appearance', Appearance::class)->name('settings.appearance');
@@ -88,7 +87,7 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/budget/estimations', \App\Livewire\BudgetEstimations::class)->middleware('can:view-budget-estimations')->name('budget.estimations');
-    Route::get('/budget/approvals', \App\Livewire\BudgetApprovals::class)->middleware('can:view-budget-estimations')->name('budget.approvals');
+    Route::get('/budget/approvals', \App\Livewire\BudgetApprovals::class)->name('budget.approvals');
     Route::get('/budget/status', \App\Livewire\BudgetStatus::class)->middleware('can:view-budget-estimations')->name('budget.status');
     Route::get('/budget/summary', \App\Livewire\BudgetSummary::class)->middleware('can:view-budget-estimations')->name('budget.summary');
 });

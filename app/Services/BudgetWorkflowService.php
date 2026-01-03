@@ -46,8 +46,8 @@ class BudgetWorkflowService
             ->orderBy('order', 'asc')
             ->first();
 
-        if ($currentStep && str_contains(strtolower($currentStep->name), 'release')) {
-            abort_if(Auth::user()->cannot($currentStep->required_permission), 403, 'You do not have permission to release budgets.');
+        if ($currentStep && $currentStep->required_permission) {
+            abort_if(Auth::user()->cannot($currentStep->required_permission), 403, "You do not have the required permission ({$currentStep->required_permission}) to perform this action.");
         }
 
         if (!$nextStep) {

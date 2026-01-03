@@ -94,8 +94,9 @@
                                     <option value="{{ $batch_id }}">{{ __('New Submission') }}</option>
                                 @endif
                             </select>
-                            <button wire:click="startNewDemand" class="btn btn-primary shadow-none" type="button"
-                                title="{{ __('New Demand') }}">
+                            <button wire:click="startNewDemand" class="btn btn-primary shadow-none {{ $has_existing_batch ? 'disabled' : '' }}" type="button"
+                                title="{{ $has_existing_batch ? __('A batch already exists for this type') : __('New Demand') }}"
+                                {{ $has_existing_batch ? 'disabled' : '' }}>
                                 <i class="bx bx-plus"></i>
                             </button>
                         </div>
@@ -187,6 +188,22 @@
                 <i class="bx bxs-check-circle me-2 font-size-16 align-middle"></i>
                 {{ session('message') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        @if ($is_released)
+            <div class="alert alert-success border-0 shadow-sm d-flex align-items-center" role="alert">
+                <i class="bx bxs-check-shield font-size-24 me-2"></i>
+                <div>
+                    <strong>{{ __('Budget Released!') }}</strong> {{ __('This budget type has already been fully approved and released. You can view the details below.') }}
+                </div>
+            </div>
+        @elseif ($is_pending && $status !== 'submitted')
+            <div class="alert alert-info border-0 shadow-sm d-flex align-items-center" role="alert">
+                <i class="bx bxs-info-circle font-size-24 me-2"></i>
+                <div>
+                    <strong>{{ __('Submission in Progress') }}</strong> {{ __('You cannot start a new batch. Please wait for the current one to be approved or rejected.') }}
+                </div>
             </div>
         @endif
 
@@ -328,17 +345,38 @@
                     </div>
                 </div>
             </div>
-        @else
-            <div class="card">
-                <div class="card-body">
-                    <div
-                        class="text-warning fw-bold d-inline-flex align-items-center justify-content-center text-center">
-                        <i class="bx bxs-check-circle font-size-24 me-2 "></i>
-                        <span>{{ __('Previous demand already submitted. Now pending for approval.') }}</span>
+        @elseif ($status === 'approved' || $current_stage === 'Released')
+            <div class="card shadow-sm border-0">
+                <div class="card-body py-5 text-center">
+                    <div class="mb-4">
+                        <i class="bx bxs-check-shield text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark">{{ __('Budget Fully Released') }}</h4>
+                    <p class="text-muted mx-auto mb-4" style="max-width: 500px;">
+                        {{ __('This budget demand has been successfully approved and released for the current fiscal year. No further modifications are allowed for this batch.') }}
+                    </p>
+                    <div class="d-inline-flex align-items-center justify-content-center bg-success-subtle text-success px-4 py-2 rounded-pill">
+                        <i class="bx bx-check-double me-2"></i>
+                        <span class="fw-semibold">{{ __('Status') }}: {{ __('Released') }}</span>
                     </div>
                 </div>
             </div>
-
+        @else
+            <div class="card shadow-sm border-0">
+                <div class="card-body py-5 text-center">
+                    <div class="mb-4">
+                        <i class="bx bxs-hourglass-top text-warning" style="font-size: 4rem;"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark">{{ __('The budget is in the approval situation') }}</h4>
+                    <p class="text-muted mx-auto mb-4" style="max-width: 500px;">
+                        {{ __('This budget demand has been submitted and is currently traveling through the approval hierarchy. You will be notified once it is Released or if any modifications are requested.') }}
+                    </p>
+                    <div class="d-inline-flex align-items-center justify-content-center bg-warning-subtle text-warning px-4 py-2 rounded-pill">
+                        <i class="bx bx-loader-alt bx-spin me-2"></i>
+                        <span class="fw-semibold">{{ __('Current Status') }}: {{ __($current_stage) }}</span>
+                    </div>
+                </div>
+            </div>
         @endif
 
 

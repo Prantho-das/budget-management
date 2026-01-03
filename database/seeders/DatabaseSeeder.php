@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             BudgetTypeSeeder::class,
+            WorkflowStepSeeder::class,
             DummyDataSeeder::class,
         ]);
     }

@@ -7,24 +7,36 @@ use App\Models\RpoUnit;
 
 class RpoUnits extends Component
 {
-  public $rpo_units, $name, $code, $parent_id, $district, $rpo_unit_id;
-  public $isOpen = false;
+    public $rpo_units, $name, $code, $parent_id, $rpo_unit_id;
+    public $isOpen = false;
+    public $search = '';
 
-  // Robust delete application
-  protected $listeners = ['deleteConfirmed'];
+    // Robust delete application
+    protected $listeners = ['deleteConfirmed'];
 
-  public function render()
-  {
-    abort_if(auth()->user()->cannot('view-offices'), 403);
-    $this->rpo_units = RpoUnit::with('parent')->orderBy('id', 'desc')->get();
-    // Get potential parents
-    $idsToExclude = $this->rpo_unit_id ? [$this->rpo_unit_id] : [];
-    $parents = RpoUnit::whereNotIn('id', $idsToExclude)->get();
+    public function render()
+    {
+        abort_if(auth()->user()->cannot('view-offices'), 403);
+        
+        $query = RpoUnit::with('parent')->orderBy('id', 'desc');
+        
+        if ($this->search) {
+            $query->where(function($q) {
+                $q->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('code', 'like', '%' . $this->search . '%');
+            });
+        }
+        
+        $this->rpo_units = $query->get();
 
-    return view('livewire.setup.rpo-units', [
-      'parents' => $parents
-    ])->extends('layouts.skot')->section('content');
-  }
+        // Get potential parents (exclude the current unit and its children to avoid cycles)
+        $idsToExclude = $this->rpo_unit_id ? [$this->rpo_unit_id] : [];
+        $parents = RpoUnit::whereNotIn('id', $idsToExclude)->get();
+
+        return view('livewire.setup.rpo-units', [
+            'parents' => $parents
+        ])->extends('layouts.skot')->section('content');
+    }
 
   public function create()
   {
@@ -48,7 +60,6 @@ class RpoUnits extends Component
     $this->name = '';
     $this->code = '';
     $this->parent_id = null;
-    $this->district = '';
     $this->rpo_unit_id = '';
   }
 
@@ -70,7 +81,6 @@ class RpoUnits extends Component
       'name' => $this->name,
       'code' => $this->code,
       'parent_id' => $this->parent_id ?: null,
-      'district' => $this->district,
       'status' => true
     ]);
 
@@ -91,7 +101,6 @@ class RpoUnits extends Component
     $this->name = $unit->name;
     $this->code = $unit->code;
     $this->parent_id = $unit->parent_id;
-    $this->district = $unit->district;
 
     $this->openModal();
   }

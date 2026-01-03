@@ -24,6 +24,9 @@ class BudgetEstimations extends Component
   public $current_stage = 'Draft';
   public $batch_id;
   public $allBatches = [];
+  public $is_pending = false;
+  public $is_released = false;
+  public $has_existing_batch = false;
 
   public function mount()
   {
@@ -37,13 +40,15 @@ class BudgetEstimations extends Component
     $defaultTypeId = null;
 
     foreach ($activeTypes as $type) {
-        $exists = BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id)
+        $defaultTypeId = $type->id;
+
+        $isReleased = BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id)
             ->where('rpo_unit_id', $this->rpo_unit_id)
             ->where('budget_type_id', $type->id)
+            ->where('current_stage', 'Released')
             ->exists();
         
-        if (!$exists) {
-            $defaultTypeId = $type->id;
+        if (!$isReleased) {
             break;
         }
     }
@@ -71,6 +76,10 @@ class BudgetEstimations extends Component
 
   public function startNewDemand()
   {
+    if ($this->has_existing_batch) {
+        session()->flash('error', __('You cannot start a new demand while a batch already exists for this budget type.'));
+        return;
+    }
     $this->batch_id = (string) \Illuminate\Support\Str::uuid();
     $this->demands = [];
     $this->remarks = [];
@@ -100,6 +109,21 @@ class BudgetEstimations extends Component
         $this->batch_id = (string) \Illuminate\Support\Str::uuid();
       }
     }
+
+    // Check for existing batches and statuses
+    $this->has_existing_batch = !empty($this->allBatches);
+
+    $this->is_pending = BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id)
+        ->where('rpo_unit_id', $this->rpo_unit_id)
+        ->where('budget_type_id', $this->budget_type_id)
+        ->where('status', 'submitted')
+        ->exists();
+
+    $this->is_released = BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id)
+        ->where('rpo_unit_id', $this->rpo_unit_id)
+        ->where('budget_type_id', $this->budget_type_id)
+        ->where('current_stage', 'Released')
+        ->exists();
 
     $currentFiscalYear = FiscalYear::find($this->fiscal_year_id);
 

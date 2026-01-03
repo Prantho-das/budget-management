@@ -26,7 +26,7 @@ class BudgetApprovals extends Component
 
     public function mount()
     {
-        abort_if(auth()->user()->cannot('view-budget-estimations'), 403);
+        abort_if(auth()->user()->cannot('approve-budget') && auth()->user()->cannot('release-budget') && auth()->user()->cannot('reject-budget'), 403);
         $this->fiscal_year_id = get_active_fiscal_year_id();
         $this->loadChildSubmissions();
     }
@@ -197,7 +197,7 @@ class BudgetApprovals extends Component
 
     public function render()
     {
-        abort_if(auth()->user()->cannot('view-budget-estimations'), 403);
+        abort_if(auth()->user()->cannot('approve-budget') && auth()->user()->cannot('release-budget') && auth()->user()->cannot('reject-budget'), 403);
         return view('livewire.budget-approvals', [
             'office' => $this->selected_office_id ? RpoUnit::find($this->selected_office_id) : null
         ])->extends('layouts.skot')->section('content');

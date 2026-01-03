@@ -143,23 +143,27 @@
                                 <span key="t-dashboards">{{ __('Dashboard') }}</span>
                             </a>
                         </li>
-                        @can('view-budget-estimations')
+                        @canany(['view-budget-estimations', 'approve-budget', 'release-budget'])
                             <li>
                                 <a href="javascript: void(0);" class="has-arrow waves-effect">
                                     <i class="bx bx-file"></i>
                                     <span key="t-utility">{{ __('Budgeting') }}</span>
                                 </a>
                                 <ul class="sub-menu" aria-expanded="false">
-                                    <li><a href="{{ route('budget.estimations') }}" wire:navigate
-                                            key="t-estimations">{{ __('Budget Demand') }}</a></li>
-                                    @canany(['approve-budget', 'reject-budget'])
+                                    @can('create-budget-estimations')
+                                        <li><a href="{{ route('budget.estimations') }}" wire:navigate
+                                                key="t-estimations">{{ __('Budget Demand') }}</a></li>
+                                    @endcan
+                                    @canany(['approve-budget', 'reject-budget', 'release-budget'])
                                         <li><a href="{{ route('budget.approvals') }}" wire:navigate
                                                 key="t-approvals">{{ __('Approvals') }}</a></li>
                                     @endcanany
-                                    <li><a href="{{ route('budget.status') }}" wire:navigate
-                                            key="t-status">{{ __('Budget Status') }}</a></li>
-                                    <li><a href="{{ route('budget.summary') }}" wire:navigate
-                                            key="t-summary">{{ __('My Budget Summary') }}</a></li>
+                                    @can('view-budget-estimations')
+                                        <li><a href="{{ route('budget.status') }}" wire:navigate
+                                                key="t-status">{{ __('Budget Status') }}</a></li>
+                                        <li><a href="{{ route('budget.summary') }}" wire:navigate
+                                                key="t-summary">{{ __('My Budget Summary') }}</a></li>
+                                    @endcan
                                 </ul>
                             </li>
                         @endcan
