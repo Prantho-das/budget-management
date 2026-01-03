@@ -46,19 +46,12 @@
                                         <form>
                                             <div class="mb-3">
                                                 <label for="name" class="form-label">{{ __('Name') }}</label>
-                                                <input type="text" class="form-control" id="name" wire:model="name" placeholder="{{ __('e.g. 2025-2026') }}">
+                                                <input type="text" class="form-control" id="name" wire:model="name" placeholder="{{ __('e.g. 2025-26') }}">
                                                 @error('name') <span class="text-danger">{{ $message }}</span>@enderror
                                             </div>
-                                            <div class="mb-3">
-                                                <label for="start_date" class="form-label">{{ __('Start Date') }}</label>
-                                                <input type="date" class="form-control" id="start_date" wire:model="start_date">
-                                                @error('start_date') <span class="text-danger">{{ $message }}</span>@enderror
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="end_date" class="form-label">{{ __('End Date') }}</label>
-                                                <input type="date" class="form-control" id="end_date" wire:model="end_date">
-                                                @error('end_date') <span class="text-danger">{{ $message }}</span>@enderror
-                                            </div>
+                                          
+
+                                            
                                             <div class="mb-3">
                                                 <div class="form-check form-switch">
                                                     <input class="form-check-input" type="checkbox" role="switch" id="status" wire:model="status">

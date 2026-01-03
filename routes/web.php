@@ -21,7 +21,34 @@ Route::get('lang/{locale}', function ($locale) {
     Session::put('locale', $locale);
     return redirect()->back();
 })->name('lang.switch');
-
+Route::get('/current-fiscal-year', function () {
+    // 1. Current fiscal year only
+    dump(current_fiscal_year());
+    // → "2025-26"
+    
+    // Or using the main function
+    // dump(fiscal_years());
+    // → ["2025-26"]
+    
+    // 2. Last 3 fiscal years (including current)
+    dump(fiscal_years(3));
+    // → ["2023-24", "2024-25", "2025-26"]
+    
+    // 3. Next 2 fiscal years (including current)
+    dump(fiscal_years(0,2)); 
+    // → ["2025-26", "2026-27", "2027-28"]
+    
+    // 4. 2 previous + current + 3 next
+//     dump(fiscal_years(2,3)); 
+//     // → ["2023-24", "2024-25", "2025-26", "2026-27", "2027-28", "2028-29"]
+    
+//     // 5. Based on a specific date
+//    dump(fiscal_years(1, 1, '2026-06-30')); 
+//     // → ["2024-25", "2025-26", "2026-27"]
+    
+//    dump(fiscal_years( 1,  1, '2026-07-01')); 
+    // → ["2025-26", "2026-27", "2027-28"]
+})->name('current-fiscal-year');
 Route::get('/dashboard', \App\Livewire\Dashboard::class)
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
