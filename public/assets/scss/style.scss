@@ -24,10 +24,33 @@ body {
     .card {
         .table-responsive {
             table {
+                .table-primary {
+                    th {
+                        background-color: #556ee6;
+                        color: #fff;
+                    }
+                }
                 th,
                 td {
                     font-size: 14px;
                     padding: 5px 5px;
+                    span.badge {
+                        width: 100%;
+                    }
+                }
+                tr.parent-expense-code {
+                    td {
+                        font-weight: 600;
+
+                        background-color: #dde2fa;
+                        span.badge {
+                            font-weight: 600;
+                            color: rgba(
+                                var(--bs-dark-rgb),
+                                var(--bs-text-opacity)
+                            ) !important;
+                        }
+                    }
                 }
             }
         }
