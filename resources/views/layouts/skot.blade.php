@@ -1,184 +1,189 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-        
-        <meta charset="utf-8" />
-        <title>@yield('title', get_setting('site_title', 'Dashboard | Skot - Admin & Dashboard Template'))</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta content="{{ get_setting('meta_description', 'Premium Multipurpose Admin & Dashboard Template') }}" name="description" />
-        <meta content="{{ get_setting('meta_author', 'Themesbrand') }}" name="author" />
-        <!-- App favicon -->
-        <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
 
-        <!-- Bootstrap Css -->
-        <link href="{{ asset('assets/css/bootstrap.min.css') }}" id="bootstrap-style" rel="stylesheet" type="text/css" />
-        <!-- Icons Css -->
-        <link href="{{ asset('assets/css/icons.min.css') }}" rel="stylesheet" type="text/css" />
-        <!-- App Css-->
-        <link href="{{ asset('assets/css/app.min.css') }}" id="app-style" rel="stylesheet" type="text/css" />
-        <!-- App js -->
-        {{-- <script src="{{ asset('assets/js/plugin.js') }}"></script> --}}
-        
-        <style>
-@if(app()->getLocale() == 'bn')
-        :lang(en) {
-  font-family: "Inter", "Arial", sans-serif;
-}
-@else
-:lang(bn) {
-  font-family: "Noto Sans Bengali", "SolaimanLipi", sans-serif;
-}
-@endif
-</style>
-        @stack('head')
+    <link href="{{ asset('assets/css/bootstrap.min.css') }}" id="bootstrap-style" rel="stylesheet" type="text/css" />
+    <!-- Icons Css -->
+    <link href="{{ asset('assets/css/icons.min.css') }}" rel="stylesheet" type="text/css" />
+    <!-- App Css-->
+    <link href="{{ asset('assets/css/app.min.css') }}" id="app-style" rel="stylesheet" type="text/css" />
+    <!-- App js -->
+    {{-- <script src="{{ asset('assets/js/plugin.js') }}"></script> --}}
+    <link rel="stylesheet" href="{{ asset('assets/solaimanlipi-font/bangla-font.css') }}">
 
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/responsive.css') }}">
 
-    </head>
+    @stack('head')
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <body data-sidebar="dark">
+
+</head>
+
+
+<body data-sidebar="dark">
 
     <!-- <body data-layout="horizontal" data-topbar="dark"> -->
 
-        <!-- Begin page -->
-        <div id="layout-wrapper">
+    <!-- Begin page -->
+    <div id="layout-wrapper">
 
-            
-            <header id="page-topbar">
-                <div class="navbar-header">
-                    <div class="d-flex">
-                        <!-- LOGO -->
-                        <div class="navbar-brand-box">
-                            <a href="{{ route('dashboard') }}" class="logo logo-dark">
-                                <span class="logo-sm">
-                                    <img src="{{ asset("/storage/".get_setting('site_logo')) ?: asset('assets/images/logo.svg') }}" alt="" height="22">
-                                </span>
-                                <span class="logo-lg">
-                                    <img src="{{ asset("/storage/".get_setting('site_logo')) ?: asset('assets/images/logo-dark.png') }}" alt="" height="17">
-                                </span>
-                            </a>
 
-                            <a href="{{ route('dashboard') }}" class="logo logo-light">
-                                <span class="logo-sm">
-                                    <img src="{{ asset("/storage/".get_setting('site_logo')) ?: asset('assets/images/logo-light.svg') }}" alt="" height="22">
-                                </span>
-                                <span class="logo-lg">
-                                    <img src="{{ asset("/storage/".get_setting('site_logo')) ?: asset('assets/images/logo-light.png') }}" alt="" height="19">
-                                </span>
-                            </a>
-                        </div>
+        <header id="page-topbar">
+            <div class="navbar-header">
+                <div class="d-flex">
+                    <!-- LOGO -->
+                    <div class="navbar-brand-box">
+                        <a href="{{ route('dashboard') }}" class="logo logo-dark">
+                            <span class="logo-sm">
+                                <img src="{{ asset('/storage/' . get_setting('site_logo')) ?: asset('assets/images/logo.svg') }}"
+                                    alt="" height="22">
+                            </span>
+                            <span class="logo-lg">
+                                <img src="{{ asset('/storage/' . get_setting('site_logo')) ?: asset('assets/images/logo-dark.png') }}"
+                                    alt="" height="17">
+                            </span>
+                        </a>
 
-                        <button type="button" class="btn btn-sm px-3 font-size-16 header-item waves-effect" id="vertical-menu-btn">
-                            <i class="fa fa-fw fa-bars"></i>
-                        </button>
-                        
+                        <a href="{{ route('dashboard') }}" class="logo logo-light">
+                            <span class="logo-sm">
+                                <img src="{{ asset('/storage/' . get_setting('site_logo')) ?: asset('assets/images/logo-light.svg') }}"
+                                    alt="" height="22">
+                            </span>
+                            <span class="logo-lg">
+                                <img src="{{ asset('/storage/' . get_setting('site_logo')) ?: asset('assets/images/logo-light.png') }}"
+                                    alt="" height="19">
+                            </span>
+                        </a>
                     </div>
 
-                    <div class="d-flex align-items-center">
-                        @auth
-                            <div class="d-inline-block">
-                                <h5 class="mb-0 font-size-14 text-uppercase fw-bold text-primary">
-                                    <i class="bx bx-buildings me-1"></i>
-                                    {{ Auth::user()->office->name ?? __('No Office') }}
-                                </h5>
-                            </div>
-                        @endauth
-                        <div class="dropdown d-inline-block" x-data="{ open: false }" @click.outside="open = false">
-                            <button type="button" class="btn header-item waves-effect"
-                            @click="open = !open" :class="{ 'show': open }" aria-haspopup="true" aria-expanded="false">
-                                @if(app()->getLocale() == 'bn')
-                                     <span class="align-middle fw-bold">বাংলা</span>
-                                @else
-                                    {{-- <img id="header-lang-img" src="{{ asset('assets/images/flags/us.jpg') }}" alt="Header Language" height="16"> --}}
-                                    <span class="align-middle fw-bold">En</span>
-                                @endif
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-end" :class="{ 'show': open }" style="display: none;" x-show="open" x-transition>
+                    <button type="button" class="btn btn-sm px-3 font-size-16 header-item waves-effect"
+                        id="vertical-menu-btn">
+                        <i class="fa fa-fw fa-bars"></i>
+                    </button>
 
-                                <!-- item-->
-                                <a href="{{ route('lang.switch', 'en') }}" class="dropdown-item notify-item language" data-lang="en">
-                                    {{-- <img src="{{ asset('assets/images/flags/us.jpg') }}" alt="user-image" class="me-1" height="12">  --}}
-                                    <span class="align-middle">{{ __('English') }}</span>
-                                </a>
-                                <!-- item-->
-                                <a href="{{ route('lang.switch', 'bn') }}" class="dropdown-item notify-item language" data-lang="bn">
-                                    <span class="align-middle">{{ __('Bangla') }}</span>
-                                </a>
-                            </div>
-                        </div>
-
-
-
-                        <div class="dropdown d-inline-block" x-data="{ open: false }" @click.outside="open = false">
-                            <button type="button" class="btn header-item waves-effect" id="page-header-user-dropdown"
-                            @click="open = !open" :class="{ 'show': open }" aria-haspopup="true" aria-expanded="false">
-                                <img class="rounded-circle header-profile-user" src="{{ Auth::user()->profile_photo_url }}"
-                                    alt="Header Avatar">
-                                <span class="d-none d-xl-inline-block ms-1" key="t-henry">{{ Auth::user()->name }}</span>
-                                <i class="mdi mdi-chevron-down d-none d-xl-inline-block"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-end" :class="{ 'show': open }" style="display: none;" x-show="open" x-transition>
-                                <!-- item-->
-                                <a class="dropdown-item" href="{{ route('profile.edit') }}"><i class="bx bx-user font-size-16 align-middle me-1"></i> <span key="t-profile">Profile</span></a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i class="bx bx-power-off font-size-16 align-middle me-1 text-danger"></i> <span key="t-logout">Logout</span></a>
-
-                            </div>
-                        </div>
-
-
-
-                    </div>
                 </div>
-            </header>
 
-            <!-- ========== Left Sidebar Start ========== -->
-            <div class="vertical-menu">
+                <div class="d-flex align-items-center">
+                    @auth
+                        <div class="d-inline-block">
+                            <h5 class="mb-0 font-size-14 text-uppercase fw-bold text-primary">
+                                <i class="bx bx-buildings me-1"></i>
+                                {{ Auth::user()->office->name ?? __('No Office') }}
+                            </h5>
+                        </div>
+                    @endauth
+                    <div class="dropdown d-inline-block" x-data="{ open: false }" @click.outside="open = false">
+                        <button type="button" class="btn header-item waves-effect" @click="open = !open"
+                            :class="{ 'show': open }" aria-haspopup="true" aria-expanded="false">
+                            @if (app()->getLocale() == 'bn')
+                                <span class="align-middle fw-bold">বাংলা</span>
+                            @else
+                                {{-- <img id="header-lang-img" src="{{ asset('assets/images/flags/us.jpg') }}" alt="Header Language" height="16"> --}}
+                                <span class="align-middle fw-bold">En</span>
+                            @endif
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end" :class="{ 'show': open }" style="display: none;"
+                            x-show="open" x-transition>
 
-                <div data-simplebar class="h-100">
+                            <!-- item-->
+                            <a href="{{ route('lang.switch', 'en') }}" class="dropdown-item notify-item language"
+                                data-lang="en">
+                                {{-- <img src="{{ asset('assets/images/flags/us.jpg') }}" alt="user-image" class="me-1" height="12">  --}}
+                                <span class="align-middle">{{ __('English') }}</span>
+                            </a>
+                            <!-- item-->
+                            <a href="{{ route('lang.switch', 'bn') }}" class="dropdown-item notify-item language"
+                                data-lang="bn">
+                                <span class="align-middle">{{ __('Bangla') }}</span>
+                            </a>
+                        </div>
+                    </div>
 
-                    <!--- Sidemenu -->
-                    <div id="sidebar-menu">
-                        <!-- Left Menu Start -->
-                        <ul class="metismenu list-unstyled" id="side-menu">
 
 
-                            
-                            
-                            <li>
-                                <a href="{{ route('dashboard') }}" wire:navigate class="waves-effect">
-                                    <i class="bx bx-home-circle"></i>
-                                    <span key="t-dashboards">{{ __('Dashboard') }}</span>
-                                </a>
-                            </li>
-                            @can('view-budget-estimations')
+                    <div class="dropdown d-inline-block" x-data="{ open: false }" @click.outside="open = false">
+                        <button type="button" class="btn header-item waves-effect" id="page-header-user-dropdown"
+                            @click="open = !open" :class="{ 'show': open }" aria-haspopup="true" aria-expanded="false">
+                            <img class="rounded-circle header-profile-user" src="{{ Auth::user()->profile_photo_url }}"
+                                alt="Header Avatar">
+                            <span class="d-none d-xl-inline-block ms-1" key="t-henry">{{ Auth::user()->name }}</span>
+                            <i class="mdi mdi-chevron-down d-none d-xl-inline-block"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end" :class="{ 'show': open }" style="display: none;"
+                            x-show="open" x-transition>
+                            <!-- item-->
+                            <a class="dropdown-item" href="{{ route('profile.edit') }}"><i
+                                    class="bx bx-user font-size-16 align-middle me-1"></i> <span
+                                    key="t-profile">Profile</span></a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-danger" href="javascript:void(0);"
+                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i
+                                    class="bx bx-power-off font-size-16 align-middle me-1 text-danger"></i> <span
+                                    key="t-logout">Logout</span></a>
+
+                        </div>
+                    </div>
+
+
+
+                </div>
+            </div>
+        </header>
+
+        <!-- ========== Left Sidebar Start ========== -->
+        <div class="vertical-menu">
+
+            <div data-simplebar class="h-100">
+
+                <!--- Sidemenu -->
+                <div id="sidebar-menu">
+                    <!-- Left Menu Start -->
+                    <ul class="metismenu list-unstyled" id="side-menu">
+
+
+
+
+                        <li>
+                            <a href="{{ route('dashboard') }}" wire:navigate class="waves-effect">
+                                <i class="bx bx-home-circle"></i>
+                                <span key="t-dashboards">{{ __('Dashboard') }}</span>
+                            </a>
+                        </li>
+                        @can('view-budget-estimations')
                             <li>
                                 <a href="javascript: void(0);" class="has-arrow waves-effect">
                                     <i class="bx bx-file"></i>
                                     <span key="t-utility">{{ __('Budgeting') }}</span>
                                 </a>
                                 <ul class="sub-menu" aria-expanded="false">
-                                    <li><a href="{{ route('budget.estimations') }}" wire:navigate key="t-estimations">{{ __('Budget Demand') }}</a></li>
+                                    <li><a href="{{ route('budget.estimations') }}" wire:navigate
+                                            key="t-estimations">{{ __('Budget Demand') }}</a></li>
                                     @canany(['approve-budget', 'reject-budget'])
-                                        <li><a href="{{ route('budget.approvals') }}" wire:navigate key="t-approvals">{{ __('Approvals') }}</a></li>
+                                        <li><a href="{{ route('budget.approvals') }}" wire:navigate
+                                                key="t-approvals">{{ __('Approvals') }}</a></li>
                                     @endcanany
-                                    <li><a href="{{ route('budget.status') }}" wire:navigate key="t-status">{{ __('Budget Status') }}</a></li>
-                                    <li><a href="{{ route('budget.summary') }}" wire:navigate key="t-summary">{{ __('My Budget Summary') }}</a></li>
+                                    <li><a href="{{ route('budget.status') }}" wire:navigate
+                                            key="t-status">{{ __('Budget Status') }}</a></li>
+                                    <li><a href="{{ route('budget.summary') }}" wire:navigate
+                                            key="t-summary">{{ __('My Budget Summary') }}</a></li>
                                 </ul>
                             </li>
-                            @endcan
+                        @endcan
 
-                            @can('view-expenses')
+                        @can('view-expenses')
                             <li>
                                 <a href="{{ route('setup.expenses') }}" wire:navigate class="waves-effect">
                                     <i class="bx bx-wallet"></i>
                                     <span key="t-expenses">{{ __('Expenses') }}</span>
                                 </a>
                             </li>
-                            @endcan
+                        @endcan
 
-                            @canany(['view-fiscal-years', 'view-budget-types', 'view-users', 'view-offices', 'view-economic-codes', 'view-roles', 'view-permissions', 'view-system-settings'])
+                        @canany(['view-fiscal-years', 'view-budget-types', 'view-users', 'view-offices',
+                            'view-economic-codes', 'view-roles', 'view-permissions', 'view-system-settings'])
                             <li>
                                 <a href="javascript: void(0);" class="has-arrow waves-effect">
                                     <i class="bx bx-cog"></i>
@@ -186,266 +191,287 @@
                                 </a>
                                 <ul class="sub-menu" aria-expanded="false">
                                     @can('view-fiscal-years')
-                                        <li><a href="{{ route('setup.fiscal-years') }}" wire:navigate key="t-fiscal-years">{{ __('Fiscal Years') }}</a></li>
+                                        <li><a href="{{ route('setup.fiscal-years') }}" wire:navigate
+                                                key="t-fiscal-years">{{ __('Fiscal Years') }}</a></li>
                                     @endcan
                                     @can('view-budget-types')
-                                        <li><a href="{{ route('setup.budget-types') }}" wire:navigate key="t-budget-types">{{ __('Budget Types') }}</a></li>
+                                        <li><a href="{{ route('setup.budget-types') }}" wire:navigate
+                                                key="t-budget-types">{{ __('Budget Types') }}</a></li>
                                     @endcan
                                     @can('view-users')
-                                        <li><a href="{{ route('setup.users') }}" wire:navigate key="t-users">{{ __('Users') }}</a></li>
+                                        <li><a href="{{ route('setup.users') }}" wire:navigate
+                                                key="t-users">{{ __('Users') }}</a></li>
                                     @endcan
                                     @can('view-offices')
-                                        <li><a href="{{ route('setup.rpo-units') }}" wire:navigate key="t-offices">{{ __('Offices') }}</a></li>
+                                        <li><a href="{{ route('setup.rpo-units') }}" wire:navigate
+                                                key="t-offices">{{ __('Offices') }}</a></li>
                                     @endcan
                                     @can('view-economic-codes')
-                                        <li><a href="{{ route('setup.economic-codes') }}" wire:navigate key="t-economic-codes">{{ __('Economic Codes') }}</a></li>
+                                        <li><a href="{{ route('setup.economic-codes') }}" wire:navigate
+                                                key="t-economic-codes">{{ __('Economic Codes') }}</a></li>
                                     @endcan
                                     @can('view-roles')
-                                        <li><a href="{{ route('setup.roles') }}" wire:navigate key="t-roles">{{ __('Roles') }}</a></li>
+                                        <li><a href="{{ route('setup.roles') }}" wire:navigate
+                                                key="t-roles">{{ __('Roles') }}</a></li>
                                     @endcan
                                     @can('view-permissions')
-                                        <li><a href="{{ route('setup.permissions') }}" wire:navigate key="t-permissions">{{ __('Permissions') }}</a></li>
+                                        <li><a href="{{ route('setup.permissions') }}" wire:navigate
+                                                key="t-permissions">{{ __('Permissions') }}</a></li>
                                     @endcan
                                     @can('view-system-settings')
-                                        <li><a href="{{ route('setup.system-settings') }}" wire:navigate key="t-system-settings">{{ __('System Settings') }}</a></li>
-                                        <li><a href="{{ route('setup.workflow') }}" wire:navigate key="t-workflow">{{ __('Workflow Setup') }}</a></li>
+                                        <li><a href="{{ route('setup.system-settings') }}" wire:navigate
+                                                key="t-system-settings">{{ __('System Settings') }}</a></li>
+                                        <li><a href="{{ route('setup.workflow') }}" wire:navigate
+                                                key="t-workflow">{{ __('Workflow Setup') }}</a></li>
                                     @endcan
                                 </ul>
                             </li>
-                            @endcan
+                        @endcan
 
 
-                        </ul>
+                    </ul>
+                </div>
+                <!-- Sidebar -->
+            </div>
+        </div>
+        <!-- Left Sidebar End -->
+
+
+
+        <!-- ============================================================== -->
+        <!-- Start right Content here -->
+        <!-- ============================================================== -->
+        <div class="main-content">
+
+            <div class="page-content">
+                <div class="container-fluid">
+                    @yield('content')
+                </div>
+                <!-- container-fluid -->
+            </div>
+            <!-- End Page-content -->
+
+            <!-- Transaction Modal -->
+            <div class="modal fade transaction-detailModal" tabindex="-1" role="dialog"
+                aria-labelledby="transaction-detailModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="transaction-detailModalLabel">Order Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="mb-2">Product id: <span class="text-primary">#SK2540</span></p>
+                            <p class="mb-4">Billing Name: <span class="text-primary">Neal Matthews</span></p>
+
+                            <div class="table-responsive">
+                                <table class="table align-middle table-nowrap">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Product</th>
+                                            <th scope="col">Product Name</th>
+                                            <th scope="col">Price</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <th scope="row">
+                                                <div>
+                                                    <img src="{{ asset('assets/images/product/img-7.png') }}"
+                                                        alt="" class="avatar-sm">
+                                                </div>
+                                            </th>
+                                            <td>
+                                                <div>
+                                                    <h5 class="text-truncate font-size-14">Wireless Headphone (Black)
+                                                    </h5>
+                                                    <p class="text-muted mb-0">$ 225 x 1</p>
+                                                </div>
+                                            </td>
+                                            <td>$ 255</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">
+                                                <div>
+                                                    <img src="{{ asset('assets/images/product/img-4.png') }}"
+                                                        alt="" class="avatar-sm">
+                                                </div>
+                                            </th>
+                                            <td>
+                                                <div>
+                                                    <h5 class="text-truncate font-size-14">Phone patterned cases</h5>
+                                                    <p class="text-muted mb-0">$ 145 x 1</p>
+                                                </div>
+                                            </td>
+                                            <td>$ 145</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2">
+                                                <h6 class="m-0 text-right">Sub Total:</h6>
+                                            </td>
+                                            <td>
+                                                $ 400
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2">
+                                                <h6 class="m-0 text-right">Shipping:</h6>
+                                            </td>
+                                            <td>
+                                                Free
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2">
+                                                <h6 class="m-0 text-right">Total:</h6>
+                                            </td>
+                                            <td>
+                                                $ 400
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
                     </div>
-                    <!-- Sidebar -->
                 </div>
             </div>
-            <!-- Left Sidebar End -->
+            <!-- end modal -->
 
-            
 
-            <!-- ============================================================== -->
-            <!-- Start right Content here -->
-            <!-- ============================================================== -->
-            <div class="main-content">
 
-                <div class="page-content">
-                    <div class="container-fluid">
-                        @yield('content')
-                    </div>
-                    <!-- container-fluid -->
-                </div>
-                <!-- End Page-content -->
-
-                <!-- Transaction Modal -->
-                <div class="modal fade transaction-detailModal" tabindex="-1" role="dialog" aria-labelledby="transaction-detailModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="transaction-detailModalLabel">Order Details</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <p class="mb-2">Product id: <span class="text-primary">#SK2540</span></p>
-                                <p class="mb-4">Billing Name: <span class="text-primary">Neal Matthews</span></p>
-
-                                <div class="table-responsive">
-                                    <table class="table align-middle table-nowrap">
-                                        <thead>
-                                            <tr>
-                                                <th scope="col">Product</th>
-                                                <th scope="col">Product Name</th>
-                                                <th scope="col">Price</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <th scope="row">
-                                                    <div>
-                                                        <img src="{{ asset('assets/images/product/img-7.png') }}" alt="" class="avatar-sm">
-                                                    </div>
-                                                </th>
-                                                <td>
-                                                    <div>
-                                                        <h5 class="text-truncate font-size-14">Wireless Headphone (Black)</h5>
-                                                        <p class="text-muted mb-0">$ 225 x 1</p>
-                                                    </div>
-                                                </td>
-                                                <td>$ 255</td>
-                                            </tr>
-                                            <tr>
-                                                <th scope="row">
-                                                    <div>
-                                                        <img src="{{ asset('assets/images/product/img-4.png') }}" alt="" class="avatar-sm">
-                                                    </div>
-                                                </th>
-                                                <td>
-                                                    <div>
-                                                        <h5 class="text-truncate font-size-14">Phone patterned cases</h5>
-                                                        <p class="text-muted mb-0">$ 145 x 1</p>
-                                                    </div>
-                                                </td>
-                                                <td>$ 145</td>
-                                            </tr>
-                                            <tr>
-                                                <td colspan="2">
-                                                    <h6 class="m-0 text-right">Sub Total:</h6>
-                                                </td>
-                                                <td>
-                                                    $ 400
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td colspan="2">
-                                                    <h6 class="m-0 text-right">Shipping:</h6>
-                                                </td>
-                                                <td>
-                                                    Free
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td colspan="2">
-                                                    <h6 class="m-0 text-right">Total:</h6>
-                                                </td>
-                                                <td>
-                                                    $ 400
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <footer class="footer">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            {{ date('Y') }} © {{ get_setting('site_name', 'Budget Management System') }}.
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="text-sm-end d-none d-sm-block">
+                                {{ get_setting('footer_text', 'Design & Develop by Themesbrand') }}
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- end modal -->
+            </footer>
+        </div>
+        <!-- end main content-->
 
+    </div>
+    <!-- END layout-wrapper -->
 
+    <!-- Right Sidebar -->
+    <div class="right-bar">
+        <div data-simplebar class="h-100">
+            <div class="rightbar-title d-flex align-items-center px-3 py-4">
 
-                <footer class="footer">
-                    <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-sm-6">
-                                {{ date('Y') }} © {{ get_setting('site_name', 'Budget Management System') }}.
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="text-sm-end d-none d-sm-block">
-                                    {{ get_setting('footer_text', 'Design & Develop by Themesbrand') }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </footer>
+                <h5 class="m-0 me-2">Settings</h5>
+
+                <a href="javascript:void(0);" class="right-bar-toggle ms-auto">
+                    <i class="mdi mdi-close noti-icon"></i>
+                </a>
             </div>
-            <!-- end main content-->
 
-        </div>
-        <!-- END layout-wrapper -->
+            <!-- Settings -->
+            <hr class="mt-0" />
+            <h6 class="text-center mb-0">Choose Layouts</h6>
 
-        <!-- Right Sidebar -->
-        <div class="right-bar">
-            <div data-simplebar class="h-100">
-                <div class="rightbar-title d-flex align-items-center px-3 py-4">
-            
-                    <h5 class="m-0 me-2">Settings</h5>
-
-                    <a href="javascript:void(0);" class="right-bar-toggle ms-auto">
-                        <i class="mdi mdi-close noti-icon"></i>
-                    </a>
+            <div class="p-4">
+                <div class="mb-2">
+                    <img src="{{ asset('assets/images/layouts/layout-1.jpg') }}" class="img-thumbnail"
+                        alt="layout images">
                 </div>
 
-                <!-- Settings -->
-                <hr class="mt-0" />
-                <h6 class="text-center mb-0">Choose Layouts</h6>
-
-                <div class="p-4">
-                    <div class="mb-2">
-                        <img src="{{ asset('assets/images/layouts/layout-1.jpg') }}" class="img-thumbnail" alt="layout images">
-                    </div>
-
-                    <div class="form-check form-switch mb-3">
-                        <input class="form-check-input theme-choice" type="checkbox" id="light-mode-switch" checked>
-                        <label class="form-check-label" for="light-mode-switch">Light Mode</label>
-                    </div>
-    
-                    <div class="mb-2">
-                        <img src="{{ asset('assets/images/layouts/layout-2.jpg') }}" class="img-thumbnail" alt="layout images">
-                    </div>
-                    <div class="form-check form-switch mb-3">
-                        <input class="form-check-input theme-choice" type="checkbox" id="dark-mode-switch">
-                        <label class="form-check-label" for="dark-mode-switch">Dark Mode</label>
-                    </div>
-    
-                    <div class="mb-2">
-                        <img src="{{ asset('assets/images/layouts/layout-3.jpg') }}" class="img-thumbnail" alt="layout images">
-                    </div>
-                    <div class="form-check form-switch mb-3">
-                        <input class="form-check-input theme-choice" type="checkbox" id="rtl-mode-switch">
-                        <label class="form-check-label" for="rtl-mode-switch">RTL Mode</label>
-                    </div>
-
-                    <div class="mb-2">
-                        <img src="{{ asset('assets/images/layouts/layout-4.jpg') }}" class="img-thumbnail" alt="layout images">
-                    </div>
-                    <div class="form-check form-switch mb-5">
-                        <input class="form-check-input theme-choice" type="checkbox" id="dark-rtl-mode-switch">
-                        <label class="form-check-label" for="dark-rtl-mode-switch">Dark RTL Mode</label>
-                    </div>
-
-            
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input theme-choice" type="checkbox" id="light-mode-switch" checked>
+                    <label class="form-check-label" for="light-mode-switch">Light Mode</label>
                 </div>
 
-            </div> <!-- end slimscroll-menu-->
-        </div>
-        <!-- /Right-bar -->
+                <div class="mb-2">
+                    <img src="{{ asset('assets/images/layouts/layout-2.jpg') }}" class="img-thumbnail"
+                        alt="layout images">
+                </div>
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input theme-choice" type="checkbox" id="dark-mode-switch">
+                    <label class="form-check-label" for="dark-mode-switch">Dark Mode</label>
+                </div>
 
-        <!-- Right bar overlay-->
-        <div class="rightbar-overlay"></div>
+                <div class="mb-2">
+                    <img src="{{ asset('assets/images/layouts/layout-3.jpg') }}" class="img-thumbnail"
+                        alt="layout images">
+                </div>
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input theme-choice" type="checkbox" id="rtl-mode-switch">
+                    <label class="form-check-label" for="rtl-mode-switch">RTL Mode</label>
+                </div>
 
-        <!-- JAVASCRIPT -->
-        <script src="{{ asset('assets/libs/jquery/jquery.min.js') }}"></script>
-        <script src="{{ asset('assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-        <script src="{{ asset('assets/libs/metismenu/metisMenu.min.js') }}"></script>
-        <script src="{{ asset('assets/libs/simplebar/simplebar.min.js') }}"></script>
-        <script src="{{ asset('assets/libs/node-waves/waves.min.js') }}"></script>
-
-        <!-- apexcharts -->
-        <script src="{{ asset('assets/libs/apexcharts/apexcharts.min.js') }}"></script>
-
+                <div class="mb-2">
+                    <img src="{{ asset('assets/images/layouts/layout-4.jpg') }}" class="img-thumbnail"
+                        alt="layout images">
+                </div>
+                <div class="form-check form-switch mb-5">
+                    <input class="form-check-input theme-choice" type="checkbox" id="dark-rtl-mode-switch">
+                    <label class="form-check-label" for="dark-rtl-mode-switch">Dark RTL Mode</label>
+                </div>
 
 
-        <!-- App js -->
-        <script src="{{ asset('assets/js/app.js') }}"></script>
+            </div>
 
-        <!-- SweetAlert2 -->
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        
-        <script>
-            document.addEventListener('livewire:initialized', () => {
-                Livewire.on('delete-confirmation', (id) => {
-                    Swal.fire({
-                        title: 'Are you sure?',
-                        text: "You won't be able to revert this!",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#3085d6',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Yes, delete it!'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            Livewire.dispatch('deleteConfirmed', {id: id});
-                        }
-                    })
-                });
+        </div> <!-- end slimscroll-menu-->
+    </div>
+    <!-- /Right-bar -->
+
+    <!-- Right bar overlay-->
+    <div class="rightbar-overlay"></div>
+
+    <!-- JAVASCRIPT -->
+    <script src="{{ asset('assets/libs/jquery/jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('assets/libs/metismenu/metisMenu.min.js') }}"></script>
+    <script src="{{ asset('assets/libs/simplebar/simplebar.min.js') }}"></script>
+    <script src="{{ asset('assets/libs/node-waves/waves.min.js') }}"></script>
+
+    <!-- apexcharts -->
+    <script src="{{ asset('assets/libs/apexcharts/apexcharts.min.js') }}"></script>
+
+
+
+    <!-- App js -->
+    <script src="{{ asset('assets/js/app.js') }}"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.addEventListener('livewire:initialized', () => {
+            Livewire.on('delete-confirmation', (id) => {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Livewire.dispatch('deleteConfirmed', {
+                            id: id
+                        });
+                    }
+                })
             });
-        </script>
+        });
+    </script>
 
-        @stack('scripts')
-        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-            @csrf
-        </form>
-    </body>
+    @stack('scripts')
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+        @csrf
+    </form>
+</body>
+
 </html>
