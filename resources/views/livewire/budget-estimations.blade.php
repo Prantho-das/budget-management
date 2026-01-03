@@ -18,7 +18,7 @@
             {{ __('Please ensure you have an Active Fiscal Year and at least one Office created.') }}
         </div>
     @else
-        <div class="row ">
+        <div class="row d-none">
             <div class="col-xl-4 col-md-6">
                 <div class="common-card card shadow-sm border-0 mini-stat bg-primary">
                     <div class="card-body mini-stat-img">
@@ -238,7 +238,7 @@
                                 @endphp
 
                                 @foreach ($economicCodes as $code)
-                                    <tr class="{{ $code->parent_id==null ? 'parent-expense-code' : '' }}">
+                                    <tr class="{{ $code->parent_id == null ? 'parent-expense-code' : '' }}">
                                         <td>
                                             <span
                                                 class="badge  bg-{{ $code->parent_id ? 'secondary' : 'primary' }}-subtle text-{{ $code->parent_id ? 'secondary' : 'primary' }} p-2">
@@ -269,24 +269,24 @@
                                         <!-- Current demand input -->
                                         <td>
                                             <div class="input-group input-group-sm">
-                                            @if ($code->parent_id!=null)
-                                                
-                                            <input type="text" class="form-control form-control-sm text-end"
-                                                    wire:model.defer="demands.{{ $code->id }}" placeholder="0"
-                                                    {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
-                                            @endif   
+                                                @if ($code->parent_id != null)
+                                                    <input type="text"
+                                                        class="form-control form-control-sm text-end"
+                                                        wire:model.defer="demands.{{ $code->id }}"
+                                                        placeholder="0"
+                                                        {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
+                                                @endif
                                             </div>
                                         </td>
 
                                         <!-- Remarks -->
                                         <td>
-                                        @if ($code->parent_id!=null)
-                                                
-                                        <input type="text" class="form-control form-control-sm"
-                                            wire:model.defer="remarks.{{ $code->id }}"
-                                            placeholder="{{ __('Note...') }}"
-                                            {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
-                                                @endif   
+                                            @if ($code->parent_id != null)
+                                                <input type="text" class="form-control form-control-sm"
+                                                    wire:model.defer="remarks.{{ $code->id }}"
+                                                    placeholder="{{ __('Note...') }}"
+                                                    {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach

@@ -23,20 +23,45 @@ body {
 .unitoffice-entry-table {
     .card {
         .table-responsive {
+            // max-height: 500px;
+            // overflow-y: auto;
             table {
+                thead {
+                    transition: $transition-4-einout;
+                    -webkit-transition: $transition-4-einout;
+                    -moz-transition: $transition-4-einout;
+                    -ms-transition: $transition-4-einout;
+                    -o-transition: $transition-4-einout;
+                }
+                thead.sticky {
+                    position: sticky;
+                    top: 41px;
+                    z-index: 10;
+                }
                 .table-primary {
                     th {
                         background-color: #556ee6;
                         color: #fff;
                     }
                 }
-                th,
+
+                th {
+                    font-size: 14px;
+                    padding: 5px 5px;
+                    vertical-align: middle;
+                }
+
                 td {
                     font-size: 14px;
                     padding: 5px 5px;
                     vertical-align: middle;
                     span.badge {
                         width: 100%;
+                    }
+                    &:not(:last-child) {
+                        .form-control {
+                            max-width: 100px;
+                        }
                     }
                 }
                 tr.parent-expense-code {

@@ -12,19 +12,37 @@ body {
   font-size: 16px;
 }
 
+.unitoffice-entry-table .card .table-responsive table thead {
+  transition: all 0.4s ease-in-out;
+  -webkit-transition: all 0.4s ease-in-out;
+  -moz-transition: all 0.4s ease-in-out;
+  -ms-transition: all 0.4s ease-in-out;
+  -o-transition: all 0.4s ease-in-out;
+}
+.unitoffice-entry-table .card .table-responsive table thead.sticky {
+  position: sticky;
+  top: 41px;
+  z-index: 10;
+}
 .unitoffice-entry-table .card .table-responsive table .table-primary th {
   background-color: #556ee6;
   color: #fff;
 }
-.unitoffice-entry-table .card .table-responsive table th,
+.unitoffice-entry-table .card .table-responsive table th {
+  font-size: 14px;
+  padding: 5px 5px;
+  vertical-align: middle;
+}
 .unitoffice-entry-table .card .table-responsive table td {
   font-size: 14px;
   padding: 5px 5px;
   vertical-align: middle;
 }
-.unitoffice-entry-table .card .table-responsive table th span.badge,
 .unitoffice-entry-table .card .table-responsive table td span.badge {
   width: 100%;
+}
+.unitoffice-entry-table .card .table-responsive table td:not(:last-child) .form-control {
+  max-width: 100px;
 }
 .unitoffice-entry-table .card .table-responsive table tr.parent-expense-code td {
   font-weight: 600;

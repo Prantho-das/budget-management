@@ -25,12 +25,8 @@
 
 <body data-sidebar="dark">
 
-    <!-- <body data-layout="horizontal" data-topbar="dark"> -->
-
     <!-- Begin page -->
     <div id="layout-wrapper">
-
-
         <header id="page-topbar">
             <div class="navbar-header">
                 <div class="d-flex">
@@ -94,7 +90,7 @@
                                 {{-- <img src="{{ asset('assets/images/flags/us.jpg') }}" alt="user-image" class="me-1" height="12">  --}}
                                 <span class="align-middle">{{ __('English') }}</span>
                             </a>
-                            <!-- item-->
+
                             <a href="{{ route('lang.switch', 'bn') }}" class="dropdown-item notify-item language"
                                 data-lang="bn">
                                 <span class="align-middle">{{ __('Bangla') }}</span>
@@ -126,9 +122,6 @@
 
                         </div>
                     </div>
-
-
-
                 </div>
             </div>
         </header>
@@ -142,9 +135,6 @@
                 <div id="sidebar-menu">
                     <!-- Left Menu Start -->
                     <ul class="metismenu list-unstyled" id="side-menu">
-
-
-
 
                         <li>
                             <a href="{{ route('dashboard') }}" wire:navigate class="waves-effect">
@@ -342,8 +332,6 @@
             </div>
             <!-- end modal -->
 
-
-
             <footer class="footer">
                 <div class="container-fluid">
                     <div class="row">
@@ -352,7 +340,7 @@
                         </div>
                         <div class="col-sm-6">
                             <div class="text-sm-end d-none d-sm-block">
-                                {{ get_setting('footer_text', 'Design & Develop by Themesbrand') }}
+                                {{ get_setting('footer_text', 'Design & Develop by NBT') }}
                             </div>
                         </div>
                     </div>
@@ -442,31 +430,12 @@
 
     <!-- App js -->
     <script src="{{ asset('assets/js/app.js') }}"></script>
+    <script src="{{ asset('assets/js/custom.js') }}"></script>
 
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <script>
-        document.addEventListener('livewire:initialized', () => {
-            Livewire.on('delete-confirmation', (id) => {
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: "You won't be able to revert this!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, delete it!'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        Livewire.dispatch('deleteConfirmed', {
-                            id: id
-                        });
-                    }
-                })
-            });
-        });
-    </script>
+
 
     @stack('scripts')
     <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
