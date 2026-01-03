@@ -49,6 +49,14 @@ body {
                     font-size: 14px;
                     padding: 5px 5px;
                     vertical-align: middle;
+                    &:nth-child(4) {
+                        width: 150px;
+                    }
+                    .form-control {
+                        font-size: 14px;
+                        height: 30px;
+                        padding: 4px 8px;
+                    }
                 }
 
                 td {
@@ -57,11 +65,12 @@ body {
                     vertical-align: middle;
                     span.badge {
                         width: 100%;
+                        font-size: 14px;
                     }
-                    &:not(:last-child) {
-                        .form-control {
-                            max-width: 100px;
-                        }
+                    .form-control {
+                        font-size: 14px;
+                        height: 30px;
+                        padding: 4px 8px;
                     }
                 }
                 tr.parent-expense-code {
@@ -70,6 +79,7 @@ body {
                         background-color: #dde2fa;
                         span.badge {
                             font-weight: 600;
+
                             color: rgba(
                                 var(--bs-dark-rgb),
                                 var(--bs-text-opacity)
@@ -181,5 +191,11 @@ body {
                 color: #34c38f;
             }
         }
+    }
+}
+
+.card {
+    .card-body {
+        padding: 10px;
     }
 }

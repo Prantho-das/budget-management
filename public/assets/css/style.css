@@ -33,6 +33,14 @@ body {
   padding: 5px 5px;
   vertical-align: middle;
 }
+.unitoffice-entry-table .card .table-responsive table th:nth-child(4) {
+  width: 150px;
+}
+.unitoffice-entry-table .card .table-responsive table th .form-control {
+  font-size: 14px;
+  height: 30px;
+  padding: 4px 8px;
+}
 .unitoffice-entry-table .card .table-responsive table td {
   font-size: 14px;
   padding: 5px 5px;
@@ -40,9 +48,12 @@ body {
 }
 .unitoffice-entry-table .card .table-responsive table td span.badge {
   width: 100%;
+  font-size: 14px;
 }
-.unitoffice-entry-table .card .table-responsive table td:not(:last-child) .form-control {
-  max-width: 100px;
+.unitoffice-entry-table .card .table-responsive table td .form-control {
+  font-size: 14px;
+  height: 30px;
+  padding: 4px 8px;
 }
 .unitoffice-entry-table .card .table-responsive table tr.parent-expense-code td {
   font-weight: 600;
@@ -139,4 +150,8 @@ body {
 .workflow-stepper .workflow-step.completed .step-badge {
   background: rgba(52, 195, 143, 0.1);
   color: #34c38f;
+}
+
+.card .card-body {
+  padding: 10px;
 }/*# sourceMappingURL=style.css.map */
