@@ -68,7 +68,7 @@
         </div>
 
         <!-- Selection Controls -->
-        <div class="card shadow-sm border-0 mb-4 ">
+        <div class="card shadow-sm border-0 mb-4 floating-budget-card sticky">
             <div class="card-body">
                 <div class="row align-items-end">
                     <div class="col-md-3 mb-3 mb-md-0 d-none">
@@ -100,12 +100,12 @@
                             </button>
                         </div>
                     </div>
-                    <div class="col-md-5 text-md-end">
+                    <div class="col-md-7"></div>
+                    <div class="col-md-5 text-center text-md-end">
                         @if ($status === 'draft' || $status === 'rejected')
                             <button wire:click="saveDraft"
                                 class="btn btn-outline-secondary px-4 waves-effect">{{ __('Save Draft') }}</button>
-                            <button type="button" 
-                                onclick="confirmSubmission()"
+                            <button type="button" onclick="confirmSubmission()"
                                 class="btn btn-primary px-4 ms-2 waves-effect waves-light">{{ __('Submit for Approval') }}</button>
                         @else
                             <div class="text-success fw-bold d-inline-flex align-items-center">
@@ -201,83 +201,110 @@
             </div>
         @endif
 
-        
+
         @if ($status == 'draft' || $status == 'rejected')
-        <div class="unitoffice-entry-table">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered align-middle custom-budget-table">
-                            <thead>
-                                <tr class="table-primary text-center">
-                                    <th rowspan="2">{{ __('Economic Code') }}</th>
-                                    <th rowspan="2">{{ __('Description') }}</th>
-                                    <th colspan="3">{{ __('Original') }}</th>
-                                    <th rowspan="2">{{ __('Demand') }}<br>{{ current_fiscal_year() }}</th>
-                                    <th rowspan="2">{{ __('Remarks') }}</th>
-                                </tr>
-                                </tr>
-                                <tr class="table-primary text-center">
+            <div class="unitoffice-entry-table">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle custom-budget-table">
+                                <thead>
+                                    <tr class="table-primary text-center">
+                                        <th rowspan="2">{{ __('Economic Code') }}</th>
+                                        <th rowspan="2">{{ __('Description') }}</th>
+                                        <th colspan="3">{{ __('Original') }}</th>
+                                        <th rowspan="2">{{ __('Demand') }}<br>{{ current_fiscal_year() }}</th>
+                                        <th rowspan="2">{{ __('Remarks') }}</th>
+                                    </tr>
+                                    </tr>
+                                    <tr class="table-primary text-center">
+                                        @php
+                                            $prevYears = \App\Models\FiscalYear::where(
+                                                'end_date',
+                                                '<',
+                                                $currentFiscalYear->start_date,
+                                            )
+                                                ->orderBy('end_date', 'desc')
+                                                ->take(3)
+                                                ->get();
+                                        @endphp
+                                        @foreach ($prevYears as $py)
+                                            <th>{{ $py->name }}</th>
+                                        @endforeach
+                                    </tr>
+                                </thead>
+
+                                <tbody>
                                     @php
-                                        $prevYears = \App\Models\FiscalYear::where(
-                                            'end_date',
-                                            '<',
-                                            $currentFiscalYear->start_date,
-                                        )
-                                            ->orderBy('end_date', 'desc')
-                                            ->take(3)
-                                            ->get();
+                                        $estMap = \App\Models\BudgetEstimation::where('batch_id', $batch_id)
+                                            ->get()
+                                            ->keyBy('economic_code_id');
                                     @endphp
-                                    @foreach ($prevYears as $py)
-                                        <th>{{ $py->name }}</th>
-                                    @endforeach
-                                </tr>
-                            </thead>
 
-                            <tbody>
-                                @php
-                                    $estMap = \App\Models\BudgetEstimation::where('batch_id', $batch_id)
-                                        ->get()
-                                        ->keyBy('economic_code_id');
-                                @endphp
-
-                                @foreach ($economicCodes as $code)
-                                    <tr class="{{ $code->parent_id == null ? 'parent-expense-code' : '' }}">
-                                        <td>
-                                            <span
-                                                class="badge  bg-{{ $code->parent_id ? 'secondary' : 'primary' }}-subtle text-{{ $code->parent_id ? 'secondary' : 'primary' }} p-2">
-                                                {{ $code->code }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="text-dark">{{ $code->name }}</div>
-                                            @if ($code->description)
-                                                <small class="text-muted d-block text-truncate"
-                                                    style="max-width: 200px;">
-                                                    {{ $code->description }}
-                                                </small>
-                                            @endif
-                                        </td>
-
-                                        <!-- Previous 3 years actual expenditure -->
-                                        @for ($i = 0; $i < 3; $i++)
-                                            <td class="text-end">
-                                                @if (isset($previousDemands[$code->id]["year_{$i}"]))
-                                                    {{ number_format($previousDemands[$code->id]["year_{$i}"]['amount'], 0) }}
-                                                @else
-                                                    <span class="opacity-25">-</span>
+                                    @foreach ($economicCodes as $code)
+                                        <tr class="{{ $code->parent_id == null ? 'parent-expense-code' : '' }}">
+                                            <td>
+                                                <span
+                                                    class="badge  bg-{{ $code->parent_id ? 'secondary' : 'primary' }}-subtle text-{{ $code->parent_id ? 'secondary' : 'primary' }} p-2">
+                                                    {{ $code->code }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="text-dark">{{ $code->name }}</div>
+                                                @if ($code->description)
+                                                    <small class="text-muted d-block text-truncate"
+                                                        style="max-width: 200px;">
+                                                        {{ $code->description }}
+                                                    </small>
                                                 @endif
                                             </td>
-                                        @endfor
 
-                                        <!-- Current demand input -->
-                                        <td>
-                                            <div class="input-group input-group-sm">
+                                            <!-- Previous 3 years actual expenditure -->
+                                            @for ($i = 0; $i < 3; $i++)
+                                                <td class="text-end">
+                                                    @if (isset($previousDemands[$code->id]["year_{$i}"]))
+                                                        {{ number_format($previousDemands[$code->id]["year_{$i}"]['amount'], 0) }}
+                                                    @else
+                                                        <span class="opacity-25">-</span>
+                                                    @endif
+                                                </td>
+                                            @endfor
+
+                                            <!-- Current demand input -->
+                                            <td>
+                                                <div class="input-group input-group-sm">
+                                                    @if ($code->parent_id != null)
+                                                        <input type="text"
+                                                            class="form-control form-control-sm text-end"
+                                                            wire:model.defer="demands.{{ $code->id }}"
+                                                            placeholder="0"
+                                                            {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
+
+                                                        @if (($status === 'draft' || $status === 'rejected') && isset($previousDemands[$code->id]['year_0']))
+                                                            @php
+                                                                $suggested = round(
+                                                                    $previousDemands[$code->id]['year_0']['amount'] *
+                                                                        1.1,
+                                                                );
+                                                            @endphp
+                                                            <button class="btn btn-soft-info btn-sm px-2 py-0 border-0"
+                                                                type="button"
+                                                                wire:click="applySuggestion({{ $code->id }})"
+                                                                title="{{ __('Click to apply 10% increase') }}">
+                                                                <small
+                                                                    class="fw-bold">{{ __('Suggest: ') . number_format($suggested) }}</small>
+                                                            </button>
+                                                        @endif
+                                                    @endif
+                                                </div>
+                                            </td>
+
+                                            <!-- Remarks -->
+                                            <td>
                                                 @if ($code->parent_id != null)
-                                                    <input type="text"
-                                                        class="form-control form-control-sm text-end"
-                                                        wire:model.defer="demands.{{ $code->id }}"
-                                                        placeholder="0"
+                                                    <input type="text" class="form-control form-control-sm"
+                                                        wire:model.defer="remarks.{{ $code->id }}"
+                                                        placeholder="{{ __('Note...') }}"
                                                         {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
                                                     
                                                     @if (($status === 'draft' || $status === 'rejected') && isset($previousDemands[$code->id]['year_0']))
@@ -292,37 +319,27 @@
                                                         </button>
                                                     @endif
                                                 @endif
-                                            </div>
-                                        </td>
-
-                                        <!-- Remarks -->
-                                        <td>
-                                            @if ($code->parent_id != null)
-                                                <input type="text" class="form-control form-control-sm"
-                                                    wire:model.defer="remarks.{{ $code->id }}"
-                                                    placeholder="{{ __('Note...') }}"
-                                                    {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>          
-         @else
-         <div class="card">
-            <div class="card-body">
-            <div class="text-warning fw-bold d-inline-flex align-items-center justify-content-center text-center">
-              <i class="bx bxs-check-circle font-size-24 me-2 "></i>
-              <span>{{ __('Previous demand already submitted. Now pending for approval.') }}</span>
-         </div>
+        @else
+            <div class="card">
+                <div class="card-body">
+                    <div
+                        class="text-warning fw-bold d-inline-flex align-items-center justify-content-center text-center">
+                        <i class="bx bxs-check-circle font-size-24 me-2 "></i>
+                        <span>{{ __('Previous demand already submitted. Now pending for approval.') }}</span>
+                    </div>
+                </div>
             </div>
-         </div>
-        
-         @endif
+
+        @endif
 
 
 </div>
@@ -332,22 +349,22 @@
 @endif
 </div>
 @push('scripts')
-<script>
-    function confirmSubmission() {
-        Swal.fire({
-            title: "{{ __('Are you sure?') }}",
-            text: "{{ __('You want to submit this budget demand for approval?') }}",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#34c38f',
-            cancelButtonColor: '#f46a6a',
-            confirmButtonText: "{{ __('Yes, submit it!') }}",
-            cancelButtonText: "{{ __('Cancel') }}"
-        }).then((result) => {
-            if (result.isConfirmed) {
-                @this.call('submitForApproval');
-            }
-        })
-    }
-</script>
+    <script>
+        function confirmSubmission() {
+            Swal.fire({
+                title: "{{ __('Are you sure?') }}",
+                text: "{{ __('You want to submit this budget demand for approval?') }}",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#34c38f',
+                cancelButtonColor: '#f46a6a',
+                confirmButtonText: "{{ __('Yes, submit it!') }}",
+                cancelButtonText: "{{ __('Cancel') }}"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.call('submitForApproval');
+                }
+            })
+        }
+    </script>
 @endpush
