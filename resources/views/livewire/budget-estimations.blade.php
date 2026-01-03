@@ -304,13 +304,7 @@
                                                                         1.1,
                                                                 );
                                                             @endphp
-                                                            <button class="btn btn-soft-info btn-sm px-2 py-0 border-0"
-                                                                type="button"
-                                                                wire:click="applySuggestion({{ $code->id }})"
-                                                                title="{{ __('Click to apply 10% increase') }}">
-                                                                <small
-                                                                    class="fw-bold">{{ __('Suggest: ') . number_format($suggested) }}</small>
-                                                            </button>
+                                                           
                                                         @endif
                                                     @endif
                                                 </div>
