@@ -269,18 +269,24 @@
                                         <!-- Current demand input -->
                                         <td>
                                             <div class="input-group input-group-sm">
-                                                <input type="text" class="form-control form-control-sm text-end"
+                                            @if ($code->parent_id!=null)
+                                                
+                                            <input type="text" class="form-control form-control-sm text-end"
                                                     wire:model.defer="demands.{{ $code->id }}" placeholder="0"
                                                     {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
+                                            @endif   
                                             </div>
                                         </td>
 
                                         <!-- Remarks -->
                                         <td>
-                                            <input type="text" class="form-control form-control-sm"
-                                                wire:model.defer="remarks.{{ $code->id }}"
-                                                placeholder="{{ __('Note...') }}"
-                                                {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
+                                        @if ($code->parent_id!=null)
+                                                
+                                        <input type="text" class="form-control form-control-sm"
+                                            wire:model.defer="remarks.{{ $code->id }}"
+                                            placeholder="{{ __('Note...') }}"
+                                            {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
+                                                @endif   
                                         </td>
                                     </tr>
                                 @endforeach
