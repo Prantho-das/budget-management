@@ -336,7 +336,7 @@
                         @foreach ($economicCodes as $code)
                             <tr>
                                 <td class="text-center">
-                                    <span class="badge bg-{{ $code->parent_id ? 'secondary parent-expence-code' : 'primary' }}-subtle text-{{ $code->parent_id ? 'secondary' : 'primary' }} p-2">
+                                    <span class="{{$code->parent_id ? 'parent-expense-code' : ''}}badge bg-{{ $code->parent_id ? 'secondary' : 'primary' }}-subtle text-{{ $code->parent_id ? 'secondary' : 'primary' }} p-2">
                                         {{ $code->code }}
                                     </span>
                                 </td>
