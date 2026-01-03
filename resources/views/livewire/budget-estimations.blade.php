@@ -304,7 +304,7 @@
             <div class="card-body">
             <div class="text-success fw-bold d-inline-flex align-items-center justify-content-center text-center">
               <i class="bx bxs-check-circle font-size-24 me-2"></i>
-              <span>{{ __('Successfully Submitted') }}</span>
+              <span>{{ __('Successfully Submitted Waiting for Approval') }}</span>
          </div>
             </div>
          </div>
