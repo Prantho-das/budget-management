@@ -1,0 +1,70 @@
+SYSTEM SETUP DATA - BUDGET MANAGEMENT SYSTEM
+================================================
+
+1. WORKFLOW STEPS (Order of Business)
+-------------------------------------
+Step 1: Budget Entry (Unit Office)
+- Level: Origin
+- Permission: approve-budget
+- Purpose: Initial entry and submission by unit staff.
+
+Step 2: Budget Approval (Unit Office)
+- Level: Parent
+- Permission: approve-budget
+- Purpose: Regional/Sub-HQ office review.
+
+Step 3: Assistant Budget Officer (HQ)
+- Level: HQ
+- Permission: release-budget
+- Purpose: First level HQ audit.
+
+Step 4: Budget Officer (HQ)
+- Level: HQ
+- Permission: release-budget
+- Purpose: Final approval and fund release.
+
+
+2. ROLES & PERMISSIONS MAPPING
+------------------------------
+Role: Super Admin
+- Permissions: ALL Permissions (Users, Offices, Setup, Budgeting, Settings)
+
+Role: Assistant Budget Officer (HQ)
+- Permissions: view-budget-estimations, release-budget, reject-budget, view-reports
+
+Role: Budget Officer (HQ)
+- Permissions: view-budget-estimations, release-budget, reject-budget, view-reports
+
+Role: Budget Approval (Unit Office)
+- Permissions: view-budget-estimations, approve-budget, reject-budget, view-reports
+
+Role: Budget Entry (Unit Office)
+- Permissions: view-budget-estimations, create-budget-estimations, edit-budget-estimations, submit-budget-estimations
+
+
+3. USER LIST
+------------
+Name: HQ Admin
+Email: admin@budget.com
+Office: প্রধান কার্যালয় (HQ)
+Role: Super Admin
+
+Name: Rony Ahmed
+Email: uttoraentry@budget.com
+Office: বিভাগীয় পাসপোর্ট ও ভিসা অফিস, ঢাকা
+Role: Budget Entry (Unit Office)
+
+Name: RPO APP
+Email: upazila2@budget.com
+Office: বিভাগীয় পাসপোর্ট ও ভিসা অফিস, ঢাকা
+Role: Budget Approval (Unit Office)
+
+Name: ABO
+Email: abo@budget.com
+Office: প্রধান কার্যালয় (HQ)
+Role: Assistant Budget Officer (HQ)
+
+Name: Md. Masud Rana
+Email: bo@budget.com
+Office: প্রধান কার্যালয় (HQ)
+Role: Budget Officer (HQ)

@@ -23,21 +23,15 @@ class BudgetStatus extends Component
     {
         abort_if(auth()->user()->cannot('view-budget-estimations'), 403);
 
-        $fiscalYear = FiscalYear::where('status', true)->latest()->first();
-        $this->fiscal_year_id = $fiscalYear ? $fiscalYear->id : null;
+        $this->fiscal_year_id = get_active_fiscal_year_id();
         $this->rpo_unit_id = Auth::user()->rpo_unit_id;
-        $this->budget_type_id = BudgetType::where('status', true)->orderBy('order_priority')->first()?->id;
+        $budgetType = BudgetType::where('status', true)->orderBy('order_priority')->first();
+        $this->budget_type_id = $budgetType ? $budgetType->id : null;
     }
 
-    public function viewHistory($economicCodeId)
+    public function viewHistory($estimationId)
     {
-        $estimation = BudgetEstimation::where([
-            'fiscal_year_id' => $this->fiscal_year_id,
-            'rpo_unit_id' => $this->rpo_unit_id,
-            'budget_type_id' => $this->budget_type_id,
-            'economic_code_id' => $economicCodeId
-        ])->first();
-
+        $estimation = BudgetEstimation::find($estimationId);
         $this->selectedLog = $estimation ? ($estimation->approval_log ?? []) : [];
         $this->showLogModal = true;
     }
@@ -54,10 +48,13 @@ class BudgetStatus extends Component
             $this->rpo_unit_id = auth()->user()->rpo_unit_id;
         }
 
-        $allocations = BudgetAllocation::with(['economicCode', 'budgetType'])
+        $estimations = BudgetEstimation::with(['economicCode', 'budgetType', 'office', 'targetOffice', 'workflowStep'])
             ->where('fiscal_year_id', $this->fiscal_year_id)
-            ->where('rpo_unit_id', $this->rpo_unit_id)
             ->where('budget_type_id', $this->budget_type_id)
+            ->when($this->rpo_unit_id, function($query) {
+                return $query->where('rpo_unit_id', $this->rpo_unit_id);
+            })
+            ->orderBy('created_at', 'desc')
             ->get();
 
         $fiscalYears = FiscalYear::orderBy('name', 'desc')->get();
@@ -65,7 +62,7 @@ class BudgetStatus extends Component
         $offices = \App\Models\RpoUnit::all();
 
         return view('livewire.budget-status', [
-            'allocations' => $allocations,
+            'estimations' => $estimations,
             'fiscalYears' => $fiscalYears,
             'budgetTypes' => $budgetTypes,
             'offices' => $offices

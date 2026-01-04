@@ -26,9 +26,8 @@ class BudgetApprovals extends Component
 
     public function mount()
     {
-        abort_if(auth()->user()->cannot('view-budget-estimations'), 403);
-        $fiscalYear = FiscalYear::where('status', true)->latest()->first();
-        $this->fiscal_year_id = $fiscalYear ? $fiscalYear->id : null;
+        abort_if(auth()->user()->cannot('approve-budget') && auth()->user()->cannot('release-budget') && auth()->user()->cannot('reject-budget'), 403);
+        $this->fiscal_year_id = get_active_fiscal_year_id();
         $this->loadChildSubmissions();
     }
 
@@ -52,7 +51,7 @@ class BudgetApprovals extends Component
             })
             ->select('rpo_unit_id', 'budget_type_id', 'status', 'current_stage', 'workflow_step_id', 'batch_id', DB::raw('SUM(amount_demand) as total_demand'), DB::raw('MIN(created_at) as created_at'))
             ->groupBy('rpo_unit_id', 'budget_type_id', 'status', 'current_stage', 'workflow_step_id', 'batch_id')
-            ->with(['office', 'workflowStep'])
+            ->with(['office', 'workflowStep', 'budgetType'])
             ->get();
 
         $this->childOffices = [];
@@ -62,6 +61,7 @@ class BudgetApprovals extends Component
                 'name' => $sub->office->name,
                 'code' => $sub->office->code,
                 'budget_type_id' => $sub->budget_type_id,
+                'budget_type_name' => $sub->budgetType->name ?? 'N/A',
                 'total_demand' => $sub->total_demand,
                 'status' => $sub->status,
                 'current_stage' => $sub->workflowStep ? $sub->workflowStep->name : $sub->current_stage,
@@ -197,7 +197,7 @@ class BudgetApprovals extends Component
 
     public function render()
     {
-        abort_if(auth()->user()->cannot('view-budget-estimations'), 403);
+        abort_if(auth()->user()->cannot('approve-budget') && auth()->user()->cannot('release-budget') && auth()->user()->cannot('reject-budget'), 403);
         return view('livewire.budget-approvals', [
             'office' => $this->selected_office_id ? RpoUnit::find($this->selected_office_id) : null
         ])->extends('layouts.skot')->section('content');

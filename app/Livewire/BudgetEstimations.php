@@ -24,16 +24,41 @@ class BudgetEstimations extends Component
   public $current_stage = 'Draft';
   public $batch_id;
   public $allBatches = [];
+  public $is_pending = false;
+  public $is_released = false;
+  public $has_existing_batch = false;
 
   public function mount()
   {
     abort_if(auth()->user()->cannot('view-budget-estimations'), 403);
-    $fiscalYear = FiscalYear::where('status', true)->latest()->first();
-    $this->fiscal_year_id = $fiscalYear ? $fiscalYear->id : null;
+    $this->fiscal_year_id = get_active_fiscal_year_id();
 
     $this->rpo_unit_id = Auth::user()->rpo_unit_id;
 
-    $this->budget_type_id = BudgetType::where('status', true)->orderBy('order_priority')->first()?->id;
+    // Determine default budget type: Original if first time, otherwise next active type
+    $activeTypes = BudgetType::where('status', true)->orderBy('order_priority')->get();
+    $defaultTypeId = null;
+
+    foreach ($activeTypes as $type) {
+        $defaultTypeId = $type->id;
+
+        $isReleased = BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id)
+            ->where('rpo_unit_id', $this->rpo_unit_id)
+            ->where('budget_type_id', $type->id)
+            ->where('current_stage', 'Released')
+            ->exists();
+        
+        if (!$isReleased) {
+            break;
+        }
+    }
+
+    // Fallback if all are submitted or none found
+    if (!$defaultTypeId && $activeTypes->count() > 0) {
+        $defaultTypeId = $activeTypes->first()->id;
+    }
+
+    $this->budget_type_id = $defaultTypeId;
 
     $this->loadDemands();
   }
@@ -51,6 +76,10 @@ class BudgetEstimations extends Component
 
   public function startNewDemand()
   {
+    if ($this->has_existing_batch) {
+        session()->flash('error', __('You cannot start a new demand while a batch already exists for this budget type.'));
+        return;
+    }
     $this->batch_id = (string) \Illuminate\Support\Str::uuid();
     $this->demands = [];
     $this->remarks = [];
@@ -81,6 +110,21 @@ class BudgetEstimations extends Component
       }
     }
 
+    // Check for existing batches and statuses
+    $this->has_existing_batch = !empty($this->allBatches);
+
+    $this->is_pending = BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id)
+        ->where('rpo_unit_id', $this->rpo_unit_id)
+        ->where('budget_type_id', $this->budget_type_id)
+        ->where('status', 'submitted')
+        ->exists();
+
+    $this->is_released = BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id)
+        ->where('rpo_unit_id', $this->rpo_unit_id)
+        ->where('budget_type_id', $this->budget_type_id)
+        ->where('current_stage', 'Released')
+        ->exists();
+
     $currentFiscalYear = FiscalYear::find($this->fiscal_year_id);
 
     // Current Year Demands for selected batch
@@ -98,7 +142,9 @@ class BudgetEstimations extends Component
     $previousYears = FiscalYear::where('end_date', '<', $currentFiscalYear->start_date)
       ->orderBy('end_date', 'desc')
       ->take(3)
-      ->get();
+      ->get()
+      ->reverse()
+      ->values();
 
     foreach ($previousYears as $index => $prevYear) {
       $expenses = \App\Models\Expense::where('fiscal_year_id', $prevYear->id)
@@ -118,12 +164,43 @@ class BudgetEstimations extends Component
       }
     }
 
+    // Auto-populate for new drafts (10% increase from previous year)
+    if ($estimations->isEmpty()) {
+      $latestIndex = count($previousYears) - 1;
+      foreach ($this->previousDemands as $codeId => $years) {
+        if ($latestIndex >= 0 && isset($years["year_{$latestIndex}"]['amount'])) {
+          $this->demands[$codeId] = round($years["year_{$latestIndex}"]['amount'] * 1.10);
+        }
+      }
+    }
+
     if ($estimations->isNotEmpty()) {
       $this->status = $estimations->first()->status;
       $this->current_stage = $estimations->first()->current_stage;
     } else {
       $this->status = 'draft';
       $this->current_stage = 'Draft';
+    }
+  }
+
+  public function applySuggestion($codeId)
+  {
+    $currentFiscalYear = FiscalYear::find($this->fiscal_year_id);
+    $prevYears = FiscalYear::where('end_date', '<', $currentFiscalYear->start_date)
+        ->orderBy('end_date', 'desc')
+        ->take(3)
+        ->get();
+    
+    $latestIndex = count($prevYears) - 1; 
+    // We reverse earlier in logic, but internal index is stable if we use the right key.
+    // In loadDemands we use reverse()->values(), so year_2 is latest.
+    
+    $latestYearKey = "year_" . (count($prevYears) - 1);
+
+    if (isset($this->previousDemands[$codeId][$latestYearKey]['amount'])) {
+      $baseline = $this->previousDemands[$codeId][$latestYearKey]['amount'];
+      $suggested = round($baseline * 1.10);
+      $this->demands[$codeId] = $suggested;
     }
   }
 

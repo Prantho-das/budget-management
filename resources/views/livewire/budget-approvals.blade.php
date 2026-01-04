@@ -46,7 +46,7 @@
                                         @endphp
                                         <tr>
                                             <td>{{ $officeData['name'] }} <br><small class="text-muted">{{ $officeData['code'] }}</small></td>
-                                            <td><span class="badge badge-soft-info">{{ $officeData['budget_type_id'] }}</span></td>
+                                            <td><span class="badge badge-soft-info">{{ $officeData['budget_type_name'] }}</span></td>
                                             <td><strong>৳ {{ number_format($officeData['total_demand'], 2) }}</strong></td>
                                             <td><small class="text-muted">{{ date('d M Y, h:i A', strtotime($officeData['created_at'])) }}</small></td>
                                             <td>

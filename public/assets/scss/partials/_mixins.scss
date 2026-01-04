@@ -1,0 +1,53 @@
+@mixin zeromargin-zeropadding {
+  margin: 0;
+  padding: 0;
+}
+@mixin no-radius {
+  border-radius: 0;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  -ms-border-radius: 0;
+  -o-border-radius: 0;
+}
+
+@mixin trans-y-center {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  -webkit-transform: translateY(-50%);
+  -moz-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  -o-transform: translateY(-50%);
+}
+
+@mixin trans-x-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  -webkit-transform: translateX(-50%);
+  -moz-transform: translateX(-50%);
+  -ms-transform: translateX(-50%);
+  -o-transform: translateX(-50%);
+}
+
+@mixin circle-radius {
+  border-radius: 50%;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  -ms-border-radius: 50%;
+  -o-border-radius: 50%;
+}
+@mixin transistion-four {
+  transition: $transition-4-einout;
+  -webkit-transition: $transition-4-einout;
+  -moz-transition: $transition-4-einout;
+  -ms-transition: $transition-4-einout;
+  -o-transition: $transition-4-einout;
+}
+@mixin transistion-nine {
+  transition: $transition-9-einout;
+  -webkit-transition: $transition-9-einout;
+  -moz-transition: $transition-9-einout;
+  -ms-transition: $transition-9-einout;
+  -o-transition: $transition-9-einout;
+}
