@@ -300,3 +300,90 @@ body {
         }
     }
 }
+
+.office-wise-budget-table {
+    .card {
+        .table-title-box {
+            .title-box-inner {
+                width: 500px;
+                margin: 0px auto;
+                text-align: center;
+                margin-bottom: 10px;
+                .title {
+                    font-size: 14px;
+                    font-weight: bold;
+                }
+                .ministry {
+                    font-size: 14px;
+                    font-weight: bold;
+                    span {
+                        display: inline-block;
+                        min-width: 150px;
+                    }
+                }
+            }
+        }
+        .table-responsive {
+            table {
+                thead {
+                    tr {
+                        &:nth-child(1) {
+                        }
+                        &:nth-child(2) {
+                            th {
+                                // top: 52px;
+                                top: 37px;
+                            }
+                        }
+                        &:nth-child(3) {
+                            th {
+                                // top: 106px;
+                                top: 71px;
+                            }
+                        }
+                    }
+                    th {
+                        text-align: center !important;
+                        font-size: 12px !important;
+                        line-height: 1 !important;
+                    }
+                }
+                tbody {
+                    tr {
+                        td {
+                            font-size: 12px !important;
+                            line-height: 1 !important;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+.form-group {
+    .form-label {
+        font-size: 14px;
+        font-weight: 600;
+        text-transform: capitalize;
+        line-height: 1;
+        margin-bottom: 5px;
+    }
+    .form-control {
+        font-size: 14px;
+        @include no-radius;
+        padding: 5px 10px;
+        &:focus {
+            box-shadow: none;
+            outline: none;
+        }
+    }
+    .form-select {
+        font-size: 14px;
+        padding: 5px 10px;
+        @include no-radius;
+        &:focus {
+            box-shadow: none;
+            outline: none;
+        }
+    }
+}

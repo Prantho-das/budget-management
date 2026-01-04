@@ -230,4 +230,72 @@ body {
   background-color: #f46a6a;
   border-color: #f46a6a;
   color: #fff;
+}
+
+.office-wise-budget-table .card .table-title-box .title-box-inner {
+  width: 500px;
+  margin: 0px auto;
+  text-align: center;
+  margin-bottom: 10px;
+}
+.office-wise-budget-table .card .table-title-box .title-box-inner .title {
+  font-size: 14px;
+  font-weight: bold;
+}
+.office-wise-budget-table .card .table-title-box .title-box-inner .ministry {
+  font-size: 14px;
+  font-weight: bold;
+}
+.office-wise-budget-table .card .table-title-box .title-box-inner .ministry span {
+  display: inline-block;
+  min-width: 150px;
+}
+.office-wise-budget-table .card .table-responsive table thead tr:nth-child(2) th {
+  top: 37px;
+}
+.office-wise-budget-table .card .table-responsive table thead tr:nth-child(3) th {
+  top: 71px;
+}
+.office-wise-budget-table .card .table-responsive table thead th {
+  text-align: center !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+}
+.office-wise-budget-table .card .table-responsive table tbody tr td {
+  font-size: 12px !important;
+  line-height: 1 !important;
+}
+
+.form-group .form-label {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: capitalize;
+  line-height: 1;
+  margin-bottom: 5px;
+}
+.form-group .form-control {
+  font-size: 14px;
+  border-radius: 0;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  -ms-border-radius: 0;
+  -o-border-radius: 0;
+  padding: 5px 10px;
+}
+.form-group .form-control:focus {
+  box-shadow: none;
+  outline: none;
+}
+.form-group .form-select {
+  font-size: 14px;
+  padding: 5px 10px;
+  border-radius: 0;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  -ms-border-radius: 0;
+  -o-border-radius: 0;
+}
+.form-group .form-select:focus {
+  box-shadow: none;
+  outline: none;
 }/*# sourceMappingURL=style.css.map */
