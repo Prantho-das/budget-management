@@ -49,7 +49,11 @@ class BudgetApprovals extends Component
                 })
                     ->orWhereNull('workflow_step_id'); // Fallback for demands without a step (e.g. pre-existing or auto-release)
             })
-            ->select('rpo_unit_id', 'budget_type_id', 'status', 'current_stage', 'workflow_step_id', 'batch_id', DB::raw('SUM(amount_demand) as total_demand'), DB::raw('MIN(created_at) as created_at'))
+            ->select('rpo_unit_id', 'budget_type_id', 'status', 'current_stage', 'workflow_step_id', 'batch_id', 
+                DB::raw('SUM(amount_demand) as total_demand'), 
+                DB::raw('COUNT(approver_remarks) as remarks_count'),
+                DB::raw('COUNT(amount_approved) as approved_count'),
+                DB::raw('MIN(created_at) as created_at'))
             ->groupBy('rpo_unit_id', 'budget_type_id', 'status', 'current_stage', 'workflow_step_id', 'batch_id')
             ->with(['office', 'workflowStep', 'budgetType'])
             ->get();
@@ -67,8 +71,17 @@ class BudgetApprovals extends Component
                 'current_stage' => $sub->workflowStep ? $sub->workflowStep->name : $sub->current_stage,
                 'batch_id' => $sub->batch_id,
                 'created_at' => $sub->created_at,
+                'is_drafted' => ($sub->remarks_count > 0 || $sub->approved_count > 0),
             ];
         }
+    }
+
+    public function saveAsDraft()
+    {
+        // Actually, updateAdjustment already saves to DB. 
+        // This method just provides a formal "Save" feedback and returns to inbox.
+        session()->flash('message', __('Draft saved successfully.'));
+        $this->backToInbox();
     }
 
     public function viewDetails($officeId, $budgetTypeId, $currentStage, $batchId)

@@ -158,6 +158,12 @@
                                         <li><a href="{{ route('budget.approvals') }}" wire:navigate
                                                 key="t-approvals">{{ __('Approvals') }}</a></li>
                                     @endcanany
+                                    @can('release-budget')
+                                        <li><a href="{{ route('budget.release') }}" wire:navigate
+                                                key="t-release">{{ __('Budget Release') }}</a></li>
+                                        <li><a href="{{ route('budget.office-wise') }}" wire:navigate
+                                                key="t-office-wise">{{ __('Office-wise Budget') }}</a></li>
+                                    @endcan
                                     @can('view-budget-estimations')
                                         <li><a href="{{ route('budget.status') }}" wire:navigate
                                                 key="t-status">{{ __('Budget Status') }}</a></li>

@@ -51,6 +51,9 @@
                                             <td><small class="text-muted">{{ date('d M Y, h:i A', strtotime($officeData['created_at'])) }}</small></td>
                                             <td>
                                                 <span class="badge badge-soft-primary font-size-12">{{ __($officeData['current_stage']) }}</span>
+                                                @if($officeData['is_drafted'])
+                                                    <span class="badge badge-soft-warning ms-1" title="{{ __('Has draft adjustments') }}"><i class="bx bx-edit-alt"></i> {{ __('Drafted') }}</span>
+                                                @endif
                                             </td>
                                             <td>
                                                 <button wire:click="viewDetails({{ $officeData['id'] }}, '{{ $officeData['budget_type_id'] }}', '{{ $officeData['current_stage'] }}', '{{ $officeData['batch_id'] }}')" class="btn btn-sm btn-info waves-effect waves-light">
@@ -92,7 +95,10 @@
                                 <p class="text-muted mb-0">{{ __('Detailed Economic Code Breakdown') }}</p>
                             </div>
                             <div class="text-end">
-                                <button onclick="confirmApproval({{ $office->id }}, '{{ $selected_budget_type_id }}', '{{ $selected_stage }}', '{{ $selected_batch_id }}')" class="btn btn-success btn-rounded px-4">
+                                <button wire:click="saveAsDraft" class="btn btn-warning btn-rounded px-4">
+                                    <i class="bx bx-save me-1"></i> {{ __('Save as Draft') }}
+                                </button>
+                                <button onclick="confirmApproval({{ $office->id }}, '{{ $selected_budget_type_id }}', '{{ $selected_stage }}', '{{ $selected_batch_id }}')" class="btn btn-success btn-rounded px-4 ms-2">
                                     <i class="bx bx-check-double me-1"></i> {{ __('Approve Entire Budget') }}
                                 </button>
                                 <button onclick="promptRejection({{ $office->id }}, '{{ $selected_budget_type_id }}', '{{ $selected_stage }}', '{{ $selected_batch_id }}')" class="btn btn-danger btn-rounded px-4 ms-2">
