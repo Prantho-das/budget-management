@@ -332,13 +332,13 @@ body {
                         &:nth-child(2) {
                             th {
                                 // top: 52px;
-                                top: 37px;
+                                top: 35px;
                             }
                         }
                         &:nth-child(3) {
                             th {
                                 // top: 106px;
-                                top: 71px;
+                                top: 70px;
                             }
                         }
                     }
@@ -357,6 +357,16 @@ body {
                     }
                 }
             }
+        }
+    }
+    .amt-flex {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        margin-bottom: 5px;
+        > div {
+            font-size: 10px;
+            line-height: normal;
         }
     }
 }
