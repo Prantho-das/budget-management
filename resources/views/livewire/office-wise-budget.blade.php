@@ -9,6 +9,10 @@
                 box-shadow: none !important;
                 padding: 0 auto !important;
             }
+            td,th{
+                padding: 1px auto !important;
+                margin: 0 !important;
+            }
 
             .vertical-menu,
             .navbar-header,
