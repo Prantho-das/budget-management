@@ -27,18 +27,18 @@
             }
 
             .office-wise-budget-table .title-box-inner {
-                font-size: 10px !important;
+                font-size: 7px !important;
             }
 
             .office-wise-budget-table .card .table-title-box .title-box-inner .ministry,
             .office-wise-budget-table .card .table-title-box .title-box-inner .title {
-                font-size: 10px !important;
+                font-size: 7px !important;
             }
 
             .table td,
             table th {
                 padding: 0.3rem !important;
-                font-size: 10px !important;
+                font-size: 7px !important;
             }
         }
 
@@ -195,7 +195,7 @@
                                         <th>10</th>
                                         <th>11</th>
                                         <th>12</th>
-                                        <th>13</th>
+                                        {{-- <th>13</th> --}}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -261,7 +261,7 @@
                                             </td>
 
                                             {{-- Extra Demand (12) --}}
-                                            <td class="text-end">0</td>
+                                            {{-- <td class="text-end">0</td> --}}
                                         </tr>
                                     @endforeach
                                 </tbody>
