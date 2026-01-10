@@ -557,3 +557,27 @@ body {
         width: 15px;
     }
 }
+
+.expense-table {
+    .table {
+        thead {
+            tr {
+                th {
+                    text-align: center;
+                    &:nth-child(2) {
+                        width: 120px;
+                    }
+                }
+            }
+        }
+        tbody {
+            tr {
+                td {
+                    &:nth-child(2) {
+                        width: 120px;
+                    }
+                }
+            }
+        }
+    }
+}

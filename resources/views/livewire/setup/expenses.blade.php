@@ -1,4 +1,4 @@
-<div class="unitoffice-entry-table budget-status-table">
+<div class="unitoffice-entry-table expense-table">
     <div class="row">
         <div class="col-12">
             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
@@ -201,7 +201,7 @@
                                         @foreach($monthExpenses as $expense)
                                             <tr>
                                                 <td class="ps-4">{{ Carbon\Carbon::make($expense->date)->format('d-M-Y') }}</td>
-                                                <td><span class="badge bg-primary-subtle text-primary">{{ $expense->code }}</span></td>
+                                                <td>{{ $expense->code }}</td>
                                                 <td>{{ $expense->economicCode->code ?? '-' }} - {{ $expense->economicCode->name ?? '' }}</td>
                                                 <td>{{ $expense->office->name ?? '-' }}</td>
                                                 <td class="text-end">{{ number_format($expense->amount, 2) }}</td>
@@ -221,8 +221,19 @@
                                         @endforeach
                                     @empty
                                         <tr>
-                                            <td colspan="6" class="text-center py-4 text-muted">
-                                                {{ __('No expenses found for the selected filters.') }}
+                                            <td>{{ Carbon\Carbon::make($expense->date)->format('M-Y') }}</td>
+                                            {{-- <td><span class="badge bg-primary">{{ $expense->code }}</span></td> --}}
+                                            <td>{{ $expense->code }}</td>
+                                            <td class="text-center">{{ $expense->economicCode->code ?? '-' }}</td>
+                                            <td>{{ $expense->office->name ?? '-' }}</td>
+                                            <td class="text-end">{{ number_format($expense->amount, 2) }}</td>
+                                            <td>
+                                                @can('edit-expenses')
+                                                    <button wire:click="edit({{ $expense->id }})" class="btn btn-sm btn-info">{{ __('Edit') }}</button>
+                                                @endcan
+                                                @can('delete-expenses')
+                                                    <button wire:click="delete({{ $expense->id }})" class="btn btn-sm btn-danger">{{ __('Delete') }}</button>
+                                                @endcan
                                             </td>
                                         </tr>
                                     @endforelse
