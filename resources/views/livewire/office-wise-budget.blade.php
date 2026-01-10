@@ -4,6 +4,11 @@
             .table-responsive{
                 max-height: unset !important;
             }
+            .form-control{
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 auto !important;
+            }
 
             .vertical-menu,
             .navbar-header,
