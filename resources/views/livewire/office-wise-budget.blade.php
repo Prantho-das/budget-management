@@ -1,6 +1,9 @@
 <div>
     <style>
         @media print {
+            .table-responsive{
+                max-height: unset !important;
+            }
 
             .vertical-menu,
             .navbar-header,
