@@ -221,19 +221,8 @@
                                         @endforeach
                                     @empty
                                         <tr>
-                                            <td>{{ Carbon\Carbon::make($expense->date)->format('M-Y') }}</td>
-                                            {{-- <td><span class="badge bg-primary">{{ $expense->code }}</span></td> --}}
-                                            <td>{{ $expense->code }}</td>
-                                            <td class="text-center">{{ $expense->economicCode->code ?? '-' }}</td>
-                                            <td>{{ $expense->office->name ?? '-' }}</td>
-                                            <td class="text-end">{{ number_format($expense->amount, 2) }}</td>
-                                            <td>
-                                                @can('edit-expenses')
-                                                    <button wire:click="edit({{ $expense->id }})" class="btn btn-sm btn-info">{{ __('Edit') }}</button>
-                                                @endcan
-                                                @can('delete-expenses')
-                                                    <button wire:click="delete({{ $expense->id }})" class="btn btn-sm btn-danger">{{ __('Delete') }}</button>
-                                                @endcan
+                                            <td colspan="6" class="text-center py-4 text-muted">
+                                                {{ __('No expenses found for the selected filters.') }}
                                             </td>
                                         </tr>
                                     @endforelse
