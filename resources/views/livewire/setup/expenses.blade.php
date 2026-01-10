@@ -18,183 +18,184 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                    @if (session()->has('message'))
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            {{ session('message') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    @endif
-
-                    <div class="row align-items-center mb-3">
-                        <div class="col-md-6">
-                            <h4 class="card-title">{{ __('Expense List') }}</h4>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="d-flex flex-wrap align-items-center justify-content-end gap-2">
-                                <div>
-                                    <select wire:model.live="filter_fiscal_year_id" class="form-select form-select-sm">
-                                        <option value="">{{ __('All Fiscal Years') }}</option>
-                                        @foreach($fiscalYears as $year)
-                                            <option value="{{ $year->id }}">{{ $year->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                @can('create-expenses')
-                                    <button wire:click="create()" class="btn btn-primary btn-sm waves-effect waves-light">{{ __('Create New') }}</button>
-                                @endcan
-                            </div>
-                        </div>
-                    </div>
-
                     @if($isOpen)
-                        <div class="modal-backdrop fade show"></div>
-                        <div class="modal fade show" tabindex="-1" role="dialog" style="display: block;">
-                            <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">{{ $expense_id ? __('Edit') : __('Create') }} {{ __('Expense') }}</h5>
-                                        <button wire:click="closeModal()" type="button" class="btn-close" aria-label="Close"></button>
+                        <div class="d-flex justify-content-between mb-4 align-items-center">
+                             <h4 class="mb-sm-0 font-size-18">{{ $expense_id ? __('Edit Expense') : __('Monthly Expense Entry') }}</h4>
+                            <button wire:click="closeModal()" class="btn btn-outline-secondary waves-effect">
+                                <i class="bx bx-arrow-back me-1"></i> {{ __('Back to List') }}
+                            </button>
+                        </div>
+
+                        <div class="card shadow-sm border-0 mb-4">
+                            <div class="card-body">
+                                <form wire:submit.prevent="store">
+                                    <div class="row align-items-end mb-4">
+                                        <div class="col-md-3 mb-3">
+                                            <label for="selectedMonth" class="form-label fw-bold">{{ __('Month') }} <span class="text-danger">*</span></label>
+                                            <input type="month" class="form-control" id="selectedMonth" wire:model.live="selectedMonth">
+                                            @error('selectedMonth') <span class="text-danger small">{{ $message }}</span>@enderror
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="code" class="form-label fw-bold">{{ __('Voucher / Bill No') }} <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="code" wire:model="code" placeholder="{{ __('Unique Code') }}">
+                                            @error('code') <span class="text-danger small">{{ $message }}</span>@enderror
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="rpo_unit_id" class="form-label fw-bold">{{ __('Office') }} <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="rpo_unit_id" wire:model.live="rpo_unit_id">
+                                                <option value="">{{ __('Select Office') }}</option>
+                                                @foreach($offices as $office)
+                                                    <option value="{{ $office->id }}">{{ $office->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            @error('rpo_unit_id') <span class="text-danger small">{{ $message }}</span>@enderror
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="fiscal_year_id" class="form-label fw-bold">{{ __('Fiscal Year') }} <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="fiscal_year_id" wire:model.live="fiscal_year_id">
+                                                <option value="">{{ __('Select Year') }}</option>
+                                                @foreach($fiscalYears as $year)
+                                                    <option value="{{ $year->id }}">{{ $year->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            @error('fiscal_year_id') <span class="text-danger small">{{ $message }}</span>@enderror
+                                        </div>
+                                         <div class="col-md-12 mb-3">
+                                            <label for="budget_type_id" class="form-label fw-bold">{{ __('Budget Source') }} <span class="text-muted fw-normal">({{ __('Optional') }})</span></label>
+                                            <select class="form-select" id="budget_type_id" wire:model.live="budget_type_id">
+                                                <option value="">{{ __('Select Source') }}</option>
+                                                @foreach($budgetTypes as $type)
+                                                    <option value="{{ $type->id }}">{{ $type->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            @error('budget_type_id') <span class="text-danger small">{{ $message }}</span>@enderror
+                                        </div>
                                     </div>
-                                    <div class="modal-body">
-                                        <form>
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="code" class="form-label">{{ __('Expense Code / Bill No') }}</label>
-                                                    <input type="text" class="form-control" id="code" wire:model="code" placeholder="{{ __('Unique Code') }}">
-                                                    @error('code') <span class="text-danger">{{ $message }}</span>@enderror
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="date" class="form-label">{{ __('Date') }}</label>
-                                                    <input type="date" class="form-control" id="date" wire:model="date">
-                                                    @error('date') <span class="text-danger">{{ $message }}</span>@enderror
-                                                </div>
-                                            </div>
-
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="economic_code_id" class="form-label">{{ __('Economic Code') }}</label>
-                                                    <select class="form-select" id="economic_code_id" wire:model.live="economic_code_id">
-                                                        <option value="">{{ __('Select Code') }}</option>
-                                                        @foreach($economicCodes as $code)
-                                                            <option value="{{ $code->id }}">{{ $code->code }} - {{ $code->name }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                    @error('economic_code_id') <span class="text-danger">{{ $message }}</span>@enderror
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="budget_type_id" class="form-label">{{ __('Budget Source (Optional)') }}</label>
-                                                    <select class="form-select" id="budget_type_id" wire:model.live="budget_type_id">
-                                                        <option value="">{{ __('Select Source') }}</option>
-                                                        @foreach($budgetTypes as $type)
-                                                            <option value="{{ $type->id }}">{{ $type->name }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                    @error('budget_type_id') <span class="text-danger">{{ $message }}</span>@enderror
-                                                </div>
-                                            </div>
-
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="amount" class="form-label">{{ __('Amount') }}</label>
-                                                    <input type="number" step="0.01" class="form-control" id="amount" wire:model.live="amount" placeholder="0.00">
-                                                    @error('amount') <span class="text-danger">{{ $message }}</span>@enderror
-                                                    
-                                                    @if($economic_code_id && $rpo_unit_id && $fiscal_year_id)
-                                                        <div class="mt-2 d-flex gap-2">
-                                                            <div>
-                                                                <small class="text-muted">{{ __('Total Budget') }}: </small>
-                                                                <span class="badge bg-info shadow">
-                                                                    ৳ {{ number_format($totalReleased, 2) }}
+                                    
+                                    @if($rpo_unit_id && $fiscal_year_id)
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered align-middle table-nowrap mb-0">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th style="width: 100px;">{{ __('Code') }}</th>
+                                                        <th>{{ __('Economic Head') }}</th>
+                                                        <th style="width: 200px;">{{ __('Expense Amount') }}</th>
+                                                        <th>{{ __('Remarks / Description') }}</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($economicCodes as $code)
+                                                        <tr class="{{ $code->parent_id == null ? 'bg-light fw-bold' : '' }}">
+                                                            <td>
+                                                                <span class="badge {{ $code->parent_id ? 'bg-info-subtle text-info' : 'bg-primary-subtle text-primary font-size-12' }}">
+                                                                    {{ $code->code }}
                                                                 </span>
-                                                            </div>
-                                                            <div>
-                                                                <small class="text-muted">{{ __('Available Balance') }}: </small>
-                                                                <span class="badge bg-{{ $availableBalance > 0 ? 'success' : 'danger' }} shadow">
-                                                                    ৳ {{ number_format($availableBalance, 2) }}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    @endif
-                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                {{ $code->name }}
+                                                                @if($code->description && $code->parent_id)
+                                                                    <i class="bx bx-info-circle text-muted ms-1" title="{{ $code->description }}"></i>
+                                                                @endif
+                                                            </td>
+                                                            
+                                                            @if($code->parent_id != null)
+                                                                <td>
+                                                                    <div class="input-group input-group-sm">
+                                                                        <span class="input-group-text">৳</span>
+                                                                        <input type="number" step="0.01" class="form-control" 
+                                                                               wire:model="expenseEntries.{{ $code->id }}.amount" placeholder="0.00">
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <input type="text" class="form-control form-control-sm" 
+                                                                           wire:model="expenseEntries.{{ $code->id }}.description" placeholder="{{ __('Notes...') }}">
+                                                                </td>
+                                                            @else
+                                                                <td colspan="2" class="text-muted fst-italic small text-center">{{ __('Parent Head - No Entry') }}</td>
+                                                            @endif
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    @else
+                                        <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center justify-content-center py-4">
+                                            <i class="bx bx-error-circle font-size-24 me-2"></i>
+                                            <div>
+                                                <strong>{{ __('Action Required') }}</strong>: {{ __('Please select Office and Fiscal Year to start entering expenses.') }}
                                             </div>
+                                        </div>
+                                    @endif
 
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="rpo_unit_id" class="form-label">{{ __('Office') }}</label>
-                                                    <select class="form-select" id="rpo_unit_id" wire:model.live="rpo_unit_id">
-                                                        <option value="">{{ __('Select Office') }}</option>
-                                                        @foreach($offices as $office)
-                                                            <option value="{{ $office->id }}">{{ $office->name }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                    @error('rpo_unit_id') <span class="text-danger">{{ $message }}</span>@enderror
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="fiscal_year_id" class="form-label">{{ __('Fiscal Year') }}</label>
-                                                    <select class="form-select" id="fiscal_year_id" wire:model.live="fiscal_year_id">
-                                                        <option value="">{{ __('Select Year') }}</option>
-                                                        @foreach($fiscalYears as $year)
-                                                            <option value="{{ $year->id }}">{{ $year->name }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                    @error('fiscal_year_id') <span class="text-danger">{{ $message }}</span>@enderror
-                                                </div>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label for="description" class="form-label">{{ __('Description') }}</label>
-                                                <textarea class="form-control" id="description" wire:model="description" rows="3"></textarea>
-                                                @error('description') <span class="text-danger">{{ $message }}</span>@enderror
-                                            </div>
-
-                                        </form>
+                                    <div class="d-flex justify-content-end gap-2 pt-4 border-top mt-4">
+                                        <button wire:click="closeModal()" type="button" class="btn btn-secondary px-4">{{ __('Cancel') }}</button>
+                                        <button type="submit" class="btn btn-primary px-4">
+                                            <i class="bx bx-save me-1"></i> {{ __('Save Expenses') }}
+                                        </button>
                                     </div>
-                                    <div class="modal-footer">
-                                        <button wire:click="closeModal()" type="button" class="btn btn-secondary">{{ __('Close') }}</button>
-                                        <button wire:click="store()" type="button" class="btn btn-primary" {{ $amount > $availableBalance ? 'disabled' : '' }}>{{ __('Save changes') }}</button>
+                                </form>
+                            </div>
+                        </div>
+                    @else
+                        <div class="row align-items-center mb-3">
+                            <div class="col-md-6">
+                                <h4 class="card-title">{{ __('Expense List') }}</h4>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex flex-wrap align-items-center justify-content-end gap-2">
+                                    <div>
+                                        <select wire:model.live="filter_fiscal_year_id" class="form-select form-select-sm">
+                                            <option value="">{{ __('All Fiscal Years') }}</option>
+                                            @foreach($fiscalYears as $year)
+                                                <option value="{{ $year->id }}">{{ $year->name }}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
+                                    @can('create-expenses')
+                                        <button wire:click="create()" class="btn btn-primary btn-sm waves-effect waves-light">{{ __('Create New') }}</button>
+                                    @endcan
                                 </div>
                             </div>
                         </div>
-                    @endif
 
-                    <div class="table-responsive">
-                        <table class="table table-bordered dt-responsive nowrap w-100">
-                            <thead>
-                                <tr>
-                                    <th>{{ __('Date') }}</th>
-                                    <th>{{ __('Code') }}</th>
-                                    <th>{{ __('Economic Code') }}</th>
-                                    <th>{{ __('Office') }}</th>
-                                    <th>{{ __('Amount') }}</th>
-                                    <th>{{ __('Action') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($expenses as $expense)
+                        <div class="table-responsive">
+                            <table class="table table-bordered dt-responsive nowrap w-100">
+                                <thead>
                                     <tr>
-                                        <td>{{ $expense->date }}</td>
-                                        <td><span class="badge bg-primary">{{ $expense->code }}</span></td>
-                                        <td>{{ $expense->economicCode->code ?? '-' }}</td>
-                                        <td>{{ $expense->office->name ?? '-' }}</td>
-                                        <td>৳ {{ number_format($expense->amount, 2) }}</td>
-                                        <td>
-                                            @can('edit-expenses')
-                                                <button wire:click="edit({{ $expense->id }})" class="btn btn-sm btn-info">{{ __('Edit') }}</button>
-                                            @endcan
-                                            @can('delete-expenses')
-                                                <button wire:click="delete({{ $expense->id }})" class="btn btn-sm btn-danger">{{ __('Delete') }}</button>
-                                            @endcan
-                                        </td>
+                                        <th>{{ __('Date') }}</th>
+                                        <th>{{ __('Code') }}</th>
+                                        <th>{{ __('Economic Code') }}</th>
+                                        <th>{{ __('Office') }}</th>
+                                        <th>{{ __('Amount') }}</th>
+                                        <th>{{ __('Action') }}</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    @foreach($expenses as $expense)
+                                        <tr>
+                                            <td>{{ $expense->date }}</td>
+                                            <td><span class="badge bg-primary">{{ $expense->code }}</span></td>
+                                            <td>{{ $expense->economicCode->code ?? '-' }}</td>
+                                            <td>{{ $expense->office->name ?? '-' }}</td>
+                                            <td>৳ {{ number_format($expense->amount, 2) }}</td>
+                                            <td>
+                                                @can('edit-expenses')
+                                                    <button wire:click="edit({{ $expense->id }})" class="btn btn-sm btn-info">{{ __('Edit') }}</button>
+                                                @endcan
+                                                @can('delete-expenses')
+                                                    <button wire:click="delete({{ $expense->id }})" class="btn btn-sm btn-danger">{{ __('Delete') }}</button>
+                                                @endcan
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
 
-                    <div class="mt-4">
-                        {{ $expenses->links() }}
-                    </div>
+                        <div class="mt-4">
+                            {{ $expenses->links() }}
+                        </div>
+                    @endif
 
                 </div>
             </div>
