@@ -138,6 +138,23 @@
                             <div class="col-md-6">
                                 <div class="d-flex flex-wrap align-items-center justify-content-end gap-2">
                                     <div>
+                                        <select wire:model.live="filter_month" class="form-select form-select-sm">
+                                            <option value="">{{ __('All Months') }}</option>
+                                            <option value="01">{{ __('January') }}</option>
+                                            <option value="02">{{ __('February') }}</option>
+                                            <option value="03">{{ __('March') }}</option>
+                                            <option value="04">{{ __('April') }}</option>
+                                            <option value="05">{{ __('May') }}</option>
+                                            <option value="06">{{ __('June') }}</option>
+                                            <option value="07">{{ __('July') }}</option>
+                                            <option value="08">{{ __('August') }}</option>
+                                            <option value="09">{{ __('September') }}</option>
+                                            <option value="10">{{ __('October') }}</option>
+                                            <option value="11">{{ __('November') }}</option>
+                                            <option value="12">{{ __('December') }}</option>
+                                        </select>
+                                    </div>
+                                    <div>
                                         <select wire:model.live="filter_fiscal_year_id" class="form-select form-select-sm">
                                             <option value="">{{ __('All Fiscal Years') }}</option>
                                             @foreach($fiscalYears as $year)
@@ -167,7 +184,7 @@
                                 <tbody>
                                     @foreach($expenses as $expense)
                                         <tr>
-                                            <td>{{ $expense->date }}</td>
+                                            <td>{{ Carbon\Carbon::make($expense->date)->format('M-Y') }}</td>
                                             <td><span class="badge bg-primary">{{ $expense->code }}</span></td>
                                             <td>{{ $expense->economicCode->code ?? '-' }}</td>
                                             <td>{{ $expense->office->name ?? '-' }}</td>

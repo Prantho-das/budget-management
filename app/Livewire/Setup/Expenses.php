@@ -26,6 +26,7 @@ class Expenses extends Component
     public $isOpen = 0;
     
     public $filter_fiscal_year_id;
+    public $filter_month;
 
   public $totalReleased = 0;
   public $availableBalance = 0;
@@ -34,9 +35,9 @@ class Expenses extends Component
 
   public function mount()
   {
-      $activeFy = FiscalYear::where('status', true)->first();
-      $this->filter_fiscal_year_id = $activeFy ? $activeFy->id : '';
-      $this->fiscal_year_id = $activeFy ? $activeFy->id : '';
+      $activeFyId = get_active_fiscal_year_id();
+      $this->filter_fiscal_year_id = $activeFyId;
+      $this->fiscal_year_id = $activeFyId;
       $this->selectedMonth = date('m'); // Default to current month number
       $this->rpo_unit_id = auth()->user()->rpo_unit_id; // Set default RPO unit for new entries
       
@@ -45,6 +46,11 @@ class Expenses extends Component
   }
 
   public function updatedFilterFiscalYearId()
+  {
+      $this->resetPage();
+  }
+
+  public function updatedFilterMonth()
   {
       $this->resetPage();
   }
@@ -67,6 +73,9 @@ class Expenses extends Component
     $expenses = Expense::with(['office', 'fiscalYear', 'economicCode'])
       ->when($this->filter_fiscal_year_id, function($query) {
           $query->where('fiscal_year_id', $this->filter_fiscal_year_id);
+      })
+      ->when($this->filter_month, function($query) {
+          $query->whereMonth('date', $this->filter_month);
       })
       ->when(!auth()->user()->can('view-all-offices-data'), function ($query) {
         $query->where('rpo_unit_id', auth()->user()->rpo_unit_id);
@@ -141,8 +150,7 @@ class Expenses extends Component
     $this->expenseEntries = [];
     $this->selectedMonth = date('m');
     $this->rpo_unit_id = auth()->user()->rpo_unit_id;
-    $activeFy = FiscalYear::where('status', true)->first();
-    $this->fiscal_year_id = $activeFy ? $activeFy->id : '';
+    $this->fiscal_year_id = get_active_fiscal_year_id();
     
     $defaultBudgetType = BudgetType::where('status', true)->orderBy('order_priority')->first();
     $this->budget_type_id = $defaultBudgetType ? $defaultBudgetType->id : '';
