@@ -24,8 +24,9 @@
                     @error('password') <span class="text-danger small">{{ $message }}</span> @enderror
                 </div>
                  <div class="form-group">
-                    <label for="captcha" class="form-label">{{ $captcha_question ?? 'Captcha' }}</label>
+                     <label for="captcha" class="form-label">{{ __('Enter Result of 8 + 8 ') }}</label>
                     <input type="number" name="captcha" id="captcha" placeholder="Result?" class="form-control" required>
+                     <label for="captcha" class="form-label captcha-label">{{ $captcha_question ?? 'Captcha' }}</label>
                     @error('captcha') <span class="text-danger small">{{ $message }}</span> @enderror
                 </div>
                 <div class="form-group">

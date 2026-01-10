@@ -350,6 +350,9 @@ body {
   line-height: 1.5;
   font-family: "Roboto", sans-serif;
 }
+.login-page-main .login-wrapper .login-form-box .form-group .captcha-label {
+  margin-top: 10px;
+}
 .login-page-main .login-wrapper .login-form-box .form-group .form-control {
   border-radius: 0;
 }
