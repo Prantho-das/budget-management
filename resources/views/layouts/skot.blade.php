@@ -20,7 +20,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
     <style>
         /* Global Loader */
@@ -477,6 +477,7 @@
 
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 
 
@@ -558,6 +559,56 @@
             if (loader && e.target.method && e.target.method.toUpperCase() !== 'GET') {
                 loader.style.display = 'flex';
             }
+        });
+
+        // Initialize Select2
+        function initSelect2() {
+            $('.custom-select2').each(function() {
+                let $el = $(this);
+                
+                // If already initialized, destroy first or skip
+                if ($el.hasClass('select2-hidden-accessible')) {
+                    $el.select2('destroy');
+                }
+
+                $el.select2({
+                    dropdownParent: $el.closest('.modal-content').length ? $el.closest('.modal-content') : $(document.body),
+                    width: '100%',
+                    placeholder: $el.attr('placeholder') || 'Select an option'
+                });
+
+                // Sync with Livewire
+                $el.on('change', function (e) {
+                    let model = $el.attr('wire:model');
+                    if (model) {
+                         // Find the closest Livewire component
+                        let component = Livewire.find($el.closest('[wire\\:id]').attr('wire:id'));
+                        if (component) {
+                            component.set(model, $el.val());
+                        }
+                    }
+                });
+            });
+        }
+
+        // Initialize on page load
+        $(document).ready(initSelect2);
+
+        // Re-initialize on Livewire navigation
+        document.addEventListener('livewire:navigated', initSelect2);
+
+        // Re-initialize on specific events
+        document.addEventListener('livewire:initialized', () => {
+             Livewire.on('select2-reinit', () => {
+                setTimeout(initSelect2, 100);
+            });
+
+            // Alternative: hook into all commits to catch dynamically added items
+            Livewire.hook('commit', ({ component, commit, succeed, fail, respond }) => {
+                succeed(() => {
+                    setTimeout(initSelect2, 50);
+                });
+            });
         });
     </script>
 </body>

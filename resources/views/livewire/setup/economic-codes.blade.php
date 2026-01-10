@@ -53,16 +53,47 @@
                                                 <input type="text" class="form-control" id="name" wire:model="name" placeholder="{{ __('Name') }}">
                                                 @error('name') <span class="text-danger">{{ $message }}</span>@enderror
                                             </div>
-                                            <div class="mb-3">
+                                            <div class="mb-3" wire:ignore>
                                                 <label for="parent_id" class="form-label">{{ __('Parent Code') }}</label>
-                                                <select class="form-control" id="parent_id" wire:model="parent_id">
+                                                <select class="form-control custom-select2" id="parent_id" wire:model="parent_id">
                                                     <option value="">{{ __('None (Root Level)') }}</option>
-                                                    @foreach($parentCodes as $pCode)
-                                                        <option value="{{ $pCode->id }}">{{ $pCode->code }} - {{ $pCode->name }}</option>
+                                                    
+                                                    @foreach($all_economic_codes as $pCode)
+                                                        <option value="{{ $pCode->id }}">
+                                                            {{ $pCode->code }} - {{ $pCode->name }}
+                                                        </option>
+                                                
+                                                        @if($pCode->children->count() > 0)
+                                                            @foreach($pCode->children as $child)
+                                                                <option value="{{ $child->id }}">
+                                                                    &nbsp;&nbsp;—> {{ $child->code }} - {{ $child->name }}
+                                                                </option>
+                                                
+                                                                @if($child->children->count() > 0)
+                                                                    @foreach($child->children as $subChild)
+                                                                        <option value="{{ $subChild->id }}" disabled>
+                                                                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;———> {{ $subChild->code }} - {{ $subChild->name }}
+                                                                        </option>
+                                                                    @endforeach
+                                                                @endif
+                                                            @endforeach
+                                                        @endif
                                                     @endforeach
                                                 </select>
                                                 @error('parent_id') <span class="text-danger">{{ $message }}</span>@enderror
                                             </div>
+
+                                            <script>
+                                                document.addEventListener('livewire:navigated', () => {
+                                                    if(typeof initSelect2 === 'function') initSelect2();
+                                                });
+                                                
+                                                window.addEventListener('select2-reinit', event => {
+                                                    setTimeout(() => {
+                                                        if(typeof initSelect2 === 'function') initSelect2();
+                                                    }, 100);
+                                                });
+                                            </script>
                                             <div class="mb-3">
                                                 <label for="description" class="form-label">{{ __('Description') }}</label>
                                                 <textarea class="form-control" id="description" wire:model="description"></textarea>

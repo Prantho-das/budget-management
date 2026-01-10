@@ -22,9 +22,13 @@ class EconomicCodes extends Component
       })
       ->orderBy('code', 'asc')
       ->get();
-
+      $all_economic_codes = EconomicCode::orderBy('code', 'asc')
+      ->where('parent_id', null)
+      ->with('children')
+      ->get();
     return view('livewire.setup.economic-codes', [
-      'parentCodes' => $parentCodes
+      'parentCodes' => $parentCodes,
+      'all_economic_codes' => $all_economic_codes,
     ])
       ->extends('layouts.skot')
       ->section('content');
@@ -40,6 +44,7 @@ class EconomicCodes extends Component
   public function openModal()
   {
     $this->isOpen = true;
+    $this->dispatch('select2-reinit');
   }
 
   public function closeModal()
@@ -97,6 +102,7 @@ class EconomicCodes extends Component
     $this->parent_id = $code->parent_id;
 
     $this->openModal();
+    $this->dispatch('select2-reinit');
   }
 
   public function delete($id)
