@@ -456,4 +456,8 @@ body {
   height: 100%;
   content: "";
   background: rgba(0, 106, 78, 0.631372549);
+}
+
+.custom-pagination-wrpaper svg {
+  width: 15px;
 }/*# sourceMappingURL=style.css.map */
