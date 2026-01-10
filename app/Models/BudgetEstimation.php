@@ -29,6 +29,7 @@ class BudgetEstimation extends Model
         'revised_amount',
         'projection_1',
         'projection_2',
+        'projection_3',
     ];
 
     protected $casts = [

@@ -17,10 +17,10 @@
                 padding: 0 !important;
             }
 
-            .card {
+            /* .card {
                 border: none !important;
                 box-shadow: none !important;
-            }
+            } */
 
             .table-responsive {
                 overflow: visible !important;

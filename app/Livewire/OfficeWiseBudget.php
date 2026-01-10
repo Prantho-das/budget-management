@@ -202,14 +202,40 @@ class OfficeWiseBudget extends Component
 
             // 5. Suggestions (10% increments)
             $est_suggestion = round($data['history_full_2'] * 1.10, 0);
-            $p1_suggestion = round($est_suggestion * 1.10, 0);
-            $p2_suggestion = round($p1_suggestion * 1.10, 0);
+            
+            // P1 suggestion based on either saved Estimation (projection_1) OR est_suggestion
+            $p1_base = $data['projection_1'] > 0 ? $data['projection_1'] : $est_suggestion;
+            $p1_suggestion = round($p1_base * 1.10, 0);
+            
+            // P2 suggestion based on either saved Projection 1 (projection_2) OR p1_suggestion
+            $p2_base = $data['projection_2'] > 0 ? $data['projection_2'] : $p1_suggestion;
+            $p2_suggestion = round($p2_base * 1.10, 0);
 
             $data['estimation_suggestion'] = $est_suggestion;
             $data['projection1_suggestion'] = $p1_suggestion;
             $data['projection2_suggestion'] = $p2_suggestion;
 
             $officeWiseData[$office->id] = $data;
+        }
+
+        // --- Grand Totals ---
+        $totals = [
+            'h1' => 0, 'h2' => 0, 'hp1' => 0, 'hp2' => 0,
+            'demand' => 0, 'revised' => 0, 'p1' => 0, 'p2' => 0, 'p3' => 0
+        ];
+
+        foreach ($officeWiseData as $row) {
+            $totals['h1'] += $row['history_full_1'];
+            $totals['h2'] += $row['history_full_2'];
+            $totals['hp1'] += $row['history_part_1'];
+            $totals['hp2'] += $row['history_part_2'];
+            $totals['demand'] += $row['demand'];
+            $totals['revised'] += $row['revised'];
+            
+            // Include what is visible in the UI (Saved value or Suggestion)
+            $totals['p1'] += ($row['projection_1'] > 0 ? $row['projection_1'] : $row['estimation_suggestion']);
+            $totals['p2'] += ($row['projection_2'] > 0 ? $row['projection_2'] : $row['projection1_suggestion']);
+            $totals['p3'] += ($row['projection_3'] > 0 ? $row['projection_3'] : $row['projection2_suggestion']);
         }
 
         return view('livewire.office-wise-budget', [
@@ -221,7 +247,8 @@ class OfficeWiseBudget extends Component
             'selectedOffice' => $selectedOffice,
             'selectedFy' => $selectedFy,
             'fullPrevYears' => $fullPrevYears,
-            'officeWiseData' => $officeWiseData
+            'officeWiseData' => $officeWiseData,
+            'totals' => $totals
         ])->extends('layouts.skot')->section('content');
     }
 }
