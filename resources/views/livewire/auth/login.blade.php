@@ -11,28 +11,32 @@
         </div>
          <div class="login-form-box">
             <h1>Login</h1>
-            <form action="">
+            <form action="{{ route('login') }}" method="POST">
+                @csrf
                 <div class="form-group">
-                    <label for="email" class="form-label">Enter Email Address</label>
-                    <input type="email" placeholder="Enter Your E-mail" class="form-control">
+                    <label for="email" class="form-label">{{ __('Enter Email Address') }}</label>
+                    <input type="email" name="email" id="email" placeholder="Enter Your E-mail" class="form-control" value="{{ old('email') }}" required autofocus>
+                    @error('email') <span class="text-danger small">{{ $message }}</span> @enderror
                 </div>
                 <div class="form-group">
-                       <label for="email" class="form-label">Enter Password </label>
-                    <input type="password" placeholder="Enter Your Password" class="form-control">
+                       <label for="password" class="form-label">{{ __('Enter Password') }}</label>
+                    <input type="password" name="password" id="password" placeholder="Enter Your Password" class="form-control" required>
+                    @error('password') <span class="text-danger small">{{ $message }}</span> @enderror
                 </div>
                  <div class="form-group">
-                    <label for="email" class="form-label">Enter The Text Displayed Bellow </label>
-                    <input type="text" placeholder="Enter Your Captcha" class="form-control">
+                    <label for="captcha" class="form-label">{{ $captcha_question ?? 'Captcha' }}</label>
+                    <input type="number" name="captcha" id="captcha" placeholder="Result?" class="form-control" required>
+                    @error('captcha') <span class="text-danger small">{{ $message }}</span> @enderror
                 </div>
                 <div class="form-group">
-                    <button class="btn login-btn">Login
+                    <button type="submit" class="btn login-btn">{{ __('Login') }}
                          
                      <i class="btn-arrow-right"></i>
 
                     </button>
                 </div>
                 <div class="form-text">
-                  <a href="#">  Forget Password ?</a>
+                  <a href="{{ route('password.request') }}">  {{ __('Forget Password ?') }}</a>
                 </div>
             </form>
         </div>
