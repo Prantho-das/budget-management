@@ -18,6 +18,7 @@ class Expenses extends Component
   use WithPagination;
 
   public $code, $amount, $description, $date, $rpo_unit_id, $fiscal_year_id, $economic_code_id, $budget_type_id;
+  public $filter_fiscal_year_id;
   public $totalReleased = 0;
   public $availableBalance = 0;
   public $isOpen = false;
@@ -25,10 +26,24 @@ class Expenses extends Component
 
   protected $listeners = ['deleteConfirmed'];
 
+  public function mount()
+  {
+      $activeFy = FiscalYear::where('status', true)->first();
+      $this->filter_fiscal_year_id = $activeFy ? $activeFy->id : null;
+  }
+
+  public function updatedFilterFiscalYearId()
+  {
+      $this->resetPage();
+  }
+
   public function render()
   {
     abort_if(auth()->user()->cannot('view-expenses'), 403);
     $expenses = Expense::with(['office', 'fiscalYear', 'economicCode'])
+      ->when($this->filter_fiscal_year_id, function($query) {
+          $query->where('fiscal_year_id', $this->filter_fiscal_year_id);
+      })
       ->when(!auth()->user()->can('view-all-offices-data'), function ($query) {
         $query->where('rpo_unit_id', auth()->user()->rpo_unit_id);
       })

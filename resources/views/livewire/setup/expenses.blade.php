@@ -25,11 +25,25 @@
                         </div>
                     @endif
 
-                    <div class="d-flex justify-content-between mb-3">
-                        <h4 class="card-title">{{ __('Expense List') }}</h4>
-                        @can('create-expenses')
-                            <button wire:click="create()" class="btn btn-primary waves-effect waves-light">{{ __('Create New') }}</button>
-                        @endcan
+                    <div class="row align-items-center mb-3">
+                        <div class="col-md-6">
+                            <h4 class="card-title">{{ __('Expense List') }}</h4>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex flex-wrap align-items-center justify-content-end gap-2">
+                                <div>
+                                    <select wire:model.live="filter_fiscal_year_id" class="form-select form-select-sm">
+                                        <option value="">{{ __('All Fiscal Years') }}</option>
+                                        @foreach($fiscalYears as $year)
+                                            <option value="{{ $year->id }}">{{ $year->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                @can('create-expenses')
+                                    <button wire:click="create()" class="btn btn-primary btn-sm waves-effect waves-light">{{ __('Create New') }}</button>
+                                @endcan
+                            </div>
+                        </div>
                     </div>
 
                     @if($isOpen)
