@@ -460,4 +460,14 @@ body {
 
 .custom-pagination-wrpaper svg {
   width: 15px;
+}
+
+.expense-table .table thead tr th {
+  text-align: center;
+}
+.expense-table .table thead tr th:nth-child(2) {
+  width: 120px;
+}
+.expense-table .table tbody tr td:nth-child(2) {
+  width: 120px;
 }/*# sourceMappingURL=style.css.map */
