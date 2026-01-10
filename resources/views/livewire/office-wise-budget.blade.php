@@ -13,10 +13,10 @@
                 padding: 0 auto !important;
             }
             td,th{
-                padding: 1px auto !important;
+                padding: 0 !important;
                 line-height: 1.1 !important;
                 margin: 0 !important;
-                border-color:#000 !important;
+                /* border-color:#000 !important; */
             }
 
             .vertical-menu,
