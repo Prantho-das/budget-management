@@ -71,14 +71,22 @@
         <div class="card shadow-sm border-0 mb-4 floating-budget-card sticky">
             <div class="card-body">
                 <div class="row align-items-end">
-                    <div class="col-md-3 mb-3 mb-md-0 d-none">
+                    <div class="col-md-4 mb-3 mb-md-0">
                         <label class="form-label fw-bold text-muted small">{{ __('Budget Request Type') }}</label>
-                        <select wire:model.live="budget_type_id" class="form-select border-light shadow-none"
-                            {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
-                            @foreach ($budgetTypes as $type)
-                                <option value="{{ $type->id }}">{{ $type->name }}</option>
-                            @endforeach
-                        </select>
+                        <div class="d-flex align-items-center">
+                            @php
+                                $currentType = $budgetTypes->firstWhere('id', $budget_type_id);
+                            @endphp
+                            @if($currentType)
+                                <div class="badge bg-primary-subtle text-primary font-size-14 px-3 py-2 border border-primary-subtle rounded-pill">
+                                    <i class="bx bx-check-double me-1"></i> {{ $currentType->name }}
+                                </div>
+                            @else
+                                <div class="badge bg-warning-subtle text-warning font-size-14 px-3 py-2 border border-warning-subtle rounded-pill">
+                                    {{ __('Loading...') }}
+                                </div>
+                            @endif
+                        </div>
                     </div>
                     <div class="col-md-4 mb-3 mb-md-0 d-none">
                         <label class="form-label fw-bold text-muted small">{{ __('Submission Batch') }}</label>

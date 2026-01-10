@@ -149,7 +149,8 @@
                                                     <input type="number" 
                                                            class="form-control" 
                                                            value="{{ $data['approved'] }}"
-                                                           onchange="@this.updateAdjustment({{ $data['id'] }}, this.value)">
+                                                           onchange="@this.updateAdjustment({{ $data['id'] }}, this.value)"
+                                                           @cannot('edit-budget-approval-amount') readonly @endcannot>
                                                 </div>
                                             </td>
                                             <td>
@@ -157,7 +158,8 @@
                                                        class="form-control form-control-sm" 
                                                        wire:model.debounce.500ms="approval_remarks.{{ $data['id'] }}"
                                                        placeholder="{{ __('Approver Remarks') }}"
-                                                       onchange="@this.updateAdjustment({{ $data['id'] }}, null, this.value)">
+                                                       onchange="@this.updateAdjustment({{ $data['id'] }}, null, this.value)"
+                                                       @cannot('edit-budget-approval-amount') readonly @endcannot>
                                             </td>
                                             <td>
                                                 <span class="badge bg-{{ $data['status'] === 'rejected' ? 'danger' : 'secondary' }}">

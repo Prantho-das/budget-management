@@ -163,8 +163,8 @@ class BudgetApprovals extends Component
             ->where('target_office_id', Auth::user()->rpo_unit_id)
             ->get();
 
-        foreach ($estimations as $est) {
-            $workflow->approve($est);
+        if ($estimations->isNotEmpty()) {
+            $workflow->approveBatch($estimations);
         }
 
         session()->flash('message', __('Budget Approved Successfully.'));
@@ -187,8 +187,8 @@ class BudgetApprovals extends Component
             ->where('target_office_id', Auth::user()->rpo_unit_id)
             ->get();
 
-        foreach ($estimations as $est) {
-            $workflow->reject($est, $this->remarks[$key]);
+        if ($estimations->isNotEmpty()) {
+            $workflow->rejectBatch($estimations, $this->remarks[$key]);
         }
 
         session()->flash('message', __('Budget Rejected.'));

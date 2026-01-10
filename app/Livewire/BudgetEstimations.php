@@ -308,7 +308,7 @@ class BudgetEstimations extends Component
             'economicCodes' => $economicCodes,
             'currentFiscalYear' => $fiscalYear,
             'currentOffice' => $office,
-            'budgetTypes' => $availableTypes,
+            'budgetTypes' => collect($availableTypes),
             'totalDemand' => array_sum($this->demands)
         ])->extends('layouts.skot')->section('content');
     }

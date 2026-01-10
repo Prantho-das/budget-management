@@ -37,8 +37,11 @@ class Expenses extends Component
       $activeFy = FiscalYear::where('status', true)->first();
       $this->filter_fiscal_year_id = $activeFy ? $activeFy->id : '';
       $this->fiscal_year_id = $activeFy ? $activeFy->id : '';
-      $this->selectedMonth = date('Y-m'); // Default to current month
+      $this->selectedMonth = date('m'); // Default to current month number
       $this->rpo_unit_id = auth()->user()->rpo_unit_id; // Set default RPO unit for new entries
+      
+      $defaultBudgetType = BudgetType::where('status', true)->orderBy('order_priority')->first();
+      $this->budget_type_id = $defaultBudgetType ? $defaultBudgetType->id : '';
   }
 
   public function updatedFilterFiscalYearId()
@@ -70,10 +73,9 @@ class Expenses extends Component
       })
       ->orderBy('id', 'desc')
       ->paginate(10);
-    //$categories = ExpenseCategory::all();
+
     $offices = RpoUnit::all();
     $fiscalYears = FiscalYear::orderBy('name', 'desc')->get();
-    $economicCodes = EconomicCode::all();
     $budgetTypes = BudgetType::where('status', true)->get();
 
     return view('livewire.setup.expenses', [
@@ -87,16 +89,10 @@ class Expenses extends Component
 
   public function updated($propertyName)
   {
-    // This method is now less relevant for bulk entry, as balance calculation would be per line item.
-    // If needed, specific logic for individual expenseEntries could be added here.
-    // For now, removing the old balance calculation trigger.
   }
 
   public function calculateBalance()
   {
-    // This method is designed for single expense entry.
-    // For bulk entry, balance would need to be calculated per economic code.
-    // Keeping it for potential future single-entry edit or specific validation.
     if ($this->economic_code_id && $this->rpo_unit_id && $this->fiscal_year_id) {
       $released = BudgetAllocation::where([
         'economic_code_id' => $this->economic_code_id,
@@ -139,16 +135,18 @@ class Expenses extends Component
 
   private function resetInputFields()
   {
-    $this->code = ''; // Main bill/voucher no
+    $this->code = ''; 
     $this->date = '';
     $this->expense_id = '';
     $this->expenseEntries = [];
-    $this->selectedMonth = date('Y-m');
-    // Keep office/fy selection if suitable, or reset
+    $this->selectedMonth = date('m');
     $this->rpo_unit_id = auth()->user()->rpo_unit_id;
     $activeFy = FiscalYear::where('status', true)->first();
     $this->fiscal_year_id = $activeFy ? $activeFy->id : '';
-    $this->budget_type_id = ''; // Reset budget type
+    
+    $defaultBudgetType = BudgetType::where('status', true)->orderBy('order_priority')->first();
+    $this->budget_type_id = $defaultBudgetType ? $defaultBudgetType->id : '';
+    
     $this->totalReleased = 0;
     $this->availableBalance = 0;
   }
@@ -165,7 +163,6 @@ class Expenses extends Component
         'rpo_unit_id' => 'required',
         'fiscal_year_id' => 'required',
         'selectedMonth' => 'required',
-        'code' => 'required', // One Voucher/Bill No for the batch? Or per batch? Assuming one for the batch for now based on UI request "first there will be month selection... submit"
     ]);
 
     if (empty($this->expenseEntries)) {
@@ -174,14 +171,40 @@ class Expenses extends Component
     }
 
     $hasEntry = false;
-    // Default date to first of selected month, or allow specific date picker? 
-    // User asked for "Month Selection", so we'll construct the date.
-    // Or if 'date' input exists, use that?
-    // Let's use the selectedMonth-01 as default if date is missing, 
-    // BUT ideally we should have a 'Date' field that respects the month.
-    // For now, let's assume 'date' field is still used but restricted? 
-    // Actually user said "Month Selection".
-    $expenseDate = $this->selectedMonth . '-01'; 
+    
+    // Calculate Year based on Fiscal Year and Selected Month
+    $fy = FiscalYear::find($this->fiscal_year_id);
+    $year = date('Y'); // Fallback
+    
+    if ($fy) {
+        $fyStart = \Carbon\Carbon::parse($fy->start_date);
+        
+        // Example: FY 2024-2025 (July 24 - June 25)
+        // If Selected Month >= FY Start Month (7) -> Use Start Year (2024)
+        // If Selected Month < FY Start Month (7) -> Use End Year (2025) which is Start Year + 1 (usually)
+        // Wait, fiscal year might span differently.
+        // Safer: 
+        // If Month is 7,8,9,10,11,12 -> it must be Start Year
+        // If Month is 1,2,3,4,5,6 -> it must be End Year (Start Year + 1)
+        // This assumes typical July-June FY. 
+        // General logic:
+        
+        $selectedMonthInt = intval($this->selectedMonth);
+        $fyStartMonth = $fyStart->month;
+        
+        if ($selectedMonthInt >= $fyStartMonth) {
+             $year = $fyStart->year;
+        } else {
+             // Basic assumption: If selected month is earlier in year than start month, it's the next year
+             $year = $fyStart->year + 1;
+        }
+    }
+    
+    $expenseDate = $year . '-' . $this->selectedMonth . '-01'; 
+    
+    // Auto-generate Batch/Voucher Code
+    // Format: EXP-{Ymd}-{Random6}
+    $autoCode = 'EXP-' . date('Ymd') . '-' . strtoupper(\Illuminate\Support\Str::random(6));
 
     foreach ($this->expenseEntries as $codeId => $entry) {
         $amount = floatval($entry['amount'] ?? 0);
@@ -189,21 +212,16 @@ class Expenses extends Component
 
         if ($amount > 0) {
             $hasEntry = true;
-            
-            // Check balance (optional validation)
-            // For bulk entry, this would need to be done per economic code.
-            // For now, we'll create the expense and assume validation happens elsewhere or is less strict.
-            // If strict validation is needed, calculateBalance() would need to be adapted or called here for each codeId.
 
             Expense::create([
-                'code' => $this->code . '-' . $codeId, // Append Code ID to ensure uniqueness per line item
+                'code' => $autoCode . '-' . $codeId, // Append Code ID to ensure uniqueness per line item
                 'amount' => $amount,
                 'description' => $desc,
                 'date' => $expenseDate,
                 'rpo_unit_id' => $this->rpo_unit_id,
                 'fiscal_year_id' => $this->fiscal_year_id,
                 'economic_code_id' => $codeId,
-                'budget_type_id' => $this->budget_type_id // Optional global type
+                'budget_type_id' => $this->budget_type_id 
             ]);
         }
     }

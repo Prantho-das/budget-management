@@ -32,23 +32,22 @@
                                     <div class="row align-items-end mb-4">
                                         <div class="col-md-3 mb-3">
                                             <label for="selectedMonth" class="form-label fw-bold">{{ __('Month') }} <span class="text-danger">*</span></label>
-                                            <input type="month" class="form-control" id="selectedMonth" wire:model.live="selectedMonth">
-                                            @error('selectedMonth') <span class="text-danger small">{{ $message }}</span>@enderror
-                                        </div>
-                                        <div class="col-md-3 mb-3">
-                                            <label for="code" class="form-label fw-bold">{{ __('Voucher / Bill No') }} <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" id="code" wire:model="code" placeholder="{{ __('Unique Code') }}">
-                                            @error('code') <span class="text-danger small">{{ $message }}</span>@enderror
-                                        </div>
-                                        <div class="col-md-3 mb-3">
-                                            <label for="rpo_unit_id" class="form-label fw-bold">{{ __('Office') }} <span class="text-danger">*</span></label>
-                                            <select class="form-select" id="rpo_unit_id" wire:model.live="rpo_unit_id">
-                                                <option value="">{{ __('Select Office') }}</option>
-                                                @foreach($offices as $office)
-                                                    <option value="{{ $office->id }}">{{ $office->name }}</option>
-                                                @endforeach
+                                            <select class="form-select" id="selectedMonth" wire:model.live="selectedMonth">
+                                                <option value="">{{ __('Select Month') }}</option>
+                                                <option value="01">{{ __('January') }}</option>
+                                                <option value="02">{{ __('February') }}</option>
+                                                <option value="03">{{ __('March') }}</option>
+                                                <option value="04">{{ __('April') }}</option>
+                                                <option value="05">{{ __('May') }}</option>
+                                                <option value="06">{{ __('June') }}</option>
+                                                <option value="07">{{ __('July') }}</option>
+                                                <option value="08">{{ __('August') }}</option>
+                                                <option value="09">{{ __('September') }}</option>
+                                                <option value="10">{{ __('October') }}</option>
+                                                <option value="11">{{ __('November') }}</option>
+                                                <option value="12">{{ __('December') }}</option>
                                             </select>
-                                            @error('rpo_unit_id') <span class="text-danger small">{{ $message }}</span>@enderror
+                                            @error('selectedMonth') <span class="text-danger small">{{ $message }}</span>@enderror
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <label for="fiscal_year_id" class="form-label fw-bold">{{ __('Fiscal Year') }} <span class="text-danger">*</span></label>
@@ -60,16 +59,11 @@
                                             </select>
                                             @error('fiscal_year_id') <span class="text-danger small">{{ $message }}</span>@enderror
                                         </div>
-                                         <div class="col-md-12 mb-3">
-                                            <label for="budget_type_id" class="form-label fw-bold">{{ __('Budget Source') }} <span class="text-muted fw-normal">({{ __('Optional') }})</span></label>
-                                            <select class="form-select" id="budget_type_id" wire:model.live="budget_type_id">
-                                                <option value="">{{ __('Select Source') }}</option>
-                                                @foreach($budgetTypes as $type)
-                                                    <option value="{{ $type->id }}">{{ $type->name }}</option>
-                                                @endforeach
-                                            </select>
-                                            @error('budget_type_id') <span class="text-danger small">{{ $message }}</span>@enderror
-                                        </div>
+                                        
+                                        {{-- Hidden Office --}}
+                                        @if(auth()->check())
+                                            <input type="hidden" wire:model="rpo_unit_id" value="{{ auth()->user()->rpo_unit_id }}">
+                                        @endif
                                     </div>
                                     
                                     @if($rpo_unit_id && $fiscal_year_id)

@@ -34,48 +34,106 @@ class BudgetWorkflowService
     /**
      * Approve a budget at the current stage.
      */
-    public function approve(BudgetEstimation $estimation, $remarks = null)
+    /**
+     * Approve a batch of estimations.
+     */
+    public function approveBatch($estimations)
     {
-        if ($estimation->current_stage === 'Released') {
+        if ($estimations->isEmpty()) return;
+
+        $firstEst = $estimations->first();
+        if ($firstEst->current_stage === 'Released') {
             throw new \Exception("Budget is already at the final stage.");
         }
 
-        $currentStep = $estimation->workflowStep;
+        $currentStep = $firstEst->workflowStep;
         $nextStep = \App\Models\WorkflowStep::where('is_active', true)
             ->where('order', '>', $currentStep ? $currentStep->order : 0)
             ->orderBy('order', 'asc')
             ->first();
 
+        // Permission check (once for the batch)
         if ($currentStep && $currentStep->required_permission) {
-            abort_if(Auth::user()->cannot($currentStep->required_permission), 403, "You do not have the required permission ({$currentStep->required_permission}) to perform this action.");
+            abort_if(Auth::user()->cannot($currentStep->required_permission), 403, "You do not have the required permission.");
         }
 
+        // Determine next path (once for the batch)
         if (!$nextStep) {
             $nextStage = 'Released';
             $nextTargetId = null;
             $nextStepId = null;
         } else {
             $nextStage = $nextStep->name;
-            $nextTargetId = $this->determineTargetOffice($estimation, $nextStep);
+            $nextTargetId = $this->determineTargetOffice($firstEst, $nextStep);
             $nextStepId = $nextStep->id;
         }
 
-        $remarks = $remarks ?? "Approved by " . (Auth::user()->office->name ?? 'System');
-        $transition = $this->transition($estimation, $nextStage, $remarks, null, $nextTargetId, $nextStepId);
+        $remarks = "Approved by " . (Auth::user()->office->name ?? 'System');
+        $this->batchTransition($estimations, $nextStage, $remarks, null, $nextTargetId, $nextStepId);
 
         if ($nextStage === 'Released') {
-            $this->createAllocation($estimation);
+            foreach ($estimations as $est) {
+                $this->createAllocation($est);
+            }
         }
-
-        return $transition;
     }
 
     /**
-     * Reject a budget.
+     * Reject a batch of estimations.
+     */
+    public function rejectBatch($estimations, $remarks = null)
+    {
+        $remarks = $remarks ?? "Rejected by " . (Auth::user()->office->name ?? 'System');
+        $this->batchTransition($estimations, 'Draft', $remarks, 'draft', null);
+    }
+
+    protected function batchTransition($estimations, $newStage, $remarks, $status = null, $targetOfficeId = null, $workflowStepId = null)
+    {
+        $user = Auth::user();
+        $actionBy = $user->id;
+        $actionName = $user->name ?? 'System';
+        $actionRole = $user->roles->first()->name ?? 'N/A';
+        $actionAt = now()->toDateTimeString();
+
+        foreach ($estimations as $estimation) {
+            $log = $estimation->approval_log ?? [];
+            $log[] = [
+                'from_stage' => $estimation->current_stage,
+                'to_stage' => $newStage,
+                'action_by' => $actionBy,
+                'action_name' => $actionName,
+                'action_role' => $actionRole,
+                'action_at' => $actionAt,
+                'remarks' => $remarks,
+                'amount_demand' => $estimation->amount_demand,
+                'amount_approved' => $estimation->amount_approved ?? $estimation->amount_demand
+            ];
+
+            // We still update individually because JSON fields and 'amount_approved' might vary per row if edited
+            $estimation->update([
+                'current_stage' => $newStage,
+                'target_office_id' => $targetOfficeId,
+                'workflow_step_id' => $workflowStepId,
+                'approval_log' => $log,
+                'status' => $status ?? ($newStage === 'Released' ? 'approved' : 'submitted')
+            ]);
+        }
+    }
+
+    /**
+     * Approve a single budget (wrapper for backward compatibility or single use).
+     */
+    public function approve(BudgetEstimation $estimation, $remarks = null)
+    {
+        $this->approveBatch(collect([$estimation]));
+    }
+
+    /**
+     * Reject a single budget.
      */
     public function reject(BudgetEstimation $estimation, $remarks = null)
     {
-        return $this->transition($estimation, 'Draft', $remarks ?? "Rejected by " . (Auth::user()->office->name ?? 'System'), 'draft', null);
+        $this->rejectBatch(collect([$estimation]), $remarks);
     }
 
     /**
