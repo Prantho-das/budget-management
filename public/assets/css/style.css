@@ -537,4 +537,12 @@ body {
 }
 .common-modal .section-devider {
   margin: 15px 0;
+}
+
+table.common-table-for-all thead tr th {
+  background: #556ee6;
+  text-align: center;
+}
+table.common-table-for-all tbody tr td {
+  font-size: 14px;
 }/*# sourceMappingURL=style.css.map */

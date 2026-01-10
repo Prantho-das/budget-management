@@ -657,3 +657,21 @@ body {
         margin: 15px 0;
     }
 }
+
+table.common-table-for-all {
+    thead {
+        tr {
+            th {
+                background: $theme-blue;
+                text-align: center;
+            }
+        }
+    }
+    tbody {
+        tr {
+            td {
+                font-size: 14px;
+            }
+        }
+    }
+}
