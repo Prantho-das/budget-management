@@ -399,7 +399,7 @@ body {
 }
 
 .login-page-main {
-    height: 100vh;
+    min-height: 100vh;
     position: relative;
     background: url(../images/login/bg.jpg);
     background-size: cover;
@@ -468,6 +468,9 @@ body {
                     text-transform: capitalize;
                     line-height: 1.5;
                     font-family: $roboto;
+                    span {
+                        color: $p-red;
+                    }
                 }
                 .captcha-label {
                     margin-top: 10px;

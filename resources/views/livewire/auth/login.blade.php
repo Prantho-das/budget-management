@@ -17,8 +17,8 @@
             <form action="{{ route('login') }}" method="POST">
                 @csrf
                 <div class="form-group">
-                    <label for="email" class="form-label">{{ __('Enter Email Address') }}</label>
-                    <input type="email" name="email" id="email" placeholder="Enter Your E-mail" class="form-control" value="{{ old('email') }}" required autofocus >
+                    <label for="email" class="form-label">{{ __('User ID') }}</label>
+                    <input type="email" name="email" id="email" placeholder="Type your email/ mobile no./ user id" class="form-control" value="{{ old('email') }}" required autofocus >
                     @error('email') <span class="text-danger small">{{ $message }}</span> @enderror
                     <div class="icon">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
@@ -28,8 +28,8 @@
                     </div>
                 </div>
                 <div class="form-group">
-                       <label for="password" class="form-label">{{ __('Enter Password') }}</label>
-                    <input type="password" name="password" id="password" placeholder="Enter Your Password" class="form-control" required>
+                       <label for="password" class="form-label">{{ __(' Password') }}</label>
+                    <input type="password" name="password" id="password" placeholder="Type  password" class="form-control" required>
                     @error('password') <span class="text-danger small">{{ $message }}</span> @enderror
                     <div class="icon">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
@@ -39,14 +39,19 @@
                     </div>
                 </div>
                  <div class="form-group">
-                     <label for="captcha" class="form-label">{{ __("Enter Result of {$captcha_question} ") }}</label>
-                    <input type="number" name="captcha" id="captcha" placeholder="Result?" class="form-control captcha-control" required>
+                     <label for="captcha" class="form-label">
+                        {{ __("Type Result of  ") }} <span>
+                            {{{$captcha_question}}}
+                        </span>
+                    
+                    </label>
+                    <input type="number" name="captcha" id="captcha" placeholder="Type result" class="form-control captcha-control" required>
                     <div class="icon">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M64 64C28.7 64 0 92.7 0 128L0 384c0 35.3 28.7 64 64 64l448 0c35.3 0 64-28.7 64-64l0-256c0-35.3-28.7-64-64-64L64 64zm16 64l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32c0-8.8 7.2-16 16-16zM64 240c0-8.8 7.2-16 16-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32zM176 128l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32c0-8.8 7.2-16 16-16zM160 240c0-8.8 7.2-16 16-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32zm16 80l224 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-224 0c-8.8 0-16-7.2-16-16l0-32c0-8.8 7.2-16 16-16zm80-176c0-8.8 7.2-16 16-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32zm16 80l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32c0-8.8 7.2-16 16-16zm80-80c0-8.8 7.2-16 16-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32zm16 80l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32c0-8.8 7.2-16 16-16zm80-80c0-8.8 7.2-16 16-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32zm16 80l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32c0-8.8 7.2-16 16-16z"/></svg>
                     </div>
-                    <button type="button" class="btn btn-link try-captcha-btn btn-sm p-0 text-decoration-none" onclick="window.location.reload()">
+                    {{-- <button type="button" class="btn btn-link try-captcha-btn btn-sm p-0 text-decoration-none" onclick="window.location.reload()">
                       {{ __('Try New Captcha') }}
-                    </button>
+                    </button> --}}
                     @error('captcha') <span class="text-danger small d-block">{{ $message }}</span> @enderror
                 </div>
                 <div class="form-group">
