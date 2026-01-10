@@ -26,6 +26,9 @@ class BudgetEstimation extends Model
         'remarks',
         'approver_remarks',
         'batch_id',
+        'revised_amount',
+        'projection_1',
+        'projection_2',
     ];
 
     protected $casts = [

@@ -82,7 +82,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-sm-12 col-md-3 col-md-3">
+                        <div class="col-sm-12 col-md-3 col-md-3 d-none">
                             <div class="form-group">
                                 <label class="form-label">{{ __('Budget Type') }}</label>
                                 <select wire:model.lazy="budget_type_id" class="form-select">
@@ -103,6 +103,16 @@
                                     @endforeach
                                 </select>
                             </div>
+                        <div class="col-sm-12 col-md-3 col-md-3">
+                            <div class="form-group">
+                                <label class="form-label">{{ __('Office') }}</label>
+                                <select wire:model.lazy="selected_office_id" class="form-select">
+                                    <option value="">{{ __('All Offices') }}</option>
+                                    @foreach ($allOffices as $office)
+                                        <option value="{{ $office->id }}">{{ $office->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -120,12 +130,12 @@
                     <div class="card-body">
                         <div class="table-title-box">
                             <div class="title-box-inner">
-                                <div class="title">পরিচালন ব্যায়ের প্রাথমিক প্রাক্কলন ও প্রক্ষেপন সার-সংক্ষেপ</div>
+                                <div class="title">{{ $budgetTypes->find($budget_type_id)->name ?? 'Revenue' }} - {{ __('Expenditure Initial Estimation and Projection Summary') }}</div>
                                 <div class="ministry">
-                                    <span>মন্ত্রণালয় / বিভাগ</span> : ১৬১ সুরক্ষা সেনা বিভাগ,স্বরাষ্ট্র মন্ত্রণালয়
+                                    <span>{{ __('Ministry / Division') }}</span> : {{ $selectedOffice && $selectedOffice->parent ? $selectedOffice->parent->name : get_setting('ministry_name', '১৬১ সুরক্ষা সেনা বিভাগ,স্বরাষ্ট্র মন্ত্রণালয়') }}
                                 </div>
                                 <div class="ministry">
-                                    <span>অধিদপ্তর</span> : ১৬১০৫ ইমিগ্রেশন ও পাসপোর্ট অধিদপ্তর
+                                    <span>{{ __('Department') }}</span> : {{ $selectedOffice ? $selectedOffice->name : get_setting('office_name', '১৬১০৫ ইমিগ্রেশন ও পাসপোর্ট অধিদপ্তর') }}
                                 </div>
                             </div>
                         </div>
@@ -141,7 +151,7 @@
                                         <th>প্রাক্কলন</th>
                                         <th colspan="2">প্রক্ষেপন</th>
                                         <th rowspan="2">অতিরিক্ত <br> দাবি</th>
-                                        <th rowspan="2">ব্যাখ্যামূলক <br> মন্তব্য</th>
+                                        <th rowspan="2">Action</th>
                                     </tr>
                                     <tr>
                                         <th>2022-2023</th>
@@ -204,20 +214,54 @@
                                                 </td>
                                             @endforeach
 
+                                            {{-- Budget (Demand) --}}
                                             <td class="text-end text-info fw-bold">
-                                                {{ $row['demand'] > 0 ? number_format($row['demand'], 0) : '-' }}</td>
-                                            <td class="text-end text-success fw-bold">
-                                                {{ $row['approved'] > 0 ? number_format($row['approved'], 0) : '-' }}
+                                                <input type="number" 
+                                                       class="form-control form-control-sm text-end" 
+                                                       value="{{ $row['demand'] }}"
+                                                       wire:change="updateAmount({{ $office->id }}, $event.target.value, 'demand')"
+                                                       style="min-width: 80px;">
                                             </td>
-                                            <td class="text-end text-warning fw-bold">
-                                                {{ $row['released'] > 0 ? number_format($row['released'], 0) : '-' }}
+
+                                            {{-- Revised --}}
+                                            <td class="text-end">
+                                                <input type="number" 
+                                                       class="form-control form-control-sm text-end" 
+                                                       value="{{ $row['revised'] }}"
+                                                       wire:change="updateAmount({{ $office->id }}, $event.target.value, 'revised')"
+                                                       style="min-width: 80px;">
                                             </td>
+
+                                            {{-- Estimation (Next Year) --}}
+                                            <td class="text-end">
+                                                <input type="number" 
+                                                       class="form-control form-control-sm text-end" 
+                                                       value="{{ $row['projection_1'] }}"
+                                                       wire:change="updateAmount({{ $office->id }}, $event.target.value, 'projection_1')"
+                                                       style="min-width: 80px;">
+                                            </td>
+
+                                            {{-- Projection 1 --}}
                                             <td class="text-end fw-bold">
-                                                {{ $balance > 0 ? number_format($balance, 0) : '-' }}</td>
+                                                 <input type="number" 
+                                                       class="form-control form-control-sm text-end" 
+                                                       value="{{ $row['projection_2'] }}"
+                                                       wire:change="updateAmount({{ $office->id }}, $event.target.value, 'projection_2')"
+                                                       style="min-width: 80px;">
+                                            </td>
+                                            
+                                            {{-- Projection 2 --}}
                                             <td class="text-end"></td>
+                                            
+                                            {{-- Extra Demand --}}
                                             <td class="text-end"></td>
-                                            <td class="text-end"></td>
-                                            <td class="text-end"></td>
+                                            
+                                            {{-- Action --}}
+                                            <td class="text-end">
+                                                <button type="button" class="btn btn-sm btn-success" wire:click="approve({{ $office->id }})" wire:loading.attr="disabled">
+                                                    <i class="bx bx-check"></i> {{ __('Approve') }}
+                                                </button>
+                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -256,123 +300,5 @@
         </div>
     </div>
 
-    {{-- new table as like sheet of HO ends --}}
-
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card">
-                <div class="card-body">
-                    <div class="row mb-3">
-
-                        <div class="col-12 text-center">
-                            <p class="mb-0 small">{{ __('Directorate of Secondary and Higher Education') }}</p>
-                            <p class="mb-0 small">{{ __('Planning and Development Division, Budget Unit') }}</p>
-                            <p class="mb-0 small">
-                                {{ __('Secondary and Higher Education Division, Ministry of Education') }}</p>
-                        </div>
-                    </div>
-
-                    <div class="text-center mb-4">
-                        <h5 class="fw-bold">{{ __('Budget Preparation (HQ)') }}</h5>
-                        @if ($selectedCode)
-                            <p class="text-muted">{{ __('Economic Code') }}: <strong>{{ $selectedCode->code }} -
-                                    {{ $selectedCode->name }}</strong></p>
-                        @endif
-                    </div>
-
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-sm align-middle">
-                            <thead class="bg-light text-center">
-                                <tr>
-                                    <th rowspan="2" style="width: 50px;">{{ __('Sl') }}</th>
-                                    <th rowspan="2">{{ __('Office Name') }}</th>
-                                    <th rowspan="2" style="width: 80px;">{{ __('Code') }}</th>
-                                    <th colspan="{{ count($prevYears) }}" class="bg-soft-info">
-                                        {{ __('Actual Expenditure') }}</th>
-                                    <th colspan="4" class="bg-soft-success">{{ __('Budget Year') }}
-                                        ({{ \App\Models\FiscalYear::find($fiscal_year_id) ? \App\Models\FiscalYear::find($fiscal_year_id)->name : '' }})
-                                    </th>
-                                </tr>
-                                <tr>
-                                    @foreach ($prevYears as $py)
-                                        <th>{{ $py->name }}</th>
-                                    @endforeach
-                                    <th class="text-info">{{ __('Demand') }}</th>
-                                    <th class="text-success">{{ __('Approved') }}</th>
-                                    <th class="text-warning">{{ __('Released') }}</th>
-                                    <th>{{ __('Balance') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @php
-                                    $totals = [
-                                        'historical' => array_fill(0, count($prevYears), 0),
-                                        'demand' => 0,
-                                        'approved' => 0,
-                                        'released' => 0,
-                                    ];
-                                @endphp
-                                @foreach ($offices as $index => $office)
-                                    @php
-                                        $row = $officeWiseData[$office->id];
-                                        $balance = $row['approved'] - $row['released'];
-
-                                        // Update totals
-                                        foreach ($prevYears as $i => $py) {
-                                            $totals['historical'][$i] += $row['historical']["year_{$i}"] ?? 0;
-                                        }
-                                        $totals['demand'] += $row['demand'];
-                                        $totals['approved'] += $row['approved'];
-                                        $totals['released'] += $row['released'];
-                                    @endphp
-                                    <tr>
-                                        <td class="text-center">{{ $index + 1 }}</td>
-                                        <td>{{ $office->name }}</td>
-                                        <td class="text-center">{{ $office->code }}</td>
-
-                                        @foreach ($prevYears as $i => $py)
-                                            <td class="text-end">
-                                                @php $val = $row['historical']["year_{$i}"] ?? 0; @endphp
-                                                {{ $val > 0 ? number_format($val, 0) : '-' }}
-                                            </td>
-                                        @endforeach
-
-                                        <td class="text-end text-info fw-bold">
-                                            {{ $row['demand'] > 0 ? number_format($row['demand'], 0) : '-' }}</td>
-                                        <td class="text-end text-success fw-bold">
-                                            {{ $row['approved'] > 0 ? number_format($row['approved'], 0) : '-' }}</td>
-                                        <td class="text-end text-warning fw-bold">
-                                            {{ $row['released'] > 0 ? number_format($row['released'], 0) : '-' }}</td>
-                                        <td class="text-end fw-bold">
-                                            {{ $balance > 0 ? number_format($balance, 0) : '-' }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                            <tfoot class="bg-light fw-bold">
-                                <tr>
-                                    <td colspan="3" class="text-center">{{ __('Grand Total') }}</td>
-                                    @foreach ($prevYears as $i => $py)
-                                        <td class="text-end">
-                                            {{ $totals['historical'][$i] > 0 ? number_format($totals['historical'][$i], 0) : '-' }}
-                                        </td>
-                                    @endforeach
-                                    <td class="text-end text-info">
-                                        {{ $totals['demand'] > 0 ? number_format($totals['demand'], 0) : '-' }}</td>
-                                    <td class="text-end text-success">
-                                        {{ $totals['approved'] > 0 ? number_format($totals['approved'], 0) : '-' }}
-                                    </td>
-                                    <td class="text-end text-warning">
-                                        {{ $totals['released'] > 0 ? number_format($totals['released'], 0) : '-' }}
-                                    </td>
-                                    <td class="text-end">
-                                        {{ $totals['approved'] - $totals['released'] > 0 ? number_format($totals['approved'] - $totals['released'], 0) : '-' }}
-                                    </td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 </div>

@@ -114,7 +114,8 @@ class BudgetApprovals extends Component
         $previousYears = FiscalYear::where('end_date', '<', $currentFiscalYear->start_date)
             ->orderBy('end_date', 'desc')
             ->take(3)
-            ->get();
+            ->get()
+            ->reverse(); // Reorder to Ascending (Oldest -> Newest) to match demand screen
 
         foreach ($previousYears as $index => $prevYear) {
             $expenses = \App\Models\Expense::where('fiscal_year_id', $prevYear->id)
