@@ -1,4 +1,4 @@
-<div>
+<div class="unitoffice-entry-table budget-status-table">
     <div class="row">
         <div class="col-12">
             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
@@ -100,7 +100,7 @@
                                                                                wire:model="expenseEntries.{{ $code->id }}.amount" placeholder="0.00">
                                                                     </div>
                                                                 </td>
-                                                                <td>
+                                                                <td >
                                                                     <input type="text" class="form-control form-control-sm" 
                                                                            wire:model="expenseEntries.{{ $code->id }}.description" placeholder="{{ __('Notes...') }}">
                                                                 </td>
@@ -169,9 +169,9 @@
                                         <tr>
                                             <td>{{ $expense->date }}</td>
                                             <td><span class="badge bg-primary">{{ $expense->code }}</span></td>
-                                            <td>{{ $expense->economicCode->code ?? '-' }}</td>
+                                            <td class="text-center">{{ $expense->economicCode->code ?? '-' }}</td>
                                             <td>{{ $expense->office->name ?? '-' }}</td>
-                                            <td>{{ number_format($expense->amount, 2) }}</td>
+                                            <td class="text-end">{{ number_format($expense->amount, 2) }}</td>
                                             <td>
                                                 @can('edit-expenses')
                                                     <button wire:click="edit({{ $expense->id }})" class="btn btn-sm btn-info">{{ __('Edit') }}</button>
