@@ -38,124 +38,121 @@
 
                     @if($isOpen)
                         <div class="modal-backdrop fade show"></div>
-                        <div class="modal fade show" tabindex="-1" role="dialog" style="display: block;">
-                            <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header bg-primary text-white">
-                                        <h5 class="modal-title">
-                                            <i class="bx bx-user me-2"></i>
-                                            {{ $user_id ? __('Edit User / Transfer') : __('Create New User') }}
-                                        </h5>
-                                        <button wire:click="closeModal()" type="button" class="btn-close btn-close-white" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <form>
-                                            <div class="row">
-                                                <!-- Personal Information Section -->
-                                                <div class="col-12">
-                                                    <h6 class="text-primary mb-3">
-                                                        <i class="bx bx-id-card me-1"></i>
-                                                        {{ __('Personal Information') }}
-                                                    </h6>
-                                                </div>
-                                                
-                                                <div class="col-md-6 mb-3">
-                                                    <label class="form-label fw-semibold">{{ __('Full Name') }} <span class="text-danger">*</span></label>
-                                                    <div class="input-group">
-                                                        <span class="input-group-text"><i class="bx bx-user"></i></span>
-                                                        <input type="text" class="form-control" wire:model="name" placeholder="{{ __('Enter full name') }}">
-                                                    </div>
-                                                    @error('name') <span class="text-danger small">{{ $message }}</span>@enderror
-                                                </div>
-
-                                                <div class="col-md-6 mb-3">
-                                                    <label class="form-label fw-semibold">{{ __('Designation') }}</label>
-                                                    <div class="input-group">
-                                                        <span class="input-group-text"><i class="bx bx-briefcase"></i></span>
-                                                        <input type="text" class="form-control" wire:model="designation" placeholder="{{ __('e.g., Assistant Director') }}">
-                                                    </div>
-                                                    @error('designation') <span class="text-danger small">{{ $message }}</span>@enderror
-                                                </div>
-
-                                                <div class="col-md-6 mb-3">
-                                                    <label class="form-label fw-semibold">{{ __('Email Address') }} <span class="text-danger">*</span></label>
-                                                    <div class="input-group">
-                                                        <span class="input-group-text"><i class="bx bx-envelope"></i></span>
-                                                        <input type="email" class="form-control" wire:model="email" placeholder="{{ __('user@example.com') }}">
-                                                    </div>
-                                                    @error('email') <span class="text-danger small">{{ $message }}</span>@enderror
-                                                </div>
-
-                                                <div class="col-md-6 mb-3">
-                                                    <label class="form-label fw-semibold">
-                                                        {{ __('Password') }} 
-                                                        @if($user_id)
-                                                            <small class="text-muted">({{ __('Leave blank to keep current') }})</small>
-                                                        @else
-                                                            <span class="text-danger">*</span>
-                                                        @endif
-                                                    </label>
-                                                    <div class="input-group">
-                                                        <span class="input-group-text"><i class="bx bx-lock"></i></span>
-                                                        <input type="password" class="form-control" wire:model="password" placeholder="{{ __('Enter password') }}">
-                                                    </div>
-                                                    @error('password') <span class="text-danger small">{{ $message }}</span>@enderror
-                                                </div>
-
-                                                <!-- Assignment Section -->
-                                                <div class="col-12 mt-3">
-                                                    <h6 class="text-primary mb-3">
-                                                        <i class="bx bx-cog me-1"></i>
-                                                        {{ __('System Assignment') }}
-                                                    </h6>
-                                                </div>
-
-                                                <div class="col-md-6 mb-3">
-                                                    <label class="form-label fw-semibold">{{ __('Assigned Role') }} <span class="text-danger">*</span></label>
-                                                    <div class="input-group">
-                                                        <span class="input-group-text"><i class="bx bx-shield"></i></span>
-                                                        <select class="form-select" wire:model="role">
-                                                            <option value="">{{ __('Select Role') }}</option>
-                                                            @foreach($roles as $r)
-                                                                <option value="{{ $r->name }}">{{ $r->name }}</option>
-                                                            @endforeach
-                                                        </select>
-                                                    </div>
-                                                    @error('role') <span class="text-danger small">{{ $message }}</span>@enderror
-                                                </div>
-
-                                                <div class="col-md-6 mb-3">
-                                                    <label class="form-label fw-semibold">
-                                                        {{ __('Assigned Office') }} <span class="text-danger">*</span>
-                                                        @if($user_id)
-                                                            <small class="text-info">({{ __('Change to transfer') }})</small>
-                                                        @endif
-                                                    </label>
-                                                    <div class="input-group">
-                                                        <span class="input-group-text"><i class="bx bx-buildings"></i></span>
-                                                        <select class="form-select" wire:model="rpo_unit_id">
-                                                            <option value="">{{ __('Select Office') }}</option>
-                                                            @foreach($offices as $office)
-                                                                <option value="{{ $office->id }}">{{ $office->name }} ({{ $office->code }})</option>
-                                                            @endforeach
-                                                        </select>
-                                                    </div>
-                                                    @error('rpo_unit_id') <span class="text-danger small">{{ $message }}</span>@enderror
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
-                                    <div class="modal-footer bg-light">
-                                        <button wire:click="closeModal()" type="button" class="btn btn-secondary">
-                                            <i class="bx bx-x me-1"></i>{{ __('Cancel') }}
-                                        </button>
-                                        <button wire:click="store()" type="button" class="btn btn-primary">
-                                            <i class="bx bx-save me-1"></i>{{ $user_id ? __('Update User') : __('Create User') }}
-                                        </button>
-                                    </div>
+                      <div class="modal fade show common-modal" tabindex="-1" role="dialog" style="display: block;">
+                        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header bg-primary text-white">
+                                    <h5 class="modal-title">
+                                        {{ $user_id ? __('Edit User / Transfer') : __('Create New User') }}
+                                    </h5>
+                                    <button wire:click="closeModal()" type="button" class="btn-close" aria-label="Close"></button>
                                 </div>
+
+                                <div class="modal-body">
+                                    <form>
+                                        <div class="row">
+
+                                            <div class="col-12">
+                                                <h6 class="text-primary">
+                                                    <i class="bx bx-id-card"></i>
+                                                    {{ __('Personal Information') }}
+                                                </h6>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">{{ __('Full Name') }} <span class="text-danger">*</span></label>
+                                                <div class="form-group">
+                                                    <input type="text" class="form-control" wire:model="name" placeholder="{{ __('Enter full name') }}">
+                                                </div>
+                                                @error('name') <span class="text-danger small">{{ $message }}</span>@enderror
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">{{ __('Designation') }}</label>
+                                                <div class="form-group">
+                                                    <input type="text" class="form-control" wire:model="designation" placeholder="{{ __('e.g., Assistant Director') }}">
+                                                </div>
+                                                @error('designation') <span class="text-danger small">{{ $message }}</span>@enderror
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">{{ __('Email Address') }} <span class="text-danger">*</span></label>
+                                                <div class="form-group">
+                                                    <input type="email" class="form-control" wire:model="email" placeholder="{{ __('user@example.com') }}">
+                                                </div>
+                                                @error('email') <span class="text-danger small">{{ $message }}</span>@enderror
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">
+                                                    {{ __('Password') }}
+                                                    @if($user_id)
+                                                        <small class="text-muted">({{ __('Leave blank to keep current') }})</small>
+                                                    @else
+                                                        <span class="text-danger">*</span>
+                                                    @endif
+                                                </label>
+                                                <div class="form-group">
+                                                    <input type="password" class="form-control" wire:model="password" placeholder="{{ __('Enter password') }}">
+                                                </div>
+                                                @error('password') <span class="text-danger small">{{ $message }}</span>@enderror
+                                            </div>
+
+                                            <div class="col-12">
+                                                <h6 class="section-devider">
+                                                    <i class="bx bx-cog"></i>
+                                                    {{ __('System Assignment') }}
+                                                </h6>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">{{ __('Assigned Role') }} <span class="text-danger">*</span></label>
+                                                <div class="form-group">
+                                                    <select class="form-select" wire:model="role">
+                                                        <option value="">{{ __('Select Role') }}</option>
+                                                        @foreach($roles as $r)
+                                                            <option value="{{ $r->name }}">{{ $r->name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                @error('role') <span class="text-danger small">{{ $message }}</span>@enderror
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">
+                                                    {{ __('Assigned Office') }} <span class="text-danger">*</span>
+                                                    @if($user_id)
+                                                        <small class="text-info">({{ __('Change to transfer') }})</small>
+                                                    @endif
+                                                </label>
+                                                <div class="form-group">
+                                                    <select class="form-select" wire:model="rpo_unit_id">
+                                                        <option value="">{{ __('Select Office') }}</option>
+                                                        @foreach($offices as $office)
+                                                            <option value="{{ $office->id }}">{{ $office->name }} ({{ $office->code }})</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                @error('rpo_unit_id') <span class="text-danger small">{{ $message }}</span>@enderror
+                                            </div>
+
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button wire:click="closeModal()" type="button" class="btn btn-sm btn-danger">
+                                        <i class="bx bx-x"></i>{{ __('Cancel') }}
+                                    </button>
+                                    <button wire:click="store()" type="button" class="btn btn-sm btn-success waves-effect waves-light">
+                                        <i class="bx bx-save"></i>{{ $user_id ? __('Update User') : __('Create User') }}
+                                    </button>
+                                </div>
+
                             </div>
                         </div>
+                    </div>
+
                     @endif
 
                     <div class="table-responsive">
@@ -196,7 +193,7 @@
                                         </td>
                                         <td>
                                             @can('edit-users')
-                                                <button wire:click="edit({{ $user->id }})" class="btn btn-sm btn-info">{{ __('Edit / Transfer') }}</button>
+                                                <button wire:click="edit({{ $user->id }})" class="btn btn-sm btn-info">{{ __('Edit') }}</button>
                                             @endcan
                                             <button wire:click="showHistory({{ $user->id }})" class="btn btn-sm btn-secondary">{{ __('History') }}</button>
                                             @if($user->id !== auth()->id())
@@ -214,7 +211,7 @@
                     
                     @if($showTransferHistoryModal)
                         <div class="modal-backdrop fade show"></div>
-                        <div class="modal fade show" tabindex="-1" role="dialog" style="display: block;">
+                        <div class="modal fade show common-modal" tabindex="-1" role="dialog" style="display: block;">
                             <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
                                 <div class="modal-content">
                                     <div class="modal-header">
