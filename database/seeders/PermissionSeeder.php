@@ -48,6 +48,7 @@ class PermissionSeeder extends Seeder
             'create-expenses' => 'Expenses',
             'edit-expenses' => 'Expenses',
             'delete-expenses' => 'Expenses',
+            'approve-expenses' => 'Expenses',
 
             // Budgeting
             'view-budget-estimations' => 'Budget Estimation',

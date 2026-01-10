@@ -12,6 +12,9 @@ class Expense extends Model
 {
     use HasFactory, LogsActivity;
 
+    const STATUS_DRAFT = 'Draft';
+    const STATUS_APPROVED = 'Approved';
+
     protected $fillable = [
         'code',
         'amount',
@@ -21,16 +24,40 @@ class Expense extends Model
         'budget_type_id',
         'rpo_unit_id',
         'fiscal_year_id',
+        'status',
+        'approved_by',
+        'approved_at',
+        'created_by',
     ];
+
+    public function office()
+    {
+        return $this->belongsTo(RpoUnit::class, 'rpo_unit_id');
+    }
+
+    public function economicCode()
+    {
+        return $this->belongsTo(EconomicCode::class, 'economic_code_id');
+    }
+
+    public function approvedBy()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 
     public function budgetType()
     {
         return $this->belongsTo(BudgetType::class);
     }
 
-    public function economicCode()
+    public function fiscalYear()
     {
-        return $this->belongsTo(EconomicCode::class);
+        return $this->belongsTo(FiscalYear::class);
     }
 
     public function getActivitylogOptions(): LogOptions
@@ -39,15 +66,5 @@ class Expense extends Model
             ->logFillable()
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
-    }
-
-    public function office()
-    {
-        return $this->belongsTo(RpoUnit::class, 'rpo_unit_id');
-    }
-
-    public function fiscalYear()
-    {
-        return $this->belongsTo(FiscalYear::class);
     }
 }

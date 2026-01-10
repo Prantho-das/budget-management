@@ -32,7 +32,7 @@
                                     <div class="row align-items-end mb-4">
                                         <div class="col-md-3 mb-3">
                                             <label for="selectedMonth" class="form-label fw-bold">{{ __('Month') }} <span class="text-danger">*</span></label>
-                                            <select class="form-select" id="selectedMonth" wire:model.live="selectedMonth">
+                                            <select class="form-select" id="selectedMonth" wire:model.live="selectedMonth" {{ $expense_id ? 'disabled' : '' }}>
                                                 <option value="">{{ __('Select Month') }}</option>
                                                 <option value="01">{{ __('January') }}</option>
                                                 <option value="02">{{ __('February') }}</option>
@@ -47,11 +47,14 @@
                                                 <option value="11">{{ __('November') }}</option>
                                                 <option value="12">{{ __('December') }}</option>
                                             </select>
+                                            @if($expense_id)
+                                                <span class="text-muted small italic">{{ __('Month cannot be changed during edit') }}</span>
+                                            @endif
                                             @error('selectedMonth') <span class="text-danger small">{{ $message }}</span>@enderror
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <label for="fiscal_year_id" class="form-label fw-bold">{{ __('Fiscal Year') }} <span class="text-danger">*</span></label>
-                                            <select class="form-select" id="fiscal_year_id" wire:model.live="fiscal_year_id">
+                                            <select class="form-select" id="fiscal_year_id" wire:model.live="fiscal_year_id" {{ $expense_id ? 'disabled' : '' }}>
                                                 <option value="">{{ __('Select Year') }}</option>
                                                 @foreach($fiscalYears as $year)
                                                     <option value="{{ $year->id }}">{{ $year->name }}</option>
@@ -184,6 +187,7 @@
                                         <th>{{ __('Economic Code') }}</th>
                                         <th>{{ __('Office') }}</th>
                                         <th class="text-end">{{ __('Amount') }}</th>
+                                        <th class="text-center">{{ __('Status') }}</th>
                                         <th class="text-center">{{ __('Action') }}</th>
                                     </tr>
                                 </thead>
@@ -206,16 +210,44 @@
                                                 <td>{{ $expense->office->name ?? '-' }}</td>
                                                 <td class="text-end">{{ number_format($expense->amount, 2) }}</td>
                                                 <td class="text-center">
-                                                    @can('edit-expenses')
-                                                        <button wire:click="edit({{ $expense->id }})" class="btn btn-soft-info btn-sm" title="{{ __('Edit') }}">
-                                                            <i class="bx bx-edit-alt"></i>
-                                                        </button>
-                                                    @endcan
-                                                    @can('delete-expenses')
-                                                        <button wire:click="delete({{ $expense->id }})" class="btn btn-soft-danger btn-sm" title="{{ __('Delete') }}">
-                                                            <i class="bx bx-trash"></i>
-                                                        </button>
-                                                    @endcan
+                                                    @if($expense->status === App\Models\Expense::STATUS_APPROVED)
+                                                        <span class="badge bg-success" title="{{ __('Approved by') }}: {{ $expense->approvedBy->name ?? 'N/A' }} {{ __('at') }} {{ $expense->approved_at }}">
+                                                            {{ __('Approved') }}
+                                                        </span>
+                                                    @else
+                                                        <span class="badge bg-warning">{{ __('Draft') }}</span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-center">
+                                                    <div class="btn-group btn-group-sm">
+                                                        @if($expense->status === App\Models\Expense::STATUS_DRAFT)
+                                                            {{-- Approval button: visible to those with permission --}}
+                                                            @can('approve-expenses')
+                                                                <button wire:click="approve({{ $expense->id }})" class="btn btn-soft-success" title="{{ __('Approve') }}">
+                                                                    <i class="bx bx-check-double"></i>
+                                                                </button>
+                                                            @endcan
+                                                            
+                                                            {{-- Edit/Delete: only for creator --}}
+                                                            @if($expense->created_by === auth()->id() || auth()->user()->hasRole('Admin'))
+                                                                @can('edit-expenses')
+                                                                    <button wire:click="edit({{ $expense->id }})" class="btn btn-soft-info" title="{{ __('Edit') }}">
+                                                                        <i class="bx bx-edit-alt"></i>
+                                                                    </button>
+                                                                @endcan
+                                                                
+                                                                @can('delete-expenses')
+                                                                    <button wire:click="delete({{ $expense->id }})" class="btn btn-soft-danger" title="{{ __('Delete') }}">
+                                                                        <i class="bx bx-trash"></i>
+                                                                    </button>
+                                                                @endcan
+                                                            @endif
+                                                        @else
+                                                            <button class="btn btn-light btn-sm" disabled title="{{ __('Approved & Locked') }}">
+                                                                <i class="bx bx-lock-alt"></i>
+                                                            </button>
+                                                        @endif
+                                                    </div>
                                                 </td>
                                             </tr>
                                         @endforeach

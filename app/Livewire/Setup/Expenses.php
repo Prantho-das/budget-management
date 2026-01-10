@@ -5,6 +5,7 @@ namespace App\Livewire\Setup;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Expense;
+use App\Models\User;
 use App\Models\ExpenseCategory;
 use App\Models\RpoUnit;
 use App\Models\FiscalYear;
@@ -217,59 +218,74 @@ class Expenses extends Component
         return;
     }
 
-    $hasEntry = false;
-    
-    // Calculate Year based on Fiscal Year and Selected Month
-    $fy = FiscalYear::find($this->fiscal_year_id);
-    $year = date('Y'); // Fallback
-    
-    if ($fy) {
-        $fyStart = \Carbon\Carbon::parse($fy->start_date);
+    if ($this->expense_id) {
+        $expense = Expense::findOrFail($this->expense_id);
         
-        // Example: FY 2024-2025 (July 24 - June 25)
-        // If Selected Month >= FY Start Month (7) -> Use Start Year (2024)
-        // If Selected Month < FY Start Month (7) -> Use End Year (2025) which is Start Year + 1 (usually)
-        // Wait, fiscal year might span differently.
-        // Safer: 
-        // If Month is 7,8,9,10,11,12 -> it must be Start Year
-        // If Month is 1,2,3,4,5,6 -> it must be End Year (Start Year + 1)
-        // This assumes typical July-June FY. 
-        // General logic:
-        
-        $selectedMonthInt = intval($this->selectedMonth);
-        $fyStartMonth = $fyStart->month;
-        
-        if ($selectedMonthInt >= $fyStartMonth) {
-             $year = $fyStart->year;
-        } else {
-             // Basic assumption: If selected month is earlier in year than start month, it's the next year
-             $year = $fyStart->year + 1;
+        // Ownership check again just in case
+        if ($expense->created_by !== auth()->id() && !auth()->user()->hasRole('Admin')) {
+            abort(403);
         }
-    }
-    
-    $expenseDate = $year . '-' . $this->selectedMonth . '-01'; 
-    
-    // Auto-generate Batch/Voucher Code
-    // Format: EXP-{Ymd}-{Random6}
-    $autoCode = 'EXP-' . date('Ymd') . '-' . strtoupper(\Illuminate\Support\Str::random(6));
 
-    foreach ($this->expenseEntries as $codeId => $entry) {
-        $amount = floatval($entry['amount'] ?? 0);
-        $desc = $entry['description'] ?? null;
-
-        if ($amount > 0) {
-            $hasEntry = true;
-
-            Expense::create([
-                'code' => $autoCode . '-' . $codeId, // Append Code ID to ensure uniqueness per line item
-                'amount' => $amount,
-                'description' => $desc,
-                'date' => $expenseDate,
-                'rpo_unit_id' => $this->rpo_unit_id,
-                'fiscal_year_id' => $this->fiscal_year_id,
-                'economic_code_id' => $codeId,
-                'budget_type_id' => $this->budget_type_id 
+        $entry = $this->expenseEntries[$expense->economic_code_id] ?? null;
+        if ($entry && floatval($entry['amount'] ?? 0) > 0) {
+            $expense->update([
+                'amount' => floatval($entry['amount'] ?? 0),
+                'description' => $entry['description'] ?? null,
             ]);
+            $hasEntry = true;
+        }
+    } else {
+        // Calculate Year based on Fiscal Year and Selected Month
+        $fy = FiscalYear::find($this->fiscal_year_id);
+        $year = date('Y'); // Fallback
+        
+        if ($fy) {
+            $fyStart = \Carbon\Carbon::parse($fy->start_date);
+            $selectedMonthInt = intval($this->selectedMonth);
+            $fyStartMonth = $fyStart->month;
+            
+            if ($selectedMonthInt >= $fyStartMonth) {
+                 $year = $fyStart->year;
+            } else {
+                 $year = $fyStart->year + 1;
+            }
+        }
+        
+        $expenseDate = $year . '-' . $this->selectedMonth . '-01'; 
+        
+        // Auto-generate Batch/Voucher Code
+        $autoCode = 'EXP-' . date('Ymd') . '-' . strtoupper(\Illuminate\Support\Str::random(6));
+
+        $hasApproverInOffice = User::where('rpo_unit_id', $this->rpo_unit_id)
+            ->permission('approve-expenses')
+            ->exists();
+
+        $targetStatus = $hasApproverInOffice ? Expense::STATUS_DRAFT : Expense::STATUS_APPROVED;
+        $approvedBy = $hasApproverInOffice ? null : auth()->id();
+        $approvedAt = $hasApproverInOffice ? null : now();
+
+        foreach ($this->expenseEntries as $codeId => $entry) {
+            $amount = floatval($entry['amount'] ?? 0);
+            $desc = $entry['description'] ?? null;
+
+            if ($amount > 0) {
+                $hasEntry = true;
+
+                Expense::create([
+                    'code' => $autoCode . '-' . $codeId,
+                    'amount' => $amount,
+                    'description' => $desc,
+                    'date' => $expenseDate,
+                    'rpo_unit_id' => $this->rpo_unit_id,
+                    'fiscal_year_id' => $this->fiscal_year_id,
+                    'economic_code_id' => $codeId,
+                    'budget_type_id' => $this->budget_type_id,
+                    'status' => $targetStatus,
+                    'created_by' => auth()->id(),
+                    'approved_by' => $approvedBy,
+                    'approved_at' => $approvedAt,
+                ]);
+            }
         }
     }
 
@@ -286,6 +302,17 @@ class Expenses extends Component
   {
     abort_if(auth()->user()->cannot('edit-expenses'), 403);
     $expense = Expense::findOrFail($id);
+
+    if ($expense->status === Expense::STATUS_APPROVED) {
+        session()->flash('error', __('Approved expenses cannot be edited.'));
+        return;
+    }
+
+    if ($expense->created_by !== auth()->id() && !auth()->user()->hasRole('Admin')) {
+        session()->flash('error', __('You can only edit expenses created by yourself.'));
+        return;
+    }
+
     $this->expense_id = $id;
     $this->code = $expense->code;
     // Edit mode is tricky with bulk view because existing expenses are individual rows.
@@ -296,8 +323,8 @@ class Expenses extends Component
     // Re-implementing single edit within this component might be confusing if the view is table-based.
     // For this step, I will focus on CREATE as requested.
     
-    // Populate single entry into the array for consistency?
-    $this->selectedMonth = date('Y-m', strtotime($expense->date));
+    // Populate single entry into the array for consistency
+    $this->selectedMonth = date('m', strtotime($expense->date));
     $this->rpo_unit_id = $expense->rpo_unit_id;
     $this->fiscal_year_id = $expense->fiscal_year_id;
     $this->budget_type_id = $expense->budget_type_id;
@@ -312,16 +339,72 @@ class Expenses extends Component
   public function delete($id)
   {
     abort_if(auth()->user()->cannot('delete-expenses'), 403);
+    $expense = Expense::findOrFail($id);
+    
+    if ($expense->status === Expense::STATUS_APPROVED) {
+        $this->dispatch('alert', ['type' => 'error', 'message' => __('Approved expenses cannot be deleted.')]);
+        return;
+    }
+
+    if ($expense->created_by !== auth()->id() && !auth()->user()->hasRole('Admin')) {
+        $this->dispatch('alert', ['type' => 'error', 'message' => __('You can only delete expenses created by yourself.')]);
+        return;
+    }
+
     $this->dispatch('delete-confirmation', $id);
+  }
+
+  public function approve($id)
+  {
+    $expense = Expense::findOrFail($id);
+    
+    // Permission check: Must have approve-expenses permission.
+    // Additionally, unless they have view-all-offices-data, they must be in the same office.
+    if (!auth()->user()->can('approve-expenses') && !auth()->user()->hasRole('Admin')) {
+        abort(403);
+    }
+    
+    if (!auth()->user()->can('view-all-offices-data') && auth()->user()->rpo_unit_id !== $expense->rpo_unit_id) {
+        $this->dispatch('alert', ['type' => 'error', 'message' => __('You can only approve expenses within your own office.')]);
+        return;
+    }
+    
+    if ($expense->status === Expense::STATUS_APPROVED) {
+        $this->dispatch('alert', ['type' => 'warning', 'message' => __('Already approved.')]);
+        return;
+    }
+
+    $expense->update([
+        'status' => Expense::STATUS_APPROVED,
+        'approved_by' => auth()->id(),
+        'approved_at' => now()
+    ]);
+
+    $this->loadExistingEntries();
+    $this->dispatch('alert', ['type' => 'success', 'message' => __('Expense Approved Successfully.')]);
   }
 
   public function deleteConfirmed($id)
   {
     abort_if(auth()->user()->cannot('delete-expenses'), 403);
     if (is_array($id)) {
-      $id = $id['id'] ?? $id[0];
+        $id = $id['id'] ?? $id[0];
     }
-    Expense::find($id)->delete();
-    session()->flash('message', __('Expense Deleted Successfully.'));
+    
+    $expense = Expense::findOrFail($id);
+
+    if ($expense->status === Expense::STATUS_APPROVED) {
+        $this->dispatch('alert', ['type' => 'error', 'message' => __('Approved expenses cannot be deleted.')]);
+        return;
+    }
+
+    if ($expense->created_by !== auth()->id() && !auth()->user()->hasRole('Admin')) {
+        $this->dispatch('alert', ['type' => 'error', 'message' => __('You can only delete expenses created by yourself.')]);
+        return;
+    }
+
+    $expense->delete();
+    $this->loadExistingEntries();
+    $this->dispatch('alert', ['type' => 'success', 'message' => __('Expense Deleted Successfully.')]);
   }
 }
