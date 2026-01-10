@@ -52,15 +52,18 @@
     <div class="row">
         <div class="col-12">
             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                <h4 class="mb-sm-0 font-size-18">{{ __('Office-wise Budget Summary') }}</h4>
+                <h4 class="mb-sm-0 font-size-18">{{ __('Ministry Budget Preparation') }}</h4>
 
                 <div class="page-title-right d-flex align-items-center">
+                    <button type="button" class="btn btn-soft-warning btn-sm me-2" wire:click="moveAllToDraft" wire:loading.attr="disabled">
+                        <i class="bx bx-undo"></i> {{ __('Move All to Draft') }}
+                    </button>
                     <button type="button" class="btn btn-primary btn-sm me-2" onclick="window.print()">
                         <i class="bx bx-printer"></i> {{ __('Print Report') }}
                     </button>
                     <ol class="breadcrumb m-0 d-none d-sm-flex">
                         <li class="breadcrumb-item"><a href="javascript: void(0);">{{ __('Budgeting') }}</a></li>
-                        <li class="breadcrumb-item active">{{ __('Office-wise') }}</li>
+                        <li class="breadcrumb-item active">{{ __('Ministry Budget Preparation') }}</li>
                     </ol>
                 </div>
             </div>
@@ -69,7 +72,7 @@
 
     <div class="row filter-section">
         <div class="col-lg-12">
-            <div class="card mb-3">
+            <div class="card mb-3 d-none">
                 <div class="card-body">
                     <div class="row g-3 justify-content-end">
                         <div class="col-sm-12 col-md-3 col-md-3">
@@ -167,7 +170,6 @@
                                         <th>প্রাক্কলন</th>
                                         <th colspan="2">প্রক্ষেপন</th>
                                         <th rowspan="2">অতিরিক্ত <br> দাবি</th>
-                                        <th rowspan="2">Action</th>
                                     </tr>
                                     <tr>
                                         <th>{{ $h1 }}</th>
@@ -216,6 +218,7 @@
                                             $totals['revised'] += $row['revised'];
                                             $totals['p1'] += $row['projection_1'];
                                             $totals['p2'] += $row['projection_2'];
+                                            $totals['p3'] += $row['projection_3'];
                                         @endphp
                                         <tr>
                                             <td>{{ $office->name }}</td>
@@ -228,25 +231,15 @@
                                             <td class="text-end text-primary fw-bold">{{ $row['history_part_2'] > 0 ? number_format($row['history_part_2'], 0) : '-' }}</td>
 
                                             {{-- Budget (Demand) (7) --}}
-                                            <td class="text-end">
-                                                <input type="number" class="form-control form-control-sm text-end" 
-                                                       value="{{ $row['demand'] }}"
-                                                       wire:change="updateAmount({{ $office->id }}, $event.target.value, 'demand')"
-                                                       style="min-width: 90px;">
-                                            </td>
+                                            <td class="text-end">{{ $row['demand'] > 0 ? number_format($row['demand'], 0) : '-' }}</td>
 
                                             {{-- Revised (8) --}}
-                                            <td class="text-end">
-                                                <input type="number" class="form-control form-control-sm text-end" 
-                                                       value="{{ $row['revised'] }}"
-                                                       wire:change="updateAmount({{ $office->id }}, $event.target.value, 'revised')"
-                                                       style="min-width: 90px;">
-                                            </td>
+                                            <td class="text-end">{{ $row['revised'] > 0 ? number_format($row['revised'], 0) : '-' }}</td>
 
                                             {{-- Estimation (9) --}}
                                             <td class="text-end">
                                                 <input type="number" class="form-control form-control-sm text-end" 
-                                                       value="{{ $row['projection_1'] }}"
+                                                       value="{{ $row['projection_1'] ?: $row['estimation_suggestion'] }}"
                                                        wire:change="updateAmount({{ $office->id }}, $event.target.value, 'projection_1')"
                                                        style="min-width: 90px;">
                                             </td>
@@ -254,25 +247,21 @@
                                             {{-- Projection 1 (10) --}}
                                             <td class="text-end">
                                                 <input type="number" class="form-control form-control-sm text-end" 
-                                                       value="{{ $row['projection_2'] }}"
+                                                       value="{{ $row['projection_2'] ?: $row['projection1_suggestion'] }}"
                                                        wire:change="updateAmount({{ $office->id }}, $event.target.value, 'projection_2')"
                                                        style="min-width: 90px;">
                                             </td>
 
                                             {{-- Projection 2 (11) --}}
                                             <td class="text-end">
-                                                <input type="number" class="form-control form-control-sm text-end" value="0" disabled style="min-width: 90px;">
+                                                <input type="number" class="form-control form-control-sm text-end" 
+                                                       value="{{ $row['projection_3'] ?: $row['projection2_suggestion'] }}"
+                                                       wire:change="updateAmount({{ $office->id }}, $event.target.value, 'projection_3')"
+                                                       style="min-width: 90px;">
                                             </td>
 
                                             {{-- Extra Demand (12) --}}
                                             <td class="text-end">0</td>
-
-                                            {{-- Action (13) --}}
-                                            <td class="text-center">
-                                                <button type="button" class="btn btn-sm btn-soft-success" wire:click="approve({{ $office->id }})" wire:loading.attr="disabled">
-                                                    <i class="bx bx-check-double"></i>
-                                                </button>
-                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -287,9 +276,8 @@
                                         <td>{{ $totals['revised'] > 0 ? number_format($totals['revised'], 0) : '-' }}</td>
                                         <td>{{ $totals['p1'] > 0 ? number_format($totals['p1'], 0) : '-' }}</td>
                                         <td>{{ $totals['p2'] > 0 ? number_format($totals['p2'], 0) : '-' }}</td>
+                                        <td>{{ $totals['p3'] > 0 ? number_format($totals['p3'], 0) : '-' }}</td>
                                         <td>-</td>
-                                        <td>-</td>
-                                        <td></td>
                                     </tr>
                                 </tfoot>
                             </table>

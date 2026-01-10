@@ -13,7 +13,7 @@ class Users extends Component
 {
     use WithPagination;
 
-    public $name, $designation, $email, $password, $user_id, $rpo_unit_id, $role;
+    public $name, $username, $phone, $designation, $email, $password, $user_id, $rpo_unit_id, $role;
     public $isOpen = false;
     public $search = '';
     public $transferHistory = [];
@@ -27,7 +27,9 @@ class Users extends Component
         $users = User::with(['office', 'roles'])
             ->where(function ($query) {
                 $query->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('email', 'like', '%' . $this->search . '%');
+                    ->orWhere('email', 'like', '%' . $this->search . '%')
+                    ->orWhere('username', 'like', '%' . $this->search . '%')
+                    ->orWhere('phone', 'like', '%' . $this->search . '%');
             })
             ->orderBy('id', 'desc')
             ->paginate(10);
@@ -59,6 +61,8 @@ class Users extends Component
     private function resetInputFields()
     {
         $this->name = '';
+        $this->username = '';
+        $this->phone = '';
         $this->designation = '';
         $this->email = '';
         $this->password = '';
@@ -77,6 +81,8 @@ class Users extends Component
 
         $this->validate([
             'name' => 'required',
+            'username' => 'required|string|max:255|unique:users,username,' . $this->user_id,
+            'phone' => 'required|string|max:255|unique:users,phone,' . $this->user_id,
             'email' => 'required|email|unique:users,email,' . $this->user_id,
             'password' => $this->user_id ? 'nullable|min:6' : 'required|min:6',
             'rpo_unit_id' => 'required',
@@ -85,6 +91,8 @@ class Users extends Component
 
         $userData = [
             'name' => $this->name,
+            'username' => $this->username,
+            'phone' => $this->phone,
             'designation' => $this->designation,
             'email' => $this->email,
             'rpo_unit_id' => $this->rpo_unit_id,
@@ -112,6 +120,8 @@ class Users extends Component
         $user = User::findOrFail($id);
         $this->user_id = $id;
         $this->name = $user->name;
+        $this->username = $user->username;
+        $this->phone = $user->phone;
         $this->designation = $user->designation;
         $this->email = $user->email;
         $this->rpo_unit_id = $user->rpo_unit_id;

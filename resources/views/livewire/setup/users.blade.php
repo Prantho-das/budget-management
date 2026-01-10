@@ -59,12 +59,28 @@
                                                 </h6>
                                             </div>
 
-                                            <div class="col-md-6">
+                                            <div class="col-md-6 mb-3">
                                                 <label class="form-label fw-semibold">{{ __('Full Name') }} <span class="text-danger">*</span></label>
                                                 <div class="form-group">
                                                     <input type="text" class="form-control" wire:model="name" placeholder="{{ __('Enter full name') }}">
                                                 </div>
                                                 @error('name') <span class="text-danger small">{{ $message }}</span>@enderror
+                                            </div>
+
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label fw-semibold">{{ __('Username') }} <span class="text-danger">*</span></label>
+                                                <div class="form-group">
+                                                    <input type="text" class="form-control" wire:model="username" placeholder="{{ __('e.g., john_doe') }}">
+                                                </div>
+                                                @error('username') <span class="text-danger small">{{ $message }}</span>@enderror
+                                            </div>
+
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label fw-semibold">{{ __('Phone Number') }} <span class="text-danger">*</span></label>
+                                                <div class="form-group">
+                                                    <input type="text" class="form-control" wire:model="phone" placeholder="{{ __('e.g., +123456789') }}">
+                                                </div>
+                                                @error('phone') <span class="text-danger small">{{ $message }}</span>@enderror
                                             </div>
 
                                             <div class="col-md-6">
@@ -160,6 +176,7 @@
                             <thead>
                                 <tr>
                                     <th>{{ __('Name') }}</th>
+                                    <th>{{ __('Username / Phone') }}</th>
                                     <th>{{ __('Designation') }}</th>
                                     <th>{{ __('Email') }}</th>
                                     <th>{{ __('Office') }}</th>
@@ -171,6 +188,10 @@
                                 @foreach($users as $user)
                                     <tr>
                                         <td><strong>{{ $user->name }}</strong></td>
+                                        <td>
+                                            <div class="text-primary fw-bold">{{ $user->username }}</div>
+                                            <div class="text-muted small">{{ $user->phone }}</div>
+                                        </td>
                                         <td>
                                             @if($user->designation)
                                                 <span class="text-muted">{{ $user->designation }}</span>

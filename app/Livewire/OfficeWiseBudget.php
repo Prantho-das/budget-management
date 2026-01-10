@@ -43,6 +43,7 @@ class OfficeWiseBudget extends Component
             'revised' => 'revised_amount',
             'projection_1' => 'projection_1',
             'projection_2' => 'projection_2',
+            'projection_3' => 'projection_3',
             default => 'amount_demand'
         };
 
@@ -61,31 +62,30 @@ class OfficeWiseBudget extends Component
         $this->dispatch('alert', ['type' => 'success', 'message' => __('Amount updated.')]);
     }
 
-    public function approve($officeId)
+    public function moveAllToDraft()
     {
         $workflow = new \App\Services\BudgetWorkflowService();
         
-        $query = BudgetEstimation::where('target_office_id', $officeId)
-            ->where('fiscal_year_id', $this->fiscal_year_id);
+        $query = BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id);
             
         if ($this->budget_type_id) {
             $query->where('budget_type_id', $this->budget_type_id);
         }
 
-        // Get estimations that are NOT yet fully approved (or in a state needing approval)
-        // Adjust logic based on exact flow. Assuming we approve pending items.
-        // Or if this is 'Release' approval, maybe different.
-        // For now, using standard approve which moves workflow forward.
+        if ($this->economic_code_id) {
+            $query->where('economic_code_id', $this->economic_code_id);
+        }
+
         $estimations = $query->get();
 
         if ($estimations->isEmpty()) {
-            $this->dispatch('alert', ['type' => 'warning', 'message' => __('No budget found to approve.')]);
+            $this->dispatch('alert', ['type' => 'warning', 'message' => __('No budget found to move to draft.')]);
             return;
         }
 
-        $workflow->approveBatch($estimations);
+        $workflow->rejectBatch($estimations, __('Moved back to draft by Ministry Admin (Bulk Action)'));
         
-        $this->dispatch('alert', ['type' => 'success', 'message' => __('Budget Approved Successfully.')]);
+        $this->dispatch('alert', ['type' => 'success', 'message' => __('All matching budgets moved back to draft.')]);
     }
 
     public function render()
@@ -150,6 +150,7 @@ class OfficeWiseBudget extends Component
                 'revised' => 0,
                 'projection_1' => 0,
                 'projection_2' => 0,
+                'projection_3' => 0,
                 'released' => 0,
             ];
 
@@ -192,12 +193,21 @@ class OfficeWiseBudget extends Component
             $data['revised'] = $estimations->sum('revised_amount');
             $data['projection_1'] = $estimations->sum('projection_1');
             $data['projection_2'] = $estimations->sum('projection_2');
-
+            $data['projection_3'] = $estimations->sum('projection_3');
             // 4. Released
             $allocQuery = BudgetAllocation::where('rpo_unit_id', $office->id)->where('fiscal_year_id', $this->fiscal_year_id);
             if ($this->budget_type_id) $allocQuery->where('budget_type_id', $this->budget_type_id);
             if ($this->economic_code_id) $allocQuery->where('economic_code_id', $this->economic_code_id);
             $data['released'] = $allocQuery->sum('amount');
+
+            // 5. Suggestions (10% increments)
+            $est_suggestion = round($data['history_full_2'] * 1.10, 0);
+            $p1_suggestion = round($est_suggestion * 1.10, 0);
+            $p2_suggestion = round($p1_suggestion * 1.10, 0);
+
+            $data['estimation_suggestion'] = $est_suggestion;
+            $data['projection1_suggestion'] = $p1_suggestion;
+            $data['projection2_suggestion'] = $p2_suggestion;
 
             $officeWiseData[$office->id] = $data;
         }
