@@ -18,6 +18,7 @@
         <link href="{{ asset('assets/css/app.min.css') }}" id="app-style" rel="stylesheet" type="text/css" />
         <!-- App js -->
         {{-- <script src="{{ asset('assets/js/plugin.js') }}"></script> --}}
+    <link rel="stylesheet" href="{{ asset('assets/fontawesome pro/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/responsive.css') }}">
         @stack('head')
