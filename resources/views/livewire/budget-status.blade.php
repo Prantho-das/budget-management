@@ -69,8 +69,8 @@
                                             <div class="small text-muted mt-1">{{ $est->economicCode->name }}</div>
                                         </td>
                                         <td>{{ $est->office->name }}</td>
-                                        <td class="text-end fw-bold">৳ {{ number_format($est->amount_demand, 0) }}</td>
-                                        <td class="text-end text-success">৳
+                                        <td class="text-end fw-bold">{{ number_format($est->amount_demand, 0) }}</td>
+                                        <td class="text-end text-success">
                                             {{ number_format($est->amount_approved ?: 0, 0) }}</td>
                                         <td class="text-center">
                                             @if ($est->status === 'approved')
@@ -171,17 +171,17 @@
                                             </td>
                                             <td class="text-end">
                                                 @if (isset($log['amount_demand']))
-                                                    ৳ {{ number_format($log['amount_demand'], 0) }}
+                                                    {{ number_format($log['amount_demand'], 0) }}
                                                 @else
                                                     <span class="text-muted italic">--</span>
                                                 @endif
                                             </td>
                                             <td class="text-end">
                                                 @if (isset($log['amount_approved']))
-                                                    <strong class="text-success">৳
+                                                    <strong class="text-success">
                                                         {{ number_format($log['amount_approved'], 0) }}</strong>
                                                 @elseif(isset($log['amount_demand']))
-                                                    <strong class="text-success">৳
+                                                    <strong class="text-success">
                                                         {{ number_format($log['amount_demand'], 0) }}</strong>
                                                 @else
                                                     <span class="text-muted italic">--</span>

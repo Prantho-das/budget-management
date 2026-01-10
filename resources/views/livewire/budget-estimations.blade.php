@@ -28,7 +28,7 @@
                         <div class="text-white">
                             <h6 class="text-uppercase mb-3 font-size-13 text-white-50">{{ __('Total Demand Amount') }}
                             </h6>
-                            <h4 class="mb-4 text-white">৳ {{ number_format($totalDemand, 2) }}</h4>
+                            <h4 class="mb-4 text-white">{{ number_format($totalDemand, 2) }}</h4>
                             <span class="badge bg-white text-primary"> {{ $currentFiscalYear->name }} </span> <span
                                 class="ms-2 text-white-50">{{ __('Current FY') }}</span>
                         </div>

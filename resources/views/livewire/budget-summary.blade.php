@@ -133,7 +133,7 @@
                 <div class="card-body">
                     <h5 class="card-title mb-4">{{ __('Total Allocated') }}</h5>
                     <div class="text-center">
-                        <h2 class="text-primary mb-0">৳ {{ number_format($totalAllocated, 2) }}</h2>
+                        <h2 class="text-primary mb-0">{{ number_format($totalAllocated, 2) }}</h2>
                         <p class="text-muted">{{ __('Total Budget Released') }}</p>
                     </div>
                 </div>
@@ -145,7 +145,7 @@
                 <div class="card-body">
                     <h5 class="card-title mb-4">{{ __('Total Expenses') }}</h5>
                     <div class="text-center">
-                        <h2 class="text-warning mb-0">৳ {{ number_format($totalExpenses, 2) }}</h2>
+                        <h2 class="text-warning mb-0">{{ number_format($totalExpenses, 2) }}</h2>
                         <p class="text-muted">{{ __('Total Amount Spent') }}</p>
                     </div>
                 </div>
@@ -157,7 +157,7 @@
                 <div class="card-body">
                     <h5 class="card-title mb-4">{{ __('Available Balance') }}</h5>
                     <div class="text-center">
-                        <h2 class="text-success mb-0">৳ {{ number_format($availableBalance, 2) }}</h2>
+                        <h2 class="text-success mb-0">{{ number_format($availableBalance, 2) }}</h2>
                         <p class="text-muted">{{ __('Remaining Budget') }}</p>
                     </div>
                 </div>
@@ -188,9 +188,9 @@
                                     <tr>
                                         <td><span class="badge bg-primary">{{ $item['code'] }}</span></td>
                                         <td>{{ $item['name'] }}</td>
-                                        <td class="text-end fw-semibold">৳ {{ number_format($item['allocated'], 2) }}</td>
-                                        <td class="text-end text-warning">৳ {{ number_format($item['spent'], 2) }}</td>
-                                        <td class="text-end text-success">৳ {{ number_format($item['balance'], 2) }}</td>
+                                        <td class="text-end fw-semibold">{{ number_format($item['allocated'], 2) }}</td>
+                                        <td class="text-end text-warning">{{ number_format($item['spent'], 2) }}</td>
+                                        <td class="text-end text-success">{{ number_format($item['balance'], 2) }}</td>
                                         <td class="text-center">
                                             <div class="progress" style="height: 20px;">
                                                 <div class="progress-bar {{ $item['utilization'] > 90 ? 'bg-danger' : ($item['utilization'] > 70 ? 'bg-warning' : 'bg-success') }}" 

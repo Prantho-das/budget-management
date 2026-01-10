@@ -95,7 +95,7 @@
                                                             @if($code->parent_id != null)
                                                                 <td>
                                                                     <div class="input-group input-group-sm">
-                                                                        <span class="input-group-text">৳</span>
+                                                                        <span class="input-group-text"></span>
                                                                         <input type="number" step="0.01" class="form-control" 
                                                                                wire:model="expenseEntries.{{ $code->id }}.amount" placeholder="0.00">
                                                                     </div>
@@ -171,7 +171,7 @@
                                             <td><span class="badge bg-primary">{{ $expense->code }}</span></td>
                                             <td>{{ $expense->economicCode->code ?? '-' }}</td>
                                             <td>{{ $expense->office->name ?? '-' }}</td>
-                                            <td>৳ {{ number_format($expense->amount, 2) }}</td>
+                                            <td>{{ number_format($expense->amount, 2) }}</td>
                                             <td>
                                                 @can('edit-expenses')
                                                     <button wire:click="edit({{ $expense->id }})" class="btn btn-sm btn-info">{{ __('Edit') }}</button>

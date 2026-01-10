@@ -47,7 +47,7 @@
                                         <tr>
                                             <td>{{ $officeData['name'] }} <br><small class="text-muted">{{ $officeData['code'] }}</small></td>
                                             <td><span class="badge badge-soft-info">{{ $officeData['budget_type_name'] }}</span></td>
-                                            <td><strong>৳ {{ number_format($officeData['total_demand'], 2) }}</strong></td>
+                                            <td><strong>{{ number_format($officeData['total_demand'], 2) }}</strong></td>
                                             <td><small class="text-muted">{{ date('d M Y, h:i A', strtotime($officeData['created_at'])) }}</small></td>
                                             <td>
                                                 <span class="badge badge-soft-primary font-size-12">{{ __($officeData['current_stage']) }}</span>
@@ -135,17 +135,17 @@
                                             @for($i = 0; $i < 3; $i++)
                                                 <td class="text-end">
                                                     @if(isset($previousDemands[$codeId]["year_{$i}"]))
-                                                        <strong class="text-info">৳ {{ number_format($previousDemands[$codeId]["year_{$i}"]['amount'], 2) }}</strong>
+                                                        <strong class="text-info">{{ number_format($previousDemands[$codeId]["year_{$i}"]['amount'], 2) }}</strong>
                                                     @else
                                                         <span class="text-muted">-</span>
                                                     @endif
                                                 </td>
                                             @endfor
-                                            <td>৳ {{ number_format($data['demand'], 2) }}</td>
+                                            <td>{{ number_format($data['demand'], 2) }}</td>
                                             <td><small>{{ $data['remarks'] ?: '-' }}</small></td>
                                             <td>
                                                 <div class="input-group input-group-sm">
-                                                    <span class="input-group-text">৳</span>
+                                                    <span class="input-group-text"></span>
                                                     <input type="number" 
                                                            class="form-control" 
                                                            value="{{ $data['approved'] }}"
