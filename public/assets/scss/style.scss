@@ -397,3 +397,79 @@ body {
         }
     }
 }
+
+.login-page-main {
+    height: 100vh;
+    position: relative;
+    .login-wrapper {
+        background: $white;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 70%;
+        max-width: 800px;
+        display: flex;
+        flex-wrap: wrap;
+        border-radius: 8px 8px 8px 8px;
+        box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.08);
+        .login-logo-box {
+            width: 50%;
+            padding: 50px;
+        }
+        .login-form-box {
+            width: 50%;
+            padding: 50px;
+            h1 {
+                font-size: 25px;
+                font-weight: 600;
+                text-transform: uppercase;
+                margin-bottom: 20px;
+            }
+            .form-group {
+                margin-bottom: 20px;
+                .form-label {
+                    font-size: 14px;
+                    text-transform: capitalize;
+                    line-height: 1.5;
+                    font-family: $roboto;
+                }
+                .form-control {
+                    border-radius: 0;
+                }
+                .login-btn {
+                    background-color: $p-red;
+                    color: #ffffff;
+                    border-radius: 4px;
+                    height: 43px;
+                    line-height: 43px;
+                    font-size: 16px;
+                    cursor: pointer;
+                    text-align: left;
+                    padding: 0 30px;
+                    display: inline-block;
+                    transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1) 0s;
+                    border: none;
+                    min-width: 150px;
+
+                    i {
+                        background-image: url(../images/arrow-right-white.png);
+                        float: right;
+                        height: 100%;
+                        background-position: center center;
+                        margin-left: 0px;
+                        background-repeat: no-repeat;
+                        width: 17px;
+                        height: 100%;
+                        transition: inherit;
+                    }
+                    &:hover {
+                        i {
+                            margin-right: -8px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
