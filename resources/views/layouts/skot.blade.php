@@ -12,7 +12,7 @@
     <!-- App js -->
     {{-- <script src="{{ asset('assets/js/plugin.js') }}"></script> --}}
     <link rel="stylesheet" href="{{ asset('assets/solaimanlipi-font/bangla-font.css') }}">
-
+    <link rel="stylesheet" href="{{ asset('assets/fontawesome pro/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/responsive.css') }}">
 
