@@ -18,7 +18,8 @@
         <link href="{{ asset('assets/css/app.min.css') }}" id="app-style" rel="stylesheet" type="text/css" />
         <!-- App js -->
         {{-- <script src="{{ asset('assets/js/plugin.js') }}"></script> --}}
-
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/responsive.css') }}">
         @stack('head')
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -26,15 +27,9 @@
     </head>
 
     <body>
-        <div class="account-pages my-5 pt-sm-5">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-md-8 col-lg-6 col-xl-5">
-                        @yield('content')
-                    </div>
-                </div>
-            </div>
-        </div>
+         <main>
+             @yield('content')
+         </main>
         <!-- end account-pages -->
 
         <!-- JAVASCRIPT -->
