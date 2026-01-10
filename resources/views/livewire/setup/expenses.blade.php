@@ -73,6 +73,7 @@
                                                     <tr>
                                                         <th style="width: 100px;">{{ __('Code') }}</th>
                                                         <th>{{ __('Economic Head') }}</th>
+                                                        <th style="width: 150px;" class="text-center">{{ __('Already Spent') }}</th>
                                                         <th style="width: 200px;">{{ __('Expense Amount') }}</th>
                                                         <th>{{ __('Remarks / Description') }}</th>
                                                     </tr>
@@ -93,19 +94,24 @@
                                                             </td>
                                                             
                                                             @if($code->parent_id != null)
+                                                                <td class="text-center">
+                                                                    @php $existing = $existingEntries[$code->id] ?? 0; @endphp
+                                                                    <span class="badge {{ $existing > 0 ? 'bg-success-subtle text-success' : 'bg-light text-muted' }} font-size-12">
+                                                                        {{ number_format($existing, 2) }}
+                                                                    </span>
+                                                                </td>
                                                                 <td>
                                                                     <div class="input-group input-group-sm">
-                                                                        <span class="input-group-text"></span>
                                                                         <input type="number" step="0.01" class="form-control" 
                                                                                wire:model="expenseEntries.{{ $code->id }}.amount" placeholder="0.00">
                                                                     </div>
                                                                 </td>
-                                                                <td >
+                                                                <td>
                                                                     <input type="text" class="form-control form-control-sm" 
                                                                            wire:model="expenseEntries.{{ $code->id }}.description" placeholder="{{ __('Notes...') }}">
                                                                 </td>
                                                             @else
-                                                                <td colspan="2" class="text-muted fst-italic small text-center">{{ __('Parent Head - No Entry') }}</td>
+                                                                <td colspan="3" class="text-muted fst-italic small text-center">{{ __('Parent Head - No Entry') }}</td>
                                                             @endif
                                                         </tr>
                                                     @endforeach
@@ -170,35 +176,56 @@
                         </div>
 
                         <div class="table-responsive">
-                            <table class="table table-bordered dt-responsive nowrap w-100">
-                                <thead>
+                            <table class="table table-bordered align-middle table-nowrap mb-0">
+                                <thead class="table-light">
                                     <tr>
                                         <th>{{ __('Date') }}</th>
                                         <th>{{ __('Code') }}</th>
                                         <th>{{ __('Economic Code') }}</th>
                                         <th>{{ __('Office') }}</th>
-                                        <th>{{ __('Amount') }}</th>
-                                        <th>{{ __('Action') }}</th>
+                                        <th class="text-end">{{ __('Amount') }}</th>
+                                        <th class="text-center">{{ __('Action') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($expenses as $expense)
+                                    @forelse($groupedExpenses as $monthYear => $monthExpenses)
+                                        <tr class="bg-light-subtle">
+                                            <td colspan="4" class="fw-bold text-primary">
+                                                <i class="bx bx-calendar me-1"></i> {{ $monthYear }}
+                                            </td>
+                                            <td class="text-end fw-bold text-primary">
+                                                {{ __('Total') }}: {{ number_format($monthlyTotals[$monthYear] ?? 0, 2) }}
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                        @foreach($monthExpenses as $expense)
+                                            <tr>
+                                                <td class="ps-4">{{ Carbon\Carbon::make($expense->date)->format('d-M-Y') }}</td>
+                                                <td><span class="badge bg-primary-subtle text-primary">{{ $expense->code }}</span></td>
+                                                <td>{{ $expense->economicCode->code ?? '-' }} - {{ $expense->economicCode->name ?? '' }}</td>
+                                                <td>{{ $expense->office->name ?? '-' }}</td>
+                                                <td class="text-end">{{ number_format($expense->amount, 2) }}</td>
+                                                <td class="text-center">
+                                                    @can('edit-expenses')
+                                                        <button wire:click="edit({{ $expense->id }})" class="btn btn-soft-info btn-sm" title="{{ __('Edit') }}">
+                                                            <i class="bx bx-edit-alt"></i>
+                                                        </button>
+                                                    @endcan
+                                                    @can('delete-expenses')
+                                                        <button wire:click="delete({{ $expense->id }})" class="btn btn-soft-danger btn-sm" title="{{ __('Delete') }}">
+                                                            <i class="bx bx-trash"></i>
+                                                        </button>
+                                                    @endcan
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    @empty
                                         <tr>
-                                            <td>{{ Carbon\Carbon::make($expense->date)->format('M-Y') }}</td>
-                                            <td><span class="badge bg-primary">{{ $expense->code }}</span></td>
-                                            <td class="text-center">{{ $expense->economicCode->code ?? '-' }}</td>
-                                            <td>{{ $expense->office->name ?? '-' }}</td>
-                                            <td class="text-end">{{ number_format($expense->amount, 2) }}</td>
-                                            <td>
-                                                @can('edit-expenses')
-                                                    <button wire:click="edit({{ $expense->id }})" class="btn btn-sm btn-info">{{ __('Edit') }}</button>
-                                                @endcan
-                                                @can('delete-expenses')
-                                                    <button wire:click="delete({{ $expense->id }})" class="btn btn-sm btn-danger">{{ __('Delete') }}</button>
-                                                @endcan
+                                            <td colspan="6" class="text-center py-4 text-muted">
+                                                {{ __('No expenses found for the selected filters.') }}
                                             </td>
                                         </tr>
-                                    @endforeach
+                                    @endforelse
                                 </tbody>
                             </table>
                         </div>

@@ -95,7 +95,7 @@
                         <div class="col-sm-12 col-md-3 col-md-3">
                             <div class="form-group">
                                 <label class="form-label">{{ __('Economic Code') }} ({{ __('Optional') }})</label>
-                                <select wire:model.lazy="economic_code_id" class="form-select">
+                                <select wire:model.lazy="economic_code_id" class="form-select custom-select2">
                                     <option value="">{{ __('All Economic Codes (Summary)') }}</option>
                                     @foreach ($economicCodes as $ec)
                                         <option value="{{ $ec->id }}">{{ $ec->code }} - {{ $ec->name }}
@@ -142,6 +142,22 @@
                         <div class="table-responsive">
                             <table class="table table-bordered align-middle custom-budget-table">
                                 <thead>
+                                    @php
+                                        // Helper for Dynamic Headers
+                                        $fyName = $selectedFy->name;
+                                        $parts = explode('-', $fyName);
+                                        $startYearNum = (int)$parts[0];
+                                        
+                                        $h1 = $fullPrevYears[0]->name ?? 'N/A';
+                                        $h2 = $fullPrevYears[1]->name ?? 'N/A';
+                                        $h3_part = $fullPrevYears[1]->name ?? 'N/A';
+                                        $h4_part = $selectedFy->name;
+                                        
+                                        $budget_fy = $selectedFy->name;
+                                        $est_fy = $startYearNum + 1 . '-' . substr($startYearNum + 2, -2);
+                                        $proj1_fy = $startYearNum + 2 . '-' . substr($startYearNum + 3, -2);
+                                        $proj2_fy = $startYearNum + 3 . '-' . substr($startYearNum + 4, -2);
+                                    @endphp
                                     <tr class="table-primary text-center">
                                         <th rowspan="2">অফিসের নাম</th>
                                         <th rowspan="2">অফিস কোড</th>
@@ -154,141 +170,126 @@
                                         <th rowspan="2">Action</th>
                                     </tr>
                                     <tr>
-                                        <th>2022-2023</th>
-                                        <th>2023-24</th>
-                                        <th>প্রথম ৬ মাস <br> 2023-24</th>
-                                        <th>প্রথম ৬ মাস <br> 2024-25</th>
-                                        <th>2024-25</th>
-                                        <th>2024-25</th>
-                                        <th>2025-26</th>
-                                        <th>2026-27</th>
-                                        <th>2027-28</th>
+                                        <th>{{ $h1 }}</th>
+                                        <th>{{ $h2 }}</th>
+                                        <th>প্রথম ৬ মাস <br> {{ $h3_part }}</th>
+                                        <th>প্রথম ৬ মাস <br> {{ $h4_part }}</th>
+                                        <th>{{ $budget_fy }}</th>
+                                        <th>{{ $budget_fy }}</th>
+                                        <th>{{ $est_fy }}</th>
+                                        <th>{{ $proj1_fy }}</th>
+                                        <th>{{ $proj2_fy }}</th>
                                     </tr>
                                     <tr>
                                         <th>1</th>
                                         <th>2</th>
                                         <th>3</th>
                                         <th>4</th>
-                                        <th></th>
                                         <th>5</th>
                                         <th>6</th>
                                         <th>7</th>
                                         <th>8</th>
                                         <th>9</th>
                                         <th>10</th>
-                                        <th></th>
                                         <th>11</th>
+                                        <th>12</th>
+                                        <th>13</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @php
                                         $totals = [
-                                            'historical' => array_fill(0, count($prevYears), 0),
-                                            'demand' => 0,
-                                            'approved' => 0,
-                                            'released' => 0,
+                                            'h1' => 0, 'h2' => 0, 'hp1' => 0, 'hp2' => 0,
+                                            'demand' => 0, 'revised' => 0, 'p1' => 0, 'p2' => 0, 'p3' => 0,
+                                            'extra' => 0
                                         ];
                                     @endphp
                                     @foreach ($offices as $index => $office)
                                         @php
                                             $row = $officeWiseData[$office->id];
-                                            $balance = $row['approved'] - $row['released'];
-
-                                            // Update totals
-                                            foreach ($prevYears as $i => $py) {
-                                                $totals['historical'][$i] += $row['historical']["year_{$i}"] ?? 0;
-                                            }
+                                            
+                                            $totals['h1'] += $row['history_full_1'];
+                                            $totals['h2'] += $row['history_full_2'];
+                                            $totals['hp1'] += $row['history_part_1'];
+                                            $totals['hp2'] += $row['history_part_2'];
                                             $totals['demand'] += $row['demand'];
-                                            $totals['approved'] += $row['approved'];
-                                            $totals['released'] += $row['released'];
+                                            $totals['revised'] += $row['revised'];
+                                            $totals['p1'] += $row['projection_1'];
+                                            $totals['p2'] += $row['projection_2'];
                                         @endphp
                                         <tr>
-
                                             <td>{{ $office->name }}</td>
                                             <td class="text-center">{{ $office->code }}</td>
 
-                                            @foreach ($prevYears as $i => $py)
-                                                <td class="text-end">
-                                                    @php $val = $row['historical']["year_{$i}"] ?? 0; @endphp
-                                                    {{ $val > 0 ? number_format($val, 0) : '-' }}
-                                                </td>
-                                            @endforeach
+                                            {{-- Actual Expenditure (3, 4, 5, 6) --}}
+                                            <td class="text-end">{{ $row['history_full_1'] > 0 ? number_format($row['history_full_1'], 0) : '-' }}</td>
+                                            <td class="text-end">{{ $row['history_full_2'] > 0 ? number_format($row['history_full_2'], 0) : '-' }}</td>
+                                            <td class="text-end">{{ $row['history_part_1'] > 0 ? number_format($row['history_part_1'], 0) : '-' }}</td>
+                                            <td class="text-end text-primary fw-bold">{{ $row['history_part_2'] > 0 ? number_format($row['history_part_2'], 0) : '-' }}</td>
 
-                                            {{-- Budget (Demand) --}}
-                                            <td class="text-end text-info fw-bold">
-                                                <input type="number" 
-                                                       class="form-control form-control-sm text-end" 
+                                            {{-- Budget (Demand) (7) --}}
+                                            <td class="text-end">
+                                                <input type="number" class="form-control form-control-sm text-end" 
                                                        value="{{ $row['demand'] }}"
                                                        wire:change="updateAmount({{ $office->id }}, $event.target.value, 'demand')"
-                                                       style="min-width: 80px;">
+                                                       style="min-width: 90px;">
                                             </td>
 
-                                            {{-- Revised --}}
+                                            {{-- Revised (8) --}}
                                             <td class="text-end">
-                                                <input type="number" 
-                                                       class="form-control form-control-sm text-end" 
+                                                <input type="number" class="form-control form-control-sm text-end" 
                                                        value="{{ $row['revised'] }}"
                                                        wire:change="updateAmount({{ $office->id }}, $event.target.value, 'revised')"
-                                                       style="min-width: 80px;">
+                                                       style="min-width: 90px;">
                                             </td>
 
-                                            {{-- Estimation (Next Year) --}}
+                                            {{-- Estimation (9) --}}
                                             <td class="text-end">
-                                                <input type="number" 
-                                                       class="form-control form-control-sm text-end" 
+                                                <input type="number" class="form-control form-control-sm text-end" 
                                                        value="{{ $row['projection_1'] }}"
                                                        wire:change="updateAmount({{ $office->id }}, $event.target.value, 'projection_1')"
-                                                       style="min-width: 80px;">
+                                                       style="min-width: 90px;">
                                             </td>
 
-                                            {{-- Projection 1 --}}
-                                            <td class="text-end fw-bold">
-                                                 <input type="number" 
-                                                       class="form-control form-control-sm text-end" 
+                                            {{-- Projection 1 (10) --}}
+                                            <td class="text-end">
+                                                <input type="number" class="form-control form-control-sm text-end" 
                                                        value="{{ $row['projection_2'] }}"
                                                        wire:change="updateAmount({{ $office->id }}, $event.target.value, 'projection_2')"
-                                                       style="min-width: 80px;">
+                                                       style="min-width: 90px;">
                                             </td>
-                                            
-                                            {{-- Projection 2 --}}
-                                            <td class="text-end"></td>
-                                            
-                                            {{-- Extra Demand --}}
-                                            <td class="text-end"></td>
-                                            
-                                            {{-- Action --}}
+
+                                            {{-- Projection 2 (11) --}}
                                             <td class="text-end">
-                                                <button type="button" class="btn btn-sm btn-success" wire:click="approve({{ $office->id }})" wire:loading.attr="disabled">
-                                                    <i class="bx bx-check"></i> {{ __('Approve') }}
+                                                <input type="number" class="form-control form-control-sm text-end" value="0" disabled style="min-width: 90px;">
+                                            </td>
+
+                                            {{-- Extra Demand (12) --}}
+                                            <td class="text-end">0</td>
+
+                                            {{-- Action (13) --}}
+                                            <td class="text-center">
+                                                <button type="button" class="btn btn-sm btn-soft-success" wire:click="approve({{ $office->id }})" wire:loading.attr="disabled">
+                                                    <i class="bx bx-check-double"></i>
                                                 </button>
                                             </td>
                                         </tr>
                                     @endforeach
                                 </tbody>
-                                <tfoot class="bg-light fw-bold">
-                                    <tr>
-                                        <td class="text-center">{{ __('Grand Total') }}</td>
-                                        @foreach ($prevYears as $i => $py)
-                                            <td class="text-end">
-                                                {{ $totals['historical'][$i] > 0 ? number_format($totals['historical'][$i], 0) : '-' }}
-                                            </td>
-                                        @endforeach
-                                        <td class="text-end text-info">
-                                            {{ $totals['demand'] > 0 ? number_format($totals['demand'], 0) : '-' }}
-                                        </td>
-                                        <td class="text-end text-success">
-                                            {{ $totals['approved'] > 0 ? number_format($totals['approved'], 0) : '-' }}
-                                        </td>
-                                        <td class="text-end text-warning">
-                                            {{ $totals['released'] > 0 ? number_format($totals['released'], 0) : '-' }}
-                                        </td>
-                                        <td class="text-end">
-                                            {{ $totals['approved'] - $totals['released'] > 0 ? number_format($totals['approved'] - $totals['released'], 0) : '-' }}
-                                        </td>
-                                        <td class="text-end"></td>
-                                        <td class="text-end"></td>
-                                        <td class="text-end"></td>
-                                        <td class="text-end"></td>
+                                <tfoot class="table-light fw-bold">
+                                    <tr class="text-end">
+                                        <td colspan="2" class="text-center">{{ __('Grand Total') }}</td>
+                                        <td>{{ $totals['h1'] > 0 ? number_format($totals['h1'], 0) : '-' }}</td>
+                                        <td>{{ $totals['h2'] > 0 ? number_format($totals['h2'], 0) : '-' }}</td>
+                                        <td>{{ $totals['hp1'] > 0 ? number_format($totals['hp1'], 0) : '-' }}</td>
+                                        <td>{{ $totals['hp2'] > 0 ? number_format($totals['hp2'], 0) : '-' }}</td>
+                                        <td>{{ $totals['demand'] > 0 ? number_format($totals['demand'], 0) : '-' }}</td>
+                                        <td>{{ $totals['revised'] > 0 ? number_format($totals['revised'], 0) : '-' }}</td>
+                                        <td>{{ $totals['p1'] > 0 ? number_format($totals['p1'], 0) : '-' }}</td>
+                                        <td>{{ $totals['p2'] > 0 ? number_format($totals['p2'], 0) : '-' }}</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td></td>
                                     </tr>
                                 </tfoot>
                             </table>

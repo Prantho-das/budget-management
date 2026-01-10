@@ -21,6 +21,7 @@ class Expenses extends Component
     // New properties for bulk entry
     public $selectedMonth;
     public $expenseEntries = []; // [code_id => ['amount' => 0, 'description' => '']]
+    public $existingEntries = []; // [code_id => amount] for context
     
     public $expense_id;
     public $isOpen = 0;
@@ -43,6 +44,8 @@ class Expenses extends Component
       
       $defaultBudgetType = BudgetType::where('status', true)->orderBy('order_priority')->first();
       $this->budget_type_id = $defaultBudgetType ? $defaultBudgetType->id : '';
+
+      $this->loadExistingEntries();
   }
 
   public function updatedFilterFiscalYearId()
@@ -80,8 +83,22 @@ class Expenses extends Component
       ->when(!auth()->user()->can('view-all-offices-data'), function ($query) {
         $query->where('rpo_unit_id', auth()->user()->rpo_unit_id);
       })
-      ->orderBy('id', 'desc')
-      ->paginate(10);
+      ->orderBy('date', 'desc')
+      ->paginate(50); // Increased for better grouping view
+
+    $groupedExpenses = $expenses->getCollection()->groupBy(function($item) {
+        return \Carbon\Carbon::parse($item->date)->format('F Y');
+    });
+
+    $monthlyTotals = Expense::selectRaw('DATE_FORMAT(date, "%M %Y") as month_year, SUM(amount) as total')
+        ->when($this->filter_fiscal_year_id, function($query) {
+            $query->where('fiscal_year_id', $this->filter_fiscal_year_id);
+        })
+        ->when(!auth()->user()->can('view-all-offices-data'), function ($query) {
+            $query->where('rpo_unit_id', auth()->user()->rpo_unit_id);
+        })
+        ->groupBy('month_year')
+        ->pluck('total', 'month_year');
 
     $offices = RpoUnit::all();
     $fiscalYears = FiscalYear::orderBy('name', 'desc')->get();
@@ -89,6 +106,8 @@ class Expenses extends Component
 
     return view('livewire.setup.expenses', [
       'expenses' => $expenses,
+      'groupedExpenses' => $groupedExpenses,
+      'monthlyTotals' => $monthlyTotals,
       'offices' => $offices,
       'fiscalYears' => $fiscalYears,
       'economicCodes' => $orderedCodes, // Hierarchical list
@@ -98,6 +117,24 @@ class Expenses extends Component
 
   public function updated($propertyName)
   {
+      if (in_array($propertyName, ['selectedMonth', 'fiscal_year_id', 'rpo_unit_id'])) {
+          $this->loadExistingEntries();
+      }
+  }
+
+  public function loadExistingEntries()
+  {
+      if ($this->selectedMonth && $this->fiscal_year_id && $this->rpo_unit_id) {
+          $this->existingEntries = Expense::where('fiscal_year_id', $this->fiscal_year_id)
+              ->where('rpo_unit_id', $this->rpo_unit_id)
+              ->whereMonth('date', $this->selectedMonth)
+              ->get()
+              ->groupBy('economic_code_id')
+              ->map(fn($group) => $group->sum('amount'))
+              ->toArray();
+      } else {
+          $this->existingEntries = [];
+      }
   }
 
   public function calculateBalance()
@@ -157,6 +194,8 @@ class Expenses extends Component
     
     $this->totalReleased = 0;
     $this->availableBalance = 0;
+
+    $this->loadExistingEntries();
   }
 
   public function store()

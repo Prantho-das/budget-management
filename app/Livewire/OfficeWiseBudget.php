@@ -92,9 +92,21 @@ class OfficeWiseBudget extends Component
     {
         abort_if(auth()->user()->cannot('release-budget'), 403);
 
-        $fiscalYears = FiscalYear::orderBy('id', 'desc')->get();
-        $budgetTypes = BudgetType::all();
-        $economicCodes = EconomicCode::orderBy('code')->get();
+        $fiscalYears = FiscalYear::orderBy('start_date', 'desc')->get();
+        $budgetTypes = BudgetType::where('status', true)->orderBy('order_priority')->get();
+        
+        // Hierarchical Economic Codes (matching BudgetEstimations.php)
+        $allCodes = EconomicCode::with(['children', 'parent'])->get();
+        $orderedCodes = [];
+        $roots = $allCodes->whereNull('parent_id')->sortBy('code');
+        foreach ($roots as $root) {
+            $orderedCodes[] = $root;
+            $children = $allCodes->where('parent_id', $root->id)->sortBy('code');
+            foreach ($children as $child) {
+                $orderedCodes[] = $child;
+            }
+        }
+        $economicCodes = $orderedCodes;
 
         // Get Offices
         $officeQuery = RpoUnit::orderBy('code');
@@ -105,95 +117,87 @@ class OfficeWiseBudget extends Component
             $selectedOffice = null;
         }
         $offices = $officeQuery->get();
-        
-        // For filter dropdown, get all
         $allOffices = RpoUnit::orderBy('code')->get();
 
-        // Determine Previous Years based on selected
+        // --- Logic Synchronization (Robust FY Detection) ---
         $selectedFy = FiscalYear::find($this->fiscal_year_id);
-        $prevYears = [];
-        if ($selectedFy) {
-             $parts = explode('-', $selectedFy->name);
-             if (count($parts) == 2) {
-                 $startYear = (int)$parts[0];
-                 for ($i = 2; $i >= 1; $i--) {
-                     $pStart = $startYear - $i;
-                     $pEnd = $pStart + 1;
-                     $pName = $pStart . '-' . substr($pEnd, -2);
-                     $prevYears[] = $pName;
-                 }
-             }
-        }
         
-        // Structure: [office_id => ['historical' => [year => val], 'demand' => val, 'approved' => val, 'released' => val]]
+        // Full Previous Years (2 full years)
+        $fullPrevYears = FiscalYear::where('end_date', '<', $selectedFy->start_date)
+            ->orderBy('end_date', 'desc')
+            ->take(2)
+            ->get()
+            ->reverse()
+            ->values(); // [0 => FY-2, 1 => FY-1]
+
+        // Partial Year Mapping (First 6 months: July-Dec)
+        // Design: 
+        // Col 3: FY-2 Full
+        // Col 4: FY-1 Full
+        // Col 5: FY-1 (First 6 Mo)
+        // Col 6: Selected FY (First 6 Mo)
+        
         $officeWiseData = [];
 
         foreach ($offices as $office) {
             $data = [
-                'historical' => [],
+                'history_full_1' => 0, // FY-2
+                'history_full_2' => 0, // FY-1
+                'history_part_1' => 0, // FY-1 (6mo)
+                'history_part_2' => 0, // FY (6mo)
                 'demand' => 0,
                 'approved' => 0,
-                'released' => 0,
                 'revised' => 0,
                 'projection_1' => 0,
-                'projection_2' => 0
+                'projection_2' => 0,
+                'released' => 0,
             ];
 
-            // 1. Historical Expenses
-            foreach ($prevYears as $idx => $pName) {
-                // Find FY ID by name
-                $pFY = $fiscalYears->where('name', $pName)->first();
-                if ($pFY) {
-                    $query = Expense::where('rpo_unit_id', $office->id)
-                                    ->where('fiscal_year_id', $pFY->id);
-                    
-                    if ($this->budget_type_id) {
-                        $query->where('budget_type_id', $this->budget_type_id);
-                    }
-                    if ($this->economic_code_id) {
-                        $query->where('economic_code_id', $this->economic_code_id);
-                    }
-                    
-                    $data['historical']["year_{$idx}"] = $query->sum('amount');
-                } else {
-                    $data['historical']["year_{$idx}"] = 0;
-                }
+            // 1. Full Historical (FY-2, FY-1)
+            foreach ($fullPrevYears as $idx => $fy) {
+                $q = Expense::where('rpo_unit_id', $office->id)->where('fiscal_year_id', $fy->id);
+                if ($this->budget_type_id) $q->where('budget_type_id', $this->budget_type_id);
+                if ($this->economic_code_id) $q->where('economic_code_id', $this->economic_code_id);
+                
+                $field = $idx === 0 ? 'history_full_1' : 'history_full_2';
+                $data[$field] = $q->sum('amount');
             }
 
-            // 2. Current Estimates (Demand) & Approved
-            if ($this->fiscal_year_id) {
-                $estQuery = BudgetEstimation::where('target_office_id', $office->id)
-                    ->where('fiscal_year_id', $this->fiscal_year_id);
-                
-                 if ($this->budget_type_id) {
-                    $estQuery->where('budget_type_id', $this->budget_type_id);
-                }
-                if ($this->economic_code_id) {
-                    $estQuery->where('economic_code_id', $this->economic_code_id);
-                }
-                
-                $estimations = $estQuery->get();
-                $data['demand'] = $estimations->sum('amount_demand');
-                $data['approved'] = $estimations->sum('amount_approved');
-                $data['revised'] = $estimations->sum('revised_amount');
-                $data['projection_1'] = $estimations->sum('projection_1');
-                $data['projection_2'] = $estimations->sum('projection_2');
+            // 2. Partial Historical (6 Months)
+            // FY-1 (First 6 mo)
+            if ($fullPrevYears->count() >= 2) {
+                $fy1 = $fullPrevYears[1]; // Latest full past year
+                $q = Expense::where('rpo_unit_id', $office->id)->where('fiscal_year_id', $fy1->id)
+                    ->whereMonth('date', '>=', 7); // July-Dec
+                if ($this->budget_type_id) $q->where('budget_type_id', $this->budget_type_id);
+                if ($this->economic_code_id) $q->where('economic_code_id', $this->economic_code_id);
+                $data['history_part_1'] = $q->sum('amount');
             }
 
-            // 3. Released (Allocation)
-            if ($this->fiscal_year_id) {
-               $allocQuery = BudgetAllocation::where('rpo_unit_id', $office->id)
-                   ->where('fiscal_year_id', $this->fiscal_year_id);
-                
-                if ($this->budget_type_id) {
-                    $allocQuery->where('budget_type_id', $this->budget_type_id);
-                }
-                if ($this->economic_code_id) {
-                    $allocQuery->where('economic_code_id', $this->economic_code_id);
-                }
-                
-                $data['released'] = $allocQuery->sum('amount');
-            }
+            // Selected FY (First 6 mo)
+            $q = Expense::where('rpo_unit_id', $office->id)->where('fiscal_year_id', $this->fiscal_year_id)
+                ->whereMonth('date', '>=', 7);
+            if ($this->budget_type_id) $q->where('budget_type_id', $this->budget_type_id);
+            if ($this->economic_code_id) $q->where('economic_code_id', $this->economic_code_id);
+            $data['history_part_2'] = $q->sum('amount');
+
+            // 3. Current Estimates
+            $estQuery = BudgetEstimation::where('target_office_id', $office->id)->where('fiscal_year_id', $this->fiscal_year_id);
+            if ($this->budget_type_id) $estQuery->where('budget_type_id', $this->budget_type_id);
+            if ($this->economic_code_id) $estQuery->where('economic_code_id', $this->economic_code_id);
+            
+            $estimations = $estQuery->get();
+            $data['demand'] = $estimations->sum('amount_demand');
+            $data['approved'] = $estimations->sum('amount_approved');
+            $data['revised'] = $estimations->sum('revised_amount');
+            $data['projection_1'] = $estimations->sum('projection_1');
+            $data['projection_2'] = $estimations->sum('projection_2');
+
+            // 4. Released
+            $allocQuery = BudgetAllocation::where('rpo_unit_id', $office->id)->where('fiscal_year_id', $this->fiscal_year_id);
+            if ($this->budget_type_id) $allocQuery->where('budget_type_id', $this->budget_type_id);
+            if ($this->economic_code_id) $allocQuery->where('economic_code_id', $this->economic_code_id);
+            $data['released'] = $allocQuery->sum('amount');
 
             $officeWiseData[$office->id] = $data;
         }
@@ -205,7 +209,8 @@ class OfficeWiseBudget extends Component
             'offices' => $offices,
             'allOffices' => $allOffices,
             'selectedOffice' => $selectedOffice,
-            'prevYears' => $prevYears,
+            'selectedFy' => $selectedFy,
+            'fullPrevYears' => $fullPrevYears,
             'officeWiseData' => $officeWiseData
         ])->extends('layouts.skot')->section('content');
     }
