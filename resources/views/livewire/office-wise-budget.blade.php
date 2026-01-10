@@ -9,7 +9,7 @@
             .btn,
             .breadcrumb,
             .filter-section {
-                display: none !important;
+                /* display: none !important; */
             }
 
             .main-content {
