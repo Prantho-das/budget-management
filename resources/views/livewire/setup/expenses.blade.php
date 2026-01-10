@@ -203,7 +203,7 @@
                             </table>
                         </div>
 
-                        <div class="mt-4">
+                        <div class="custom-pagination-wrpaper">
                             {{ $expenses->links() }}
                         </div>
                     @endif
