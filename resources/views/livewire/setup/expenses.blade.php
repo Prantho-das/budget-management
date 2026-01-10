@@ -185,7 +185,8 @@
                                     @foreach($expenses as $expense)
                                         <tr>
                                             <td>{{ Carbon\Carbon::make($expense->date)->format('M-Y') }}</td>
-                                            <td><span class="badge bg-primary">{{ $expense->code }}</span></td>
+                                            {{-- <td><span class="badge bg-primary">{{ $expense->code }}</span></td> --}}
+                                            <td>{{ $expense->code }}</td>
                                             <td class="text-center">{{ $expense->economicCode->code ?? '-' }}</td>
                                             <td>{{ $expense->office->name ?? '-' }}</td>
                                             <td class="text-end">{{ number_format($expense->amount, 2) }}</td>
