@@ -33,7 +33,7 @@
 
                     @if($isOpen)
                         <div class="modal-backdrop fade show"></div>
-                        <div class="modal fade show" tabindex="-1" role="dialog" style="display: block;">
+                        <div class="modal fade show common-modal" tabindex="-1" role="dialog" style="display: block;">
                             <div class="modal-dialog modal-dialog-centered" role="document">
                                 <div class="modal-content text-dark">
                                     <div class="modal-header">
@@ -42,31 +42,32 @@
                                     </div>
                                     <div class="modal-body">
                                         <form>
-                                            <div class="mb-3">
+                                            <div class="form-group">
                                                 <label for="name" class="form-label">{{ __('Type Name') }}</label>
                                                 <input type="text" class="form-control" id="name" wire:model="name" placeholder="{{ __('e.g. Original Budget') }}">
                                                 @error('name') <span class="text-danger">{{ $message }}</span>@enderror
                                             </div>
-                                            <div class="mb-3">
+                                            <div class="form-group">
                                                 <label for="code" class="form-label">{{ __('Short Code (Unique)') }}</label>
                                                 <input type="text" class="form-control" id="code" wire:model="code" placeholder="{{ __('e.g. original') }}">
                                                 @error('code') <span class="text-danger">{{ $message }}</span>@enderror
                                             </div>
-                                            <div class="mb-3">
+                                            <div class="form-group">
                                                 <label for="order_priority" class="form-label">{{ __('Sequence (Order Priority)') }}</label>
                                                 <input type="number" class="form-control" id="order_priority" wire:model="order_priority" placeholder="1, 2, 3...">
                                                 @error('order_priority') <span class="text-danger">{{ $message }}</span>@enderror
                                                 <small class="text-muted">{{ __('Higher priority means it comes later in the sequence.') }}</small>
                                             </div>
-                                            <div class="form-check form-switch mb-3">
-                                                <input class="form-check-input" type="checkbox" id="status" wire:model="status">
-                                                <label class="form-check-input" for="status">{{ __('Active Status') }}</label>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" role="switch" id="Activestatus" wire:model="status">
+                                                <label class="form-check-label" for="status">{{ __('Active Status') }}</label>
                                             </div>
+                                         
                                         </form>
                                     </div>
                                     <div class="modal-footer">
-                                        <button wire:click="closeModal()" type="button" class="btn btn-secondary">{{ __('Close') }}</button>
-                                        <button wire:click="store()" type="button" class="btn btn-primary">{{ __('Save Changes') }}</button>
+                                        <button wire:click="closeModal()" type="button" class="btn btn-sm btn-danger">{{ __('Close') }}</button>
+                                        <button wire:click="store()" type="button" class="btn btn-sm btn-success waves-effect waves-light">{{ __('Save Changes') }}</button>
                                     </div>
                                 </div>
                             </div>

@@ -470,4 +470,71 @@ body {
 }
 .expense-table .table tbody tr td:nth-child(2) {
   width: 120px;
+}
+
+.common-modal .modal-content {
+  border-radius: 0;
+  border: none;
+}
+.common-modal .modal-content .modal-header {
+  background: #556ee6;
+  color: #fff;
+  border-radius: 0;
+  padding: 8px 15px;
+}
+.common-modal .modal-content .modal-header .modal-title {
+  font-size: 16px;
+}
+.common-modal .modal-content .modal-header .btn-close {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3E%3Cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3E%3C/svg%3E") no-repeat center/1em 1em;
+  opacity: 1;
+  color: #fff !important;
+}
+.common-modal .modal-content .modal-body {
+  padding: 20px;
+}
+.common-modal .modal-content .modal-body .form-group {
+  margin-bottom: 10px;
+}
+.common-modal .modal-content .modal-body .form-group .form-label {
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+.common-modal .modal-content .modal-body .form-group .form-control {
+  border-radius: 0;
+}
+.common-modal .modal-content .modal-body .form-group .form-select {
+  font-size: 14px;
+  border-radius: 0;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  -ms-border-radius: 0;
+  -o-border-radius: 0;
+  padding: 5px 10px;
+}
+.common-modal .modal-content .modal-body .form-check-input:focus {
+  box-shadow: none;
+  outline: none;
+}
+.common-modal .modal-content .modal-body .form-check-input:checked {
+  background-color: #556ee6;
+  border-color: #556ee6;
+}
+.common-modal .modal-content .modal-body input[type=number] {
+  -moz-appearance: textfield;
+}
+.common-modal .modal-content .modal-body input[type=number]::-webkit-inner-spin-button,
+.common-modal .modal-content .modal-body input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.common-modal .modal-content .modal-footer {
+  padding: 5px 10px;
+}
+.common-modal .btn-success {
+  background: #556ee6;
+  border-color: #556ee6;
+}
+.common-modal .section-devider {
+  margin: 15px 0;
 }/*# sourceMappingURL=style.css.map */
