@@ -2,7 +2,7 @@
     <style>
         @media print {
             body > *{
-                line-height: 1.3 !important;
+                line-height: 1.1 !important;
             }
             .table-responsive{
                 max-height: unset !important;
@@ -14,7 +14,7 @@
             }
             td,th{
                 padding: 1px auto !important;
-                line-height: 1.3 !important;
+                line-height: 1.1 !important;
                 margin: 0 !important;
             }
 
