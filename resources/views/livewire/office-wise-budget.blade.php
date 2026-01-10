@@ -16,6 +16,7 @@
                 padding: 1px auto !important;
                 line-height: 1.1 !important;
                 margin: 0 !important;
+                border-color:#000 !important;
             }
 
             .vertical-menu,
@@ -53,7 +54,7 @@
 
             .table td,
             table th {
-                padding: 0.3rem !important;
+                /* padding: 0.3rem !important; */
                 font-size: 7px !important;
             }
         }
