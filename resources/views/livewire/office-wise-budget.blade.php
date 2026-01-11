@@ -1,68 +1,133 @@
 <div>
     <style>
+        @page {
+            size: legal landscape;
+            margin: 5mm;
+        }
+
         @media print {
-            body > *{
-                line-height: 1.1 !important;
-            }
-            .table-responsive{
-                max-height: unset !important;
-            }
-            .form-control{
-                border: none !important;
+            /* 1. Global Print Reset */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color: #000 !important;
+                background: transparent !important;
                 box-shadow: none !important;
-                padding: 0 auto !important;
-            }
-            td,th{
-                padding: 0 !important;
-                line-height: 1.1 !important;
-                margin: 0 !important;
-                /* border-color:#000 !important; */
+                text-shadow: none !important;
             }
 
             .vertical-menu,
             .navbar-header,
             .footer,
-            .card-body.border-bottom,
+            .page-title-box,
+            .filter-section,
             .btn,
             .breadcrumb,
-            .filter-section {
-                /* display: none !important; */
+            #page-topbar,
+            .main-content footer,
+            .bx {
+                display: none !important;
             }
 
             .main-content {
                 margin: 0 !important;
                 padding: 0 !important;
+                width: 100% !important;
             }
 
-            /* .card {
-                border: none !important;
-                box-shadow: none !important;
-            } */
+            .page-content {
+                padding: 0 !important;
+            }
 
+            .card {
+                border: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            .card-body {
+                padding: 0 !important;
+            }
+
+            /* 2. Professional Table Styling */
             .table-responsive {
                 overflow: visible !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
             }
 
-            .office-wise-budget-table .title-box-inner {
-                font-size: 7px !important;
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                font-size: 8px !important; /* Professional high-density font */
+                border: 1px solid #000 !important;
+                table-layout: auto !important; /* Allow columns to fit content */
             }
 
-            .office-wise-budget-table .card .table-title-box .title-box-inner .ministry,
-            .office-wise-budget-table .card .table-title-box .title-box-inner .title {
-                font-size: 7px !important;
+            table th, table td {
+                padding: 2px 3px !important;
+                border: 0.5pt solid #000 !important; /* Hairline professional border */
+                word-wrap: break-word !important;
+                line-height: 1.1 !important;
+                text-align: center !important;
             }
 
-            .table td,
-            table th {
-                /* padding: 0.3rem !important; */
-                font-size: 7px !important;
+            table td.text-end {
+                text-align: right !important;
             }
-        }
 
-        .table-sm td,
-        .table-sm th {
-            padding: 0.3rem !important;
-            font-size: 13px;
+            table td.text-start {
+                text-align: left !important;
+            }
+
+            /* Header Specifics */
+            .table-title-box {
+                margin-bottom: 10px !important;
+                text-align: center !important;
+                border-bottom: 1px double #000 !important;
+                padding-bottom: 5px !important;
+            }
+
+            .title-box-inner .title {
+                font-size: 14px !important;
+                text-transform: uppercase !important;
+                font-weight: bold !important;
+                margin: 0 !important;
+            }
+
+            .title-box-inner .ministry {
+                font-size: 10px !important;
+                font-weight: normal !important;
+                margin-top: 2px !important;
+            }
+
+            /* 3. Logical Row Styling */
+            .table-primary {
+                background-color: #eee !important; /* Very light gray for headers */
+            }
+
+            .fw-bold {
+                font-weight: bold !important;
+            }
+
+            .table-light {
+                background-color: #f9f9f9 !important;
+            }
+
+            /* 4. Formatting Fixes */
+            .form-control {
+                border: none !important;
+                padding: 0 !important;
+                font-size: 8px !important;
+                height: auto !important;
+            }
+
+            input[type="number"]::-webkit-inner-spin-button,
+            input[type="number"]::-webkit-outer-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
         }
     </style>
 
@@ -123,6 +188,7 @@
                                     @endforeach
                                 </select>
                             </div>
+                        </div>
                         <div class="col-sm-12 col-md-3 col-md-3">
                             <div class="form-group">
                                 <label class="form-label">{{ __('Office') }}</label>
@@ -216,30 +282,27 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @php
-                                        $totals = [
-                                            'h1' => 0, 'h2' => 0, 'hp1' => 0, 'hp2' => 0,
-                                            'demand' => 0, 'revised' => 0, 'p1' => 0, 'p2' => 0, 'p3' => 0,
-                                            'extra' => 0
-                                        ];
-                                    @endphp
-                                    @foreach ($offices as $index => $office)
+                                    @foreach ($flattenedTable as $index => $item)
                                         @php
-                                            $row = $officeWiseData[$office->id];
-                                            
-                                            $totals['h1'] += $row['history_full_1'];
-                                            $totals['h2'] += $row['history_full_2'];
-                                            $totals['hp1'] += $row['history_part_1'];
-                                            $totals['hp2'] += $row['history_part_2'];
-                                            $totals['demand'] += $row['demand'];
-                                            $totals['revised'] += $row['revised'];
-                                            $totals['p1'] += $row['projection_1'];
-                                            $totals['p2'] += $row['projection_2'];
-                                            $totals['p3'] += $row['projection_3'];
+                                            $office = $item['office'];
+                                            $row = $item['data'];
+                                            $depth = $item['depth'];
+                                            $type = $item['type'];
+                                            $isParent = $item['has_children'];
+                                            $rowKey = $type . '-' . $office->id . '-' . $index;
                                         @endphp
-                                        <tr>
-                                            <td>{{ $office->name }}</td>
-                                            <td class="text-center">{{ $office->code }}</td>
+                                        <tr wire:key="{{ $rowKey }}" class="{{ $type === 'subtotal' ? 'table-light fw-bold' : ($isParent ? 'fw-bold' : '') }}">
+                                            <td style="padding-left: {{ $depth * 25 + 10 }}px !important;">
+                                                @if($type === 'subtotal')
+                                                    {{ __('Total') }} ({{ $office->name }})
+                                                @else
+                                                    @if($isParent)
+                                                        <i class="bx bx-chevron-down me-1"></i>
+                                                    @endif
+                                                    {{ $office->name }}
+                                                @endif
+                                            </td>
+                                            <td class="text-center">{{ $type === 'office' ? $office->code : '-' }}</td>
 
                                             {{-- Actual Expenditure (3, 4, 5, 6) --}}
                                             <td class="text-end">{{ $row['history_full_1'] > 0 ? number_format($row['history_full_1'], 0) : '-' }}</td>
@@ -255,30 +318,45 @@
 
                                             {{-- Estimation (9) --}}
                                             <td class="text-end">
-                                                <input type="number" class="form-control form-control-sm text-end" 
-                                                       value="{{ $row['projection_1'] ?: $row['estimation_suggestion'] }}"
-                                                       wire:change="updateAmount({{ $office->id }}, $event.target.value, 'projection_1')"
-                                                       style="min-width: 90px;">
+                                                @if($type === 'office')
+                                                    <input type="number" class="form-control form-control-sm text-end {{ $isParent ? 'fw-bold' : '' }}" 
+                                                           value="{{ $row['projection_1'] ?: $row['estimation_suggestion'] }}"
+                                                           wire:change.debounce.500ms="updateAmount({{ $office->id }}, $event.target.value, 'projection_1')"
+                                                           style="min-width: 90px;"
+                                                           {{ $isParent ? 'readonly' : '' }}>
+                                                @else
+                                                    <span class="fw-bold">{{ number_format($row['projection_1'] ?: $row['estimation_suggestion'], 0) }}</span>
+                                                @endif
                                             </td>
 
                                             {{-- Projection 1 (10) --}}
                                             <td class="text-end">
-                                                <input type="number" class="form-control form-control-sm text-end" 
-                                                       value="{{ $row['projection_2'] ?: $row['projection1_suggestion'] }}"
-                                                       wire:change="updateAmount({{ $office->id }}, $event.target.value, 'projection_2')"
-                                                       style="min-width: 90px;">
+                                                @if($type === 'office')
+                                                    <input type="number" class="form-control form-control-sm text-end {{ $isParent ? 'fw-bold' : '' }}" 
+                                                           value="{{ $row['projection_2'] ?: $row['projection1_suggestion'] }}"
+                                                           wire:change.debounce.500ms="updateAmount({{ $office->id }}, $event.target.value, 'projection_2')"
+                                                           style="min-width: 90px;"
+                                                           {{ $isParent ? 'readonly' : '' }}>
+                                                @else
+                                                    <span class="fw-bold">{{ number_format($row['projection_2'] ?: $row['projection1_suggestion'], 0) }}</span>
+                                                @endif
                                             </td>
 
                                             {{-- Projection 2 (11) --}}
                                             <td class="text-end">
-                                                <input type="number" class="form-control form-control-sm text-end" 
-                                                       value="{{ $row['projection_3'] ?: $row['projection2_suggestion'] }}"
-                                                       wire:change="updateAmount({{ $office->id }}, $event.target.value, 'projection_3')"
-                                                       style="min-width: 90px;">
+                                                @if($type === 'office')
+                                                    <input type="number" class="form-control form-control-sm text-end {{ $isParent ? 'fw-bold' : '' }}" 
+                                                           value="{{ $row['projection_3'] ?: $row['projection2_suggestion'] }}"
+                                                           wire:change.debounce.500ms="updateAmount({{ $office->id }}, $event.target.value, 'projection_3')"
+                                                           style="min-width: 90px;"
+                                                           {{ $isParent ? 'readonly' : '' }}>
+                                                @else
+                                                    <span class="fw-bold">{{ number_format($row['projection_3'] ?: $row['projection2_suggestion'], 0) }}</span>
+                                                @endif
                                             </td>
 
                                             {{-- Extra Demand (12) --}}
-                                            {{-- <td class="text-end">0</td> --}}
+                                            <td class="text-center">-</td>
                                         </tr>
                                     @endforeach
                                 </tbody>

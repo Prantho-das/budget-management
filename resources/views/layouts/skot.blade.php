@@ -65,7 +65,7 @@
                 <div class="d-flex">
                     <!-- LOGO -->
                     <div class="navbar-brand-box">
-                        <a href="{{ route('dashboard') }}" class="logo logo-dark">
+                        <a href="{{ route('dashboard') }}" wire:navigate class="logo logo-dark">
                             <span class="logo-sm">
                                 <img src="{{ asset('/storage/' . get_setting('site_logo')) ?: asset('assets/images/logo.svg') }}"
                                     alt="">
@@ -76,7 +76,7 @@
                             </span>
                         </a>
 
-                        <a href="{{ route('dashboard') }}" class="logo logo-light">
+                        <a href="{{ route('dashboard') }}" wire:navigate class="logo logo-light">
                             <span class="logo-sm">
                                 <img src="{{ asset('/storage/' . get_setting('site_logo')) ?: asset('assets/images/logo-light.svg') }}"
                                     alt="">
@@ -144,7 +144,7 @@
                         <div class="dropdown-menu dropdown-menu-en" :class="{ 'show': open }" style="display: none;"
                             x-show="open" x-transition>
                             <!-- item-->
-                            <a class="dropdown-item" href="{{ route('profile.edit') }}"><i
+                            <a class="dropdown-item" href="{{ route('profile.edit') }}" wire:navigate><i
                                     class="bx bx-user font-size-16 align-middle me-1"></i> <span
                                     key="t-profile">Profile</span></a>
                             <div class="dropdown-divider"></div>

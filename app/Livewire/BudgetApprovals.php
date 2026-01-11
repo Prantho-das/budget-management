@@ -49,11 +49,18 @@ class BudgetApprovals extends Component
                 })
                     ->orWhereNull('workflow_step_id'); // Fallback for demands without a step (e.g. pre-existing or auto-release)
             })
-            ->select('rpo_unit_id', 'budget_type_id', 'status', 'current_stage', 'workflow_step_id', 'batch_id', 
-                DB::raw('SUM(amount_demand) as total_demand'), 
+            ->select(
+                'rpo_unit_id',
+                'budget_type_id',
+                'status',
+                'current_stage',
+                'workflow_step_id',
+                'batch_id',
+                DB::raw('SUM(amount_demand) as total_demand'),
                 DB::raw('COUNT(approver_remarks) as remarks_count'),
                 DB::raw('COUNT(amount_approved) as approved_count'),
-                DB::raw('MIN(created_at) as created_at'))
+                DB::raw('MIN(created_at) as created_at')
+            )
             ->groupBy('rpo_unit_id', 'budget_type_id', 'status', 'current_stage', 'workflow_step_id', 'batch_id')
             ->with(['office', 'workflowStep', 'budgetType'])
             ->get();
@@ -108,32 +115,33 @@ class BudgetApprovals extends Component
         if ($estimations->isEmpty()) return;
 
         $currentFiscalYear = $estimations->first()->fiscalYear;
-
-        // Previous 3 Years Expense Data
         $this->previousDemands = [];
+
+        // Single query for all previous expenses for this office
         $previousYears = FiscalYear::where('end_date', '<', $currentFiscalYear->start_date)
             ->orderBy('end_date', 'desc')
             ->take(3)
             ->get()
-            ->reverse(); // Reorder to Ascending (Oldest -> Newest) to match demand screen
+            ->reverse()
+            ->values();
 
-        foreach ($previousYears as $index => $prevYear) {
-            $expenses = \App\Models\Expense::where('fiscal_year_id', $prevYear->id)
-                ->where('rpo_unit_id', $this->selected_office_id)
-                ->selectRaw('economic_code_id, SUM(amount) as total_expense')
-                ->groupBy('economic_code_id')
-                ->get();
+        $pastFyIds = $previousYears->pluck('id')->toArray();
+        $rawExpenses = \App\Models\Expense::whereIn('fiscal_year_id', $pastFyIds)
+            ->where('rpo_unit_id', $this->selected_office_id)
+            ->get()
+            ->groupBy(['economic_code_id', 'fiscal_year_id']);
 
-            foreach ($expenses as $expense) {
-                if (!isset($this->previousDemands[$expense->economic_code_id])) {
-                    $this->previousDemands[$expense->economic_code_id] = [];
+        foreach ($rawExpenses as $codeId => $byFiscalYear) {
+            foreach ($previousYears as $index => $prevYear) {
+                if (isset($byFiscalYear[$prevYear->id])) {
+                    $this->previousDemands[$codeId]["year_{$index}"] = [
+                        'year' => $prevYear->name,
+                        'amount' => $byFiscalYear[$prevYear->id]->sum('amount')
+                    ];
                 }
-                $this->previousDemands[$expense->economic_code_id]["year_{$index}"] = [
-                    'year' => $prevYear->name,
-                    'amount' => $expense->total_expense
-                ];
             }
         }
+
         foreach ($estimations as $est) {
             $this->demands[$est->economic_code_id] = [
                 'id' => $est->id,

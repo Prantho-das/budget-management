@@ -113,32 +113,24 @@ class BudgetEstimations extends Component
         // Check for existing batches and statuses
         $this->has_existing_batch = !empty($this->allBatches);
 
-        $this->is_pending = BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id)
-            ->where('rpo_unit_id', $this->rpo_unit_id)
-            ->where('budget_type_id', $this->budget_type_id)
-            ->where('status', 'submitted')
-            ->exists();
-
-        $this->is_released = BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id)
-            ->where('rpo_unit_id', $this->rpo_unit_id)
-            ->where('budget_type_id', $this->budget_type_id)
-            ->where('current_stage', 'Released')
-            ->exists();
+        // Batch check in single count query if possible, or just re-use allBatches
+        $this->is_pending = collect($this->allBatches)->contains('status', 'submitted');
+        $this->is_released = collect($this->allBatches)->contains('current_stage', 'Released');
 
         $currentFiscalYear = FiscalYear::find($this->fiscal_year_id);
 
         // Current Year Demands for selected batch
-        $estimations = BudgetEstimation::where('batch_id', $this->batch_id)
-            ->get();
+        $estimations = BudgetEstimation::where('batch_id', $this->batch_id)->get();
 
+        $this->demands = [];
+        $this->remarks = [];
         foreach ($estimations as $estimation) {
             $this->demands[$estimation->economic_code_id] = $estimation->amount_demand;
             $this->remarks[$estimation->economic_code_id] = $estimation->remarks;
         }
 
-        // Previous 3 Years Expense Data
+        // Optimized Previous 3 Years Expense Data
         $this->previousDemands = [];
-
         $previousYears = FiscalYear::where('end_date', '<', $currentFiscalYear->start_date)
             ->orderBy('end_date', 'desc')
             ->take(3)
@@ -146,21 +138,20 @@ class BudgetEstimations extends Component
             ->reverse()
             ->values();
 
-        foreach ($previousYears as $index => $prevYear) {
-            $expenses = \App\Models\Expense::where('fiscal_year_id', $prevYear->id)
-                ->where('rpo_unit_id', $this->rpo_unit_id)
-                ->selectRaw('economic_code_id, SUM(amount) as total_expense')
-                ->groupBy('economic_code_id')
-                ->get();
+        $pastFyIds = $previousYears->pluck('id')->toArray();
+        $rawExpenses = \App\Models\Expense::whereIn('fiscal_year_id', $pastFyIds)
+            ->where('rpo_unit_id', $this->rpo_unit_id)
+            ->get()
+            ->groupBy(['economic_code_id', 'fiscal_year_id']);
 
-            foreach ($expenses as $expense) {
-                if (!isset($this->previousDemands[$expense->economic_code_id])) {
-                    $this->previousDemands[$expense->economic_code_id] = [];
+        foreach ($rawExpenses as $codeId => $byFiscalYear) {
+            foreach ($previousYears as $index => $prevYear) {
+                if (isset($byFiscalYear[$prevYear->id])) {
+                    $this->previousDemands[$codeId]["year_{$index}"] = [
+                        'year' => $prevYear->name,
+                        'amount' => $byFiscalYear[$prevYear->id]->sum('amount')
+                    ];
                 }
-                $this->previousDemands[$expense->economic_code_id]["year_{$index}"] = [
-                    'year' => $prevYear->name,
-                    'amount' => $expense->total_expense
-                ];
             }
         }
 

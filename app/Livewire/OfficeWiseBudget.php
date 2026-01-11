@@ -37,8 +37,8 @@ class OfficeWiseBudget extends Component
         }
 
         $amount = (float) $amount;
-        
-        $dbField = match($field) {
+
+        $dbField = match ($field) {
             'demand' => 'amount_demand',
             'revised' => 'revised_amount',
             'projection_1' => 'projection_1',
@@ -65,9 +65,9 @@ class OfficeWiseBudget extends Component
     public function moveAllToDraft()
     {
         $workflow = new \App\Services\BudgetWorkflowService();
-        
+
         $query = BudgetEstimation::where('fiscal_year_id', $this->fiscal_year_id);
-            
+
         if ($this->budget_type_id) {
             $query->where('budget_type_id', $this->budget_type_id);
         }
@@ -84,7 +84,7 @@ class OfficeWiseBudget extends Component
         }
 
         $workflow->rejectBatch($estimations, __('Moved back to draft by Ministry Admin (Bulk Action)'));
-        
+
         $this->dispatch('alert', ['type' => 'success', 'message' => __('All matching budgets moved back to draft.')]);
     }
 
@@ -94,161 +94,199 @@ class OfficeWiseBudget extends Component
 
         $fiscalYears = FiscalYear::orderBy('start_date', 'desc')->get();
         $budgetTypes = BudgetType::where('status', true)->orderBy('order_priority')->get();
-        
-        // Hierarchical Economic Codes (matching BudgetEstimations.php)
-        $allCodes = EconomicCode::with(['children', 'parent'])->get();
-        $orderedCodes = [];
-        $roots = $allCodes->whereNull('parent_id')->sortBy('code');
-        foreach ($roots as $root) {
-            $orderedCodes[] = $root;
-            $children = $allCodes->where('parent_id', $root->id)->sortBy('code');
-            foreach ($children as $child) {
-                $orderedCodes[] = $child;
-            }
-        }
-        $economicCodes = $orderedCodes;
-
-        // Get Offices
-        $officeQuery = RpoUnit::orderBy('code');
-        if ($this->selected_office_id) {
-            $officeQuery->where('id', $this->selected_office_id);
-            $selectedOffice = RpoUnit::find($this->selected_office_id);
-        } else {
-            $selectedOffice = null;
-        }
-        $offices = $officeQuery->get();
-        $allOffices = RpoUnit::orderBy('code')->get();
-
-        // --- Logic Synchronization (Robust FY Detection) ---
         $selectedFy = FiscalYear::find($this->fiscal_year_id);
-        
-        // Full Previous Years (2 full years)
+
+        $economicCodes = $this->getHierarchicalEconomicCodes();
+
         $fullPrevYears = FiscalYear::where('end_date', '<', $selectedFy->start_date)
             ->orderBy('end_date', 'desc')
             ->take(2)
             ->get()
             ->reverse()
-            ->values(); // [0 => FY-2, 1 => FY-1]
+            ->values();
 
-        // Partial Year Mapping (First 6 months: July-Dec)
-        // Design: 
-        // Col 3: FY-2 Full
-        // Col 4: FY-1 Full
-        // Col 5: FY-1 (First 6 Mo)
-        // Col 6: Selected FY (First 6 Mo)
-        
-        $officeWiseData = [];
+        // Fetch Raw Data for everything upfront
+        $pastFyIds = $fullPrevYears->pluck('id')->toArray();
+        $relevantFyIds = array_merge($pastFyIds, [$this->fiscal_year_id]);
 
-        foreach ($offices as $office) {
-            $data = [
-                'history_full_1' => 0, // FY-2
-                'history_full_2' => 0, // FY-1
-                'history_part_1' => 0, // FY-1 (6mo)
-                'history_part_2' => 0, // FY (6mo)
-                'demand' => 0,
-                'approved' => 0,
-                'revised' => 0,
-                'projection_1' => 0,
-                'projection_2' => 0,
-                'projection_3' => 0,
-                'released' => 0,
-            ];
+        $rawBudgets = BudgetEstimation::whereIn('fiscal_year_id', $relevantFyIds)
+            ->when($this->budget_type_id, fn($q) => $q->where('budget_type_id', $this->budget_type_id))
+            ->when($this->economic_code_id, fn($q) => $q->where('economic_code_id', $this->economic_code_id))
+            ->get()
+            ->groupBy('target_office_id');
 
-            // 1. Full Historical (FY-2, FY-1)
-            foreach ($fullPrevYears as $idx => $fy) {
-                $q = Expense::where('rpo_unit_id', $office->id)->where('fiscal_year_id', $fy->id);
-                if ($this->budget_type_id) $q->where('budget_type_id', $this->budget_type_id);
-                if ($this->economic_code_id) $q->where('economic_code_id', $this->economic_code_id);
-                
-                $field = $idx === 0 ? 'history_full_1' : 'history_full_2';
-                $data[$field] = $q->sum('amount');
-            }
+        $rawExpenses = Expense::whereIn('fiscal_year_id', $relevantFyIds)
+            ->when($this->budget_type_id, fn($q) => $q->where('budget_type_id', $this->budget_type_id))
+            ->when($this->economic_code_id, fn($q) => $q->where('economic_code_id', $this->economic_code_id))
+            ->get()
+            ->groupBy('rpo_unit_id');
 
-            // 2. Partial Historical (6 Months)
-            // FY-1 (First 6 mo)
-            if ($fullPrevYears->count() >= 2) {
-                $fy1 = $fullPrevYears[1]; // Latest full past year
-                $q = Expense::where('rpo_unit_id', $office->id)->where('fiscal_year_id', $fy1->id)
-                    ->whereMonth('date', '>=', 7); // July-Dec
-                if ($this->budget_type_id) $q->where('budget_type_id', $this->budget_type_id);
-                if ($this->economic_code_id) $q->where('economic_code_id', $this->economic_code_id);
-                $data['history_part_1'] = $q->sum('amount');
-            }
+        // Recursive tree building
+        $rootOffices = RpoUnit::with(['children' => fn($q) => $q->orderBy('code')])
+            ->whereNull('parent_id')
+            ->when($this->selected_office_id, fn($q) => $q->where('id', $this->selected_office_id))
+            ->orderBy('code')
+            ->get();
 
-            // Selected FY (First 6 mo)
-            $q = Expense::where('rpo_unit_id', $office->id)->where('fiscal_year_id', $this->fiscal_year_id)
-                ->whereMonth('date', '>=', 7);
-            if ($this->budget_type_id) $q->where('budget_type_id', $this->budget_type_id);
-            if ($this->economic_code_id) $q->where('economic_code_id', $this->economic_code_id);
-            $data['history_part_2'] = $q->sum('amount');
-
-            // 3. Current Estimates
-            $estQuery = BudgetEstimation::where('target_office_id', $office->id)->where('fiscal_year_id', $this->fiscal_year_id);
-            if ($this->budget_type_id) $estQuery->where('budget_type_id', $this->budget_type_id);
-            if ($this->economic_code_id) $estQuery->where('economic_code_id', $this->economic_code_id);
-            
-            $estimations = $estQuery->get();
-            $data['demand'] = $estimations->sum('amount_demand');
-            $data['approved'] = $estimations->sum('amount_approved');
-            $data['revised'] = $estimations->sum('revised_amount');
-            $data['projection_1'] = $estimations->sum('projection_1');
-            $data['projection_2'] = $estimations->sum('projection_2');
-            $data['projection_3'] = $estimations->sum('projection_3');
-            // 4. Released
-            $allocQuery = BudgetAllocation::where('rpo_unit_id', $office->id)->where('fiscal_year_id', $this->fiscal_year_id);
-            if ($this->budget_type_id) $allocQuery->where('budget_type_id', $this->budget_type_id);
-            if ($this->economic_code_id) $allocQuery->where('economic_code_id', $this->economic_code_id);
-            $data['released'] = $allocQuery->sum('amount');
-
-            // 5. Suggestions (10% increments)
-            $est_suggestion = round($data['history_full_2'] * 1.10, 0);
-            
-            // P1 suggestion based on either saved Estimation (projection_1) OR est_suggestion
-            $p1_base = $data['projection_1'] > 0 ? $data['projection_1'] : $est_suggestion;
-            $p1_suggestion = round($p1_base * 1.10, 0);
-            
-            // P2 suggestion based on either saved Projection 1 (projection_2) OR p1_suggestion
-            $p2_base = $data['projection_2'] > 0 ? $data['projection_2'] : $p1_suggestion;
-            $p2_suggestion = round($p2_base * 1.10, 0);
-
-            $data['estimation_suggestion'] = $est_suggestion;
-            $data['projection1_suggestion'] = $p1_suggestion;
-            $data['projection2_suggestion'] = $p2_suggestion;
-
-            $officeWiseData[$office->id] = $data;
+        $hierarchicalData = [];
+        foreach ($rootOffices as $root) {
+            $hierarchicalData[] = $this->calculateNodeData($root, 0, $rawBudgets, $rawExpenses, $fullPrevYears);
         }
 
-        // --- Grand Totals ---
-        $totals = [
-            'h1' => 0, 'h2' => 0, 'hp1' => 0, 'hp2' => 0,
-            'demand' => 0, 'revised' => 0, 'p1' => 0, 'p2' => 0, 'p3' => 0
+        $flattenedTable = $this->flattenTreeWithSubtotals($hierarchicalData);
+
+        // Grand Totals Calculation
+        $totals = $this->calculateGrandTotals($hierarchicalData);
+
+        return view('livewire.office-wise-budget', [
+            'fiscalYears' => $fiscalYears,
+            'budgetTypes' => $budgetTypes,
+            'economicCodes' => $economicCodes,
+            'allOffices' => RpoUnit::orderBy('name')->get(),
+            'selectedOffice' => $this->selected_office_id ? RpoUnit::find($this->selected_office_id) : null,
+            'selectedFy' => $selectedFy,
+            'fullPrevYears' => $fullPrevYears,
+            'flattenedTable' => $flattenedTable,
+            'totals' => $totals
+        ])->extends('layouts.skot')->section('content');
+    }
+    private function getHierarchicalEconomicCodes()
+    {
+        $allCodes = EconomicCode::with(['children' => fn($q) => $q->orderBy('code')])
+            ->whereNull('parent_id')
+            ->orderBy('code')
+            ->get();
+
+        $ordered = [];
+        foreach ($allCodes as $root) {
+            $ordered[] = $root;
+            foreach ($root->children as $child) {
+                $ordered[] = $child;
+            }
+        }
+        return $ordered;
+    }
+
+    private function calculateNodeData($office, $depth, $rawBudgets, $rawExpenses, $fullPrevYears)
+    {
+        $nodeData = [
+            'history_full_1' => 0,
+            'history_full_2' => 0,
+            'history_part_1' => 0,
+            'history_part_2' => 0,
+            'demand' => 0,
+            'approved' => 0,
+            'revised' => 0,
+            'projection_1' => 0,
+            'projection_2' => 0,
+            'projection_3' => 0,
         ];
 
-        foreach ($officeWiseData as $row) {
+        // A. Direct Data
+        $myBudgets = $rawBudgets->get($office->id, collect())->where('fiscal_year_id', $this->fiscal_year_id);
+        $nodeData['demand'] = $myBudgets->sum('amount_demand');
+        $nodeData['approved'] = $myBudgets->sum('amount_approved');
+        $nodeData['revised'] = $myBudgets->sum('revised_amount');
+        $nodeData['projection_1'] = $myBudgets->sum('projection_1');
+        $nodeData['projection_2'] = $myBudgets->sum('projection_2');
+        $nodeData['projection_3'] = $myBudgets->sum('projection_3');
+
+        $myExpenses = $rawExpenses->get($office->id, collect());
+        foreach ($fullPrevYears as $idx => $fy) {
+            $field = $idx === 0 ? 'history_full_1' : 'history_full_2';
+            $nodeData[$field] = $myExpenses->where('fiscal_year_id', $fy->id)->sum('amount');
+        }
+
+        if ($fullPrevYears->count() >= 2) {
+            $fy1 = $fullPrevYears[1];
+            $nodeData['history_part_1'] = $myExpenses->where('fiscal_year_id', $fy1->id)
+                ->filter(fn($e) => \Carbon\Carbon::parse($e->date)->month >= 7)->sum('amount');
+        }
+        $nodeData['history_part_2'] = $myExpenses->where('fiscal_year_id', $this->fiscal_year_id)
+            ->filter(fn($e) => \Carbon\Carbon::parse($e->date)->month >= 7)->sum('amount');
+
+        $own = array_merge($nodeData, $this->calculateSuggestions($nodeData));
+
+        // B. Aggregation
+        $children = [];
+        $aggregated = $nodeData;
+        foreach ($office->children as $child) {
+            $childNode = $this->calculateNodeData($child, $depth + 1, $rawBudgets, $rawExpenses, $fullPrevYears);
+            $children[] = $childNode;
+            foreach ($nodeData as $key => $val) {
+                $aggregated[$key] += $childNode['aggregated'][$key];
+            }
+        }
+
+        $aggregated = array_merge($aggregated, $this->calculateSuggestions($aggregated));
+
+        return [
+            'office' => $office,
+            'depth' => $depth,
+            'own' => $own,
+            'aggregated' => $aggregated,
+            'children' => $children
+        ];
+    }
+
+    private function calculateSuggestions($data)
+    {
+        $est = round($data['history_full_2'] * 1.10, 0);
+        $p1 = round(($data['projection_1'] > 0 ? $data['projection_1'] : $est) * 1.10, 0);
+        $p2 = round(($data['projection_2'] > 0 ? $data['projection_2'] : $p1) * 1.10, 0);
+        return [
+            'estimation_suggestion' => $est,
+            'projection1_suggestion' => $p1,
+            'projection2_suggestion' => $p2,
+        ];
+    }
+
+    private function flattenTreeWithSubtotals($tree)
+    {
+        $flattened = [];
+        $this->processFlattening($tree, $flattened);
+        return $flattened;
+    }
+
+    private function processFlattening($nodes, &$flattened)
+    {
+        foreach ($nodes as $node) {
+            $flattened[] = [
+                'type' => 'office',
+                'office' => $node['office'],
+                'depth' => $node['depth'],
+                'data' => $node['own'],
+                'has_children' => !empty($node['children'])
+            ];
+
+            if (!empty($node['children'])) {
+                $this->processFlattening($node['children'], $flattened);
+                $flattened[] = [
+                    'type' => 'subtotal',
+                    'office' => $node['office'],
+                    'depth' => $node['depth'],
+                    'data' => $node['aggregated'],
+                    'has_children' => false
+                ];
+            }
+        }
+    }
+
+    private function calculateGrandTotals($tree)
+    {
+        $totals = ['h1' => 0, 'h2' => 0, 'hp1' => 0, 'hp2' => 0, 'demand' => 0, 'revised' => 0, 'p1' => 0, 'p2' => 0, 'p3' => 0];
+        foreach ($tree as $root) {
+            $row = $root['aggregated'];
             $totals['h1'] += $row['history_full_1'];
             $totals['h2'] += $row['history_full_2'];
             $totals['hp1'] += $row['history_part_1'];
             $totals['hp2'] += $row['history_part_2'];
             $totals['demand'] += $row['demand'];
             $totals['revised'] += $row['revised'];
-            
-            // Include what is visible in the UI (Saved value or Suggestion)
             $totals['p1'] += ($row['projection_1'] > 0 ? $row['projection_1'] : $row['estimation_suggestion']);
             $totals['p2'] += ($row['projection_2'] > 0 ? $row['projection_2'] : $row['projection1_suggestion']);
             $totals['p3'] += ($row['projection_3'] > 0 ? $row['projection_3'] : $row['projection2_suggestion']);
         }
-
-        return view('livewire.office-wise-budget', [
-            'fiscalYears' => $fiscalYears,
-            'budgetTypes' => $budgetTypes,
-            'economicCodes' => $economicCodes,
-            'offices' => $offices,
-            'allOffices' => $allOffices,
-            'selectedOffice' => $selectedOffice,
-            'selectedFy' => $selectedFy,
-            'fullPrevYears' => $fullPrevYears,
-            'officeWiseData' => $officeWiseData,
-            'totals' => $totals
-        ])->extends('layouts.skot')->section('content');
+        return $totals;
     }
 }
