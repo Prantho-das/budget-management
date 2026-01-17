@@ -214,12 +214,18 @@
                                         </td>
                                         <td>
                                             @can('edit-users')
-                                                <button wire:click="edit({{ $user->id }})" class="btn btn-sm btn-info">{{ __('Edit') }}</button>
+                                                <button wire:click="edit({{ $user->id }})" class="btn btn-sm btn-info btn-soft-info waves-effect waves-light" title="{{ __('Edit') }}">
+                                                    <i class="bx bx-edit-alt"></i>
+                                                </button>
                                             @endcan
-                                            <button wire:click="showHistory({{ $user->id }})" class="btn btn-sm btn-secondary">{{ __('History') }}</button>
+                                            <button wire:click="showHistory({{ $user->id }})" class="btn btn-sm btn-secondary btn-soft-secondary waves-effect waves-light" title="{{ __('History') }}">
+                                                <i class="bx bx-history"></i>
+                                            </button>
                                             @if($user->id !== auth()->id())
                                                 @can('delete-users')
-                                                    <button onclick="confirm('{{ __('Are you sure?') }}') || event.stopImmediatePropagation()" wire:click="delete({{ $user->id }})" class="btn btn-sm btn-danger">{{ __('Delete') }}</button>
+                                                    <button onclick="confirm('{{ __('Are you sure?') }}') || event.stopImmediatePropagation()" wire:click="delete({{ $user->id }})" class="btn btn-sm btn-danger btn-soft-danger waves-effect waves-light" title="{{ __('Delete') }}">
+                                                        <i class="bx bx-trash"></i>
+                                                    </button>
                                                 @endcan
                                             @endif
                                         </td>

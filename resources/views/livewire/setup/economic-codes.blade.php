@@ -114,7 +114,7 @@
                                     </div>
                                     <div class="modal-footer">
                                         <button wire:click="closeModal()" type="button" class="btn btn-secondary">{{ __('Close') }}</button>
-                                        <button wire:click="store()" type="button" class="btn btn-primary">{{ __('Save changes') }}</button>
+                                        <button wire:click="store()" type="button" class="btn btn-primary">{{ __('Submit') }}</button>
                                     </div>
                                 </div>
                             </div>

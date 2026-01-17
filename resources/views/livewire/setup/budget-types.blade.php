@@ -67,7 +67,7 @@
                                     </div>
                                     <div class="modal-footer">
                                         <button wire:click="closeModal()" type="button" class="btn btn-sm btn-danger">{{ __('Close') }}</button>
-                                        <button wire:click="store()" type="button" class="btn btn-sm btn-success waves-effect waves-light">{{ __('Save Changes') }}</button>
+                                        <button wire:click="store()" type="button" class="btn btn-sm btn-success waves-effect waves-light">{{ __('Submit') }}</button>
                                     </div>
                                 </div>
                             </div>
@@ -98,12 +98,16 @@
                                                 {{ $type->status ? __('Active') : __('Inactive') }}
                                             </span>
                                         </td>
-                                        <td>
+                                        <td class="text-center">
                                             @can('edit-budget-types')
-                                                <button wire:click="edit({{ $type->id }})" class="btn btn-sm btn-info me-1">{{ __('Edit') }}</button>
+                                                <button wire:click="edit({{ $type->id }})" class="btn btn-sm btn-info btn-soft-info waves-effect waves-light" title="{{ __('Edit') }}">
+                                                    <i class="mdi mdi-pencil"></i>
+                                                </button>
                                             @endcan
                                             @can('delete-budget-types')
-                                                <button wire:click="delete({{ $type->id }})" class="btn btn-sm btn-danger">{{ __('Delete') }}</button>
+                                                <button onclick="confirm('{{ __('Are you sure?') }}') || event.stopImmediatePropagation()" wire:click="delete({{ $type->id }})" class="btn btn-sm btn-danger btn-soft-danger waves-effect waves-light" title="{{ __('Delete') }}">
+                                                    <i class="mdi mdi-trash-can"></i>
+                                                </button>
                                             @endcan
                                         </td>
                                     </tr>

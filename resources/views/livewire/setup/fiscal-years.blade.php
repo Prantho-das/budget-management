@@ -63,7 +63,7 @@
                                     </div>
                                     <div class="modal-footer">
                                         <button wire:click="closeModal()" type="button" class="btn btn-secondary">{{ __('Close') }}</button>
-                                        <button wire:click="store()" type="button" class="btn btn-primary">{{ __('Save changes') }}</button>
+                                        <button wire:click="store()" type="button" class="btn btn-primary">{{ __('Submit') }}</button>
                                     </div>
                                 </div>
                             </div>
@@ -96,12 +96,16 @@
                                                 <span class="badge bg-danger">{{ __('Inactive') }}</span>
                                             @endif
                                         </td>
-                                        <td>
+                                        <td class="text-center">
                                             @can('edit-fiscal-years')
-                                                <button wire:click="edit({{ $fiscal->id }})" class="btn btn-sm btn-info">{{ __('Edit') }}</button>
+                                                <button wire:click="edit({{ $fiscal->id }})" class="btn btn-sm btn-info btn-soft-info waves-effect waves-light" title="{{ __('Edit') }}">
+                                                    <i class="mdi mdi-pencil"></i>
+                                                </button>
                                             @endcan
                                             @can('delete-fiscal-years')
-                                                <button wire:click="delete({{ $fiscal->id }})" class="btn btn-sm btn-danger">{{ __('Delete') }}</button>
+                                                <button onclick="confirm('{{ __('Are you sure?') }}') || event.stopImmediatePropagation()" wire:click="delete({{ $fiscal->id }})" class="btn btn-sm btn-danger btn-soft-danger waves-effect waves-light" title="{{ __('Delete') }}">
+                                                    <i class="mdi mdi-trash-can"></i>
+                                                </button>
                                             @endcan
                                         </td>
                                     </tr>

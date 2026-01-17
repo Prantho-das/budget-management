@@ -89,7 +89,7 @@
                                     </div>
                                     <div class="modal-footer">
                                         <button wire:click="closeModal()" type="button" class="btn btn-secondary">Close</button>
-                                        <button wire:click="store()" type="button" class="btn btn-primary">Save changes</button>
+                                        <button wire:click="store()" type="button" class="btn btn-primary">{{ __('Submit') }}</button>
                                     </div>
                                 </div>
                             </div>
@@ -116,10 +116,14 @@
                                                 <span class="badge bg-secondary">{{ $perm->name }}</span>
                                             @endforeach
                                         </td>
-                                        <td>
-                                            <button wire:click="edit({{ $role->id }})" class="btn btn-sm btn-info">Edit</button>
-                                            <button wire:click="delete({{ $role->id }})" class="btn btn-sm btn-danger">Delete</button>
-                                        </td>
+                                        <td class="text-center">
+                                             <button wire:click="edit({{ $role->id }})" class="btn btn-sm btn-info btn-soft-info waves-effect waves-light" title="Edit">
+                                                 <i class="mdi mdi-pencil"></i>
+                                             </button>
+                                             <button onclick="confirm('Are you sure?') || event.stopImmediatePropagation()" wire:click="delete({{ $role->id }})" class="btn btn-sm btn-danger btn-soft-danger waves-effect waves-light" title="Delete">
+                                                 <i class="mdi mdi-trash-can"></i>
+                                             </button>
+                                         </td>
                                     </tr>
                                 @endforeach
                             </tbody>

@@ -57,7 +57,7 @@
                                     </div>
                                     <div class="modal-footer">
                                         <button wire:click="closeModal()" type="button" class="btn btn-secondary">Close</button>
-                                        <button wire:click="store()" type="button" class="btn btn-primary">Save changes</button>
+                                        <button wire:click="store()" type="button" class="btn btn-primary">{{ __('Submit') }}</button>
                                     </div>
                                 </div>
                             </div>
@@ -82,9 +82,13 @@
                                         <td><span class="badge bg-info">{{ $perm->group_name }}</span></td>
                                         <td>{{ $perm->name }}</td>
                                         <td>{{ $perm->guard_name }}</td>
-                                        <td>
-                                            <button wire:click="edit({{ $perm->id }})" class="btn btn-sm btn-info">Edit</button>
-                                            <button wire:click="delete({{ $perm->id }})" class="btn btn-sm btn-danger">Delete</button>
+                                        <td class="text-center">
+                                            <button wire:click="edit({{ $perm->id }})" class="btn btn-sm btn-info btn-soft-info waves-effect waves-light" title="{{ __('Edit') }}">
+                                                <i class="mdi mdi-pencil"></i>
+                                            </button>
+                                            <button onclick="confirm('{{ __('Are you sure?') }}') || event.stopImmediatePropagation()" wire:click="delete({{ $perm->id }})" class="btn btn-sm btn-danger btn-soft-danger waves-effect waves-light" title="{{ __('Delete') }}">
+                                                <i class="mdi mdi-trash-can"></i>
+                                            </button>
                                         </td>
                                     </tr>
                                 @endforeach
