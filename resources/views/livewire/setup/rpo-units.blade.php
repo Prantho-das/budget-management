@@ -43,7 +43,7 @@
 
                     @if($isOpen)
                         <div class="modal-backdrop fade show"></div>
-                        <div class="modal fade show" tabindex="-1" role="dialog" style="display: block;">
+                        <div class="modal fade show common-modal" tabindex="-1" role="dialog" style="display: block;">
                             <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
                                 <div class="modal-content border-0 shadow-lg">
                                     <div class="modal-header bg-primary text-white">
