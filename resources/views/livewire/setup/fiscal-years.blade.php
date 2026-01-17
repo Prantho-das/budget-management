@@ -54,7 +54,7 @@
                                             
                                             <div class="mb-3">
                                                 <div class="form-check form-switch">
-                                                    <input class="form-check-input" type="checkbox" role="switch" id="status" wire:model="status">
+                                                    <input class="form-check-input" type="checkbox" role="switch" id="statuss" wire:model="status">
                                                     <label class="form-check-label" for="status">{{ __('Active Status') }}</label>
                                                 </div>
                                                 @error('status') <span class="text-danger">{{ $message }}</span>@enderror
