@@ -8,30 +8,69 @@ use App\Models\EconomicCode;
 class EconomicCodes extends Component
 {
   public $codes, $name, $code, $description, $economic_code_id, $parent_id;
+  public $selectedParentId, $selectedSubHeadId, $isUsed = false;
   public $isOpen = false;
+  public $search = '';
 
   protected $listeners = ['deleteConfirmed'];
 
   public function render()
   {
     abort_if(auth()->user()->cannot('view-economic-codes'), 403);
-    $this->codes = EconomicCode::with('parent')->orderBy('code', 'asc')->get();
-    $parentCodes = EconomicCode::whereNull('parent_id')
+    
+    // Hierarchical fetch with live search
+    $this->codes = EconomicCode::whereNull('parent_id')
+      ->with(['children' => function($query) {
+        $query->orderBy('code', 'asc')->with(['children' => function($q) {
+          $q->orderBy('code', 'asc');
+        }]);
+      }])
+      ->when($this->search, function($query) {
+        $query->where(function($q) {
+          $term = '%' . $this->search . '%';
+          $q->where('name', 'like', $term)
+            ->orWhere('code', 'like', $term)
+            ->orWhereHas('children', function($subQ) use ($term) {
+              $subQ->where('name', 'like', $term)
+                ->orWhere('code', 'like', $term)
+                ->orWhereHas('children', function($projectQ) use ($term) {
+                  $projectQ->where('name', 'like', $term)
+                           ->orWhere('code', 'like', $term);
+                });
+            });
+        });
+      })
+      ->orderBy('code', 'asc')
+      ->get();
+
+    $rootCodes = EconomicCode::whereNull('parent_id')
       ->when($this->economic_code_id, function ($query) {
         return $query->where('id', '!=', $this->economic_code_id);
       })
       ->orderBy('code', 'asc')
       ->get();
-      $all_economic_codes = EconomicCode::orderBy('code', 'asc')
-      ->where('parent_id', null)
-      ->with('children')
-      ->get();
+
+    $subHeadCodes = collect();
+    if ($this->selectedParentId) {
+      $subHeadCodes = EconomicCode::where('parent_id', $this->selectedParentId)
+        ->when($this->economic_code_id, function ($query) {
+          return $query->where('id', '!=', $this->economic_code_id);
+        })
+        ->orderBy('code', 'asc')
+        ->get();
+    }
+
     return view('livewire.setup.economic-codes', [
-      'parentCodes' => $parentCodes,
-      'all_economic_codes' => $all_economic_codes,
+      'rootCodes' => $rootCodes,
+      'subHeadCodes' => $subHeadCodes,
     ])
       ->extends('layouts.skot')
       ->section('content');
+  }
+
+  public function updatedSelectedParentId($value)
+  {
+    $this->selectedSubHeadId = '';
   }
 
   public function create()
@@ -59,6 +98,9 @@ class EconomicCodes extends Component
     $this->description = '';
     $this->economic_code_id = '';
     $this->parent_id = '';
+    $this->selectedParentId = '';
+    $this->selectedSubHeadId = '';
+    $this->isUsed = false;
   }
 
   public function store()
@@ -69,18 +111,29 @@ class EconomicCodes extends Component
       abort_if(auth()->user()->cannot('create-economic-codes'), 403);
     }
 
-    $this->validate([
+    $validationRules = [
       'name' => 'required',
-      'code' => 'required|unique:economic_codes,code,' . $this->economic_code_id,
-      'parent_id' => 'nullable|exists:economic_codes,id',
-    ]);
+    ];
 
-    EconomicCode::updateOrCreate(['id' => $this->economic_code_id], [
+    if (!$this->isUsed) {
+      $validationRules['code'] = 'required|unique:economic_codes,code,' . $this->economic_code_id;
+      $validationRules['selectedParentId'] = 'nullable|exists:economic_codes,id';
+      $validationRules['selectedSubHeadId'] = 'nullable|exists:economic_codes,id';
+    }
+
+    $this->validate($validationRules);
+
+    $data = [
       'name' => $this->name,
-      'code' => $this->code,
       'description' => $this->description,
-      'parent_id' => $this->parent_id ?: null,
-    ]);
+    ];
+
+    if (!$this->isUsed) {
+      $data['code'] = $this->code;
+      $data['parent_id'] = $this->selectedSubHeadId ?: ($this->selectedParentId ?: null);
+    }
+
+    EconomicCode::updateOrCreate(['id' => $this->economic_code_id], $data);
 
     session()->flash(
       'message',
@@ -94,12 +147,25 @@ class EconomicCodes extends Component
   public function edit($id)
   {
     abort_if(auth()->user()->cannot('edit-economic-codes'), 403);
-    $code = EconomicCode::findOrFail($id);
+    $code = EconomicCode::with('parent.parent')->findOrFail($id);
     $this->economic_code_id = $id;
     $this->name = $code->name;
     $this->code = $code->code;
     $this->description = $code->description;
-    $this->parent_id = $code->parent_id;
+    $this->isUsed = $code->isUsed();
+
+    if ($code->parent) {
+      if ($code->parent->parent_id) {
+        $this->selectedParentId = $code->parent->parent_id;
+        $this->selectedSubHeadId = $code->parent_id;
+      } else {
+        $this->selectedParentId = $code->parent_id;
+        $this->selectedSubHeadId = '';
+      }
+    } else {
+      $this->selectedParentId = '';
+      $this->selectedSubHeadId = '';
+    }
 
     $this->openModal();
     $this->dispatch('select2-reinit');
@@ -117,7 +183,16 @@ class EconomicCodes extends Component
     if (is_array($id)) {
       $id = $id['id'] ?? $id[0];
     }
-    EconomicCode::find($id)->delete();
-    session()->flash('message', __('Economic Code Deleted Successfully.'));
+    
+    $code = EconomicCode::find($id);
+    if ($code && $code->isUsed()) {
+      session()->flash('error', __('This Economic Code is in use and cannot be deleted.'));
+      return;
+    }
+
+    if ($code) {
+      $code->delete();
+      session()->flash('message', __('Economic Code Deleted Successfully.'));
+    }
   }
 }

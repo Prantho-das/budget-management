@@ -25,6 +25,13 @@
                         </div>
                     @endif
 
+                    @if (session()->has('error'))
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {{ session('error') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+
                     <div class="d-flex justify-content-between mb-3">
                         <h4 class="card-title">{{ __('Economic Code List') }}</h4>
                         @can('create-economic-codes')
@@ -42,10 +49,16 @@
                                         <button wire:click="closeModal()" type="button" class="btn-close" aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
+                                        @if($isUsed)
+                                            <div class="alert alert-warning mb-3" role="alert">
+                                                <i class="mdi mdi-alert-outline me-2"></i>
+                                                {{ __('This code is in use (has children or financial data) and cannot be moved or have its code changed.') }}
+                                            </div>
+                                        @endif
                                         <form>
                                             <div class="mb-3">
-                                                <label for="code" class="form-label">{{ __('Economic Code') }}</label>
-                                                <input type="text" class="form-control" id="code" wire:model="code" placeholder="{{ __('e.g. 3257101') }}">
+                                                <label for="code" class="form-label">{{ __('Code') }}</label>
+                                                <input type="text" class="form-control" id="code" wire:model="code" placeholder="{{ __('e.g. 3257101') }}" {{ $isUsed ? 'disabled' : '' }}>
                                                 @error('code') <span class="text-danger">{{ $message }}</span>@enderror
                                             </div>
                                             <div class="mb-3">
@@ -53,35 +66,33 @@
                                                 <input type="text" class="form-control" id="name" wire:model="name" placeholder="{{ __('Name') }}">
                                                 @error('name') <span class="text-danger">{{ $message }}</span>@enderror
                                             </div>
-                                            <div class="mb-3" wire:ignore>
-                                                <label for="parent_id" class="form-label">{{ __('Parent Code') }}</label>
-                                                <select class="form-control custom-select2" id="parent_id" wire:model="parent_id">
+                                            <div class="mb-3">
+                                                <label for="selectedParentId" class="form-label">{{ __('First Stage') }}</label>
+                                                <select class="form-control" id="selectedParentId" wire:model.live="selectedParentId" {{ $isUsed ? 'disabled' : '' }}>
                                                     <option value="">{{ __('None (Root Level)') }}</option>
-                                                    
-                                                    @foreach($all_economic_codes as $pCode)
+                                                    @foreach($rootCodes as $pCode)
                                                         <option value="{{ $pCode->id }}">
                                                             {{ $pCode->code }} - {{ $pCode->name }}
                                                         </option>
-                                                
-                                                        @if($pCode->children->count() > 0)
-                                                            @foreach($pCode->children as $child)
-                                                                <option value="{{ $child->id }}">
-                                                                    &nbsp;&nbsp;—> {{ $child->code }} - {{ $child->name }}
-                                                                </option>
-                                                
-                                                                @if($child->children->count() > 0)
-                                                                    @foreach($child->children as $subChild)
-                                                                        <option value="{{ $subChild->id }}" disabled>
-                                                                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;———> {{ $subChild->code }} - {{ $subChild->name }}
-                                                                        </option>
-                                                                    @endforeach
-                                                                @endif
-                                                            @endforeach
-                                                        @endif
                                                     @endforeach
                                                 </select>
-                                                @error('parent_id') <span class="text-danger">{{ $message }}</span>@enderror
+                                                @error('selectedParentId') <span class="text-danger">{{ $message }}</span>@enderror
                                             </div>
+
+                                            @if($selectedParentId && $subHeadCodes->count() > 0)
+                                                <div class="mb-3">
+                                                    <label for="selectedSubHeadId" class="form-label">{{ __('Second Stage') }}</label>
+                                                    <select class="form-control" id="selectedSubHeadId" wire:model.live="selectedSubHeadId" {{ $isUsed ? 'disabled' : '' }}>
+                                                        <option value="">{{ __('None (Parent Head is the actual parent)') }}</option>
+                                                        @foreach($subHeadCodes as $child)
+                                                            <option value="{{ $child->id }}">
+                                                                {{ $child->code }} - {{ $child->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                    @error('selectedSubHeadId') <span class="text-danger">{{ $message }}</span>@enderror
+                                                </div>
+                                            @endif
 
                                             <script>
                                                 document.addEventListener('livewire:navigated', () => {
@@ -94,7 +105,7 @@
                                                     }, 100);
                                                 });
                                             </script>
-                                            <div class="mb-3">
+                                            <div class="mb-3 d-none">
                                                 <label for="description" class="form-label">{{ __('Description') }}</label>
                                                 <textarea class="form-control" id="description" wire:model="description"></textarea>
                                                 @error('description') <span class="text-danger">{{ $message }}</span>@enderror
@@ -110,41 +121,112 @@
                         </div>
                     @endif
 
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="search-box">
+                                <div class="position-relative">
+                                    <input type="text" class="form-control" wire:model.live.debounce.300ms="search" placeholder="{{ __('Search by code or name...') }}">
+                                    <i class="mdi mdi-magnify search-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="table-responsive">
-                        <table class="table table-bordered dt-responsive nowrap w-100">
-                            <thead>
+                        <table class="table table-centered align-middle table-nowrap mb-0">
+                            <thead class="table-light">
                                 <tr>
-                                    <th>{{ __('ID') }}</th>
-                                    <th>{{ __('Code') }}</th>
-                                    <th>{{ __('Parent') }}</th>
+                                    <th style="width: 80px;">{{ __('SL') }}</th>
+                                    <th style="width: 150px;">{{ __('Economic Code') }}</th>
                                     <th>{{ __('Name') }}</th>
-                                    <th>{{ __('Description') }}</th>
-                                    <th>{{ __('Action') }}</th>
+                                    <th>{{ __('Type') }}</th>
+                                    <th class="text-center">{{ __('Action') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($codes as $code)
-                                    <tr>
-                                        <td>{{ $code->id }}</td>
-                                        <td><span class="badge bg-success">{{ $code->code }}</span></td>
+                                @foreach($codes as $root)
+                                    @php $rootIdx = $loop->iteration; @endphp
+                                    <tr class="table-primary border-start border-4 border-primary">
+                                        <td>{{ $rootIdx }}</td>
                                         <td>
-                                            @if($code->parent)
-                                                <span class="badge bg-info">{{ $code->parent->code }}</span>
-                                            @else
-                                                <span class="text-muted">{{ __('None') }}</span>
-                                            @endif
+                                            <span class="badge bg-primary fs-13">{{ $root->code }}</span>
                                         </td>
-                                        <td>{{ $code->name }}</td>
-                                        <td>{{ $code->description }}</td>
-                                        <td>
-                                            @can('edit-economic-codes')
-                                                <button wire:click="edit({{ $code->id }})" class="btn btn-sm btn-info">{{ __('Edit') }}</button>
-                                            @endcan
-                                            @can('delete-economic-codes')
-                                                <button wire:click="delete({{ $code->id }})" class="btn btn-sm btn-danger">{{ __('Delete') }}</button>
-                                            @endcan
+                                        <td class="fw-bold text-primary">{{ $root->name }}</td>
+                                        <td><span class="badge badge-soft-primary px-3">{{ __('First Stage') }}</span></td>
+                                        <td class="text-center">
+                                            <div class="btn-group">
+                                                @if($root->isUsed())
+                                                    <span class="badge bg-soft-warning text-warning p-2" title="{{ __('This record is locked because it is in use') }}">
+                                                        <i class="mdi mdi-lock fs-14"></i>
+                                                    </span>
+                                                @else
+                                                    @can('edit-economic-codes')
+                                                        <button wire:click="edit({{ $root->id }})" class="btn btn-sm btn-info btn-soft-info waves-effect waves-light" title="Edit"><i class="mdi mdi-pencil"></i></button>
+                                                    @endcan
+                                                    @can('delete-economic-codes')
+                                                        <button wire:click="delete({{ $root->id }})" class="btn btn-sm btn-danger btn-soft-danger waves-effect waves-light" title="Delete"><i class="mdi mdi-trash-can"></i></button>
+                                                    @endcan
+                                                @endif
+                                            </div>
                                         </td>
                                     </tr>
+                                    
+                                    @foreach($root->children as $subHead)
+                                        @php $subIdx = $loop->iteration; @endphp
+                                        <tr class="table-light">
+                                            <td style="padding-left: 20px;">{{ $rootIdx }}.{{ $subIdx }}</td>
+                                            <td>
+                                                <i class="mdi mdi-arrow-right-bottom me-1 text-muted"></i>
+                                                <span class="badge bg-info fs-12">{{ $subHead->code }}</span>
+                                            </td>
+                                            <td class="fw-medium text-info">{{ $subHead->name }}</td>
+                                            <td><span class="badge badge-soft-info px-3">{{ __('Second Stage') }}</span></td>
+                                            <td class="text-center">
+                                                <div class="btn-group">
+                                                    @if($subHead->isUsed())
+                                                        <span class="badge bg-soft-warning text-warning p-2" title="{{ __('This record is locked because it is in use') }}">
+                                                            <i class="mdi mdi-lock fs-14"></i>
+                                                        </span>
+                                                    @else
+                                                        @can('edit-economic-codes')
+                                                            <button wire:click="edit({{ $subHead->id }})" class="btn btn-sm btn-info btn-soft-info waves-effect waves-light"><i class="mdi mdi-pencil"></i></button>
+                                                        @endcan
+                                                        @can('delete-economic-codes')
+                                                            <button wire:click="delete({{ $subHead->id }})" class="btn btn-sm btn-danger btn-soft-danger waves-effect waves-light"><i class="mdi mdi-trash-can"></i></button>
+                                                        @endcan
+                                                    @endif
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        @foreach($subHead->children as $project)
+                                            <tr>
+                                                <td style="padding-left: 40px;">{{ $rootIdx }}.{{ $subIdx }}.{{ $loop->iteration }}</td>
+                                                <td>
+                                                    <i class="mdi mdi-subdirectory-arrow-right me-1 text-muted"></i>
+                                                    <span class="badge bg-success fs-11">{{ $project->code }}</span>
+                                                </td>
+                                                <td class="text-success">{{ $project->name }}</td>
+                                                <td><span class="badge badge-soft-success px-3">{{ __('Third Stage') }}</span></td>
+                                                <td class="text-center">
+                                                    <div class="btn-group">
+                                                        @if($project->isUsed())
+                                                            <span class="badge bg-soft-warning text-warning p-2" title="{{ __('This record is locked because it is in use') }}">
+                                                                <i class="mdi mdi-lock fs-14"></i>
+                                                            </span>
+                                                        @else
+                                                            @can('edit-economic-codes')
+                                                                <button wire:click="edit({{ $project->id }})" class="btn btn-sm btn-info btn-soft-info waves-effect waves-light"><i class="mdi mdi-pencil"></i></button>
+                                                            @endcan
+                                                            @can('delete-economic-codes')
+                                                                <button wire:click="delete({{ $project->id }})" class="btn btn-sm btn-danger btn-soft-danger waves-effect waves-light"><i class="mdi mdi-trash-can"></i></button>
+                                                            @endcan
+                                                        @endif
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    @endforeach
                                 @endforeach
                             </tbody>
                         </table>

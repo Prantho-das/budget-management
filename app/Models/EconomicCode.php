@@ -31,4 +31,27 @@ class EconomicCode extends Model
     {
         return $this->hasMany(EconomicCode::class, 'parent_id');
     }
+
+    public function budgetEstimations()
+    {
+        return $this->hasMany(BudgetEstimation::class);
+    }
+
+    public function budgetAllocations()
+    {
+        return $this->hasMany(BudgetAllocation::class);
+    }
+
+    public function expenses()
+    {
+        return $this->hasMany(Expense::class);
+    }
+
+    public function isUsed()
+    {
+        return $this->children()->exists() ||
+            $this->budgetEstimations()->exists() ||
+            $this->budgetAllocations()->exists() ||
+            $this->expenses()->exists();
+    }
 }
