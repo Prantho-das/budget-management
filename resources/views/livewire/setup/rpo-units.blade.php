@@ -114,7 +114,7 @@
                                     <th style="width: 80px;">{{ __('SL') }}</th>
                                     <th style="width: 150px;">{{ __('Office Code') }}</th>
                                     <th>{{ __('Office Name') }}</th>
-                                    <th>{{ __('Type') }}</th>
+                                    {{-- <th>{{ __('Type') }}</th> --}}
                                     <th class="text-center">{{ __('Action') }}</th>
                                 </tr>
                             </thead>
@@ -127,7 +127,7 @@
                                             <span class="badge bg-primary fs-13">{{ $root->code }}</span>
                                         </td>
                                         <td class="fw-bold text-primary">{{ $root->name }}</td>
-                                        <td><span class="badge badge-soft-primary px-3">{{ __('Headquarters') }}</span></td>
+                                        {{-- <td><span class="badge badge-soft-primary px-3">{{ __('Headquarters') }}</span></td> --}}
                                         <td class="text-center">
                                             <div class="btn-group">
                                                 @can('edit-offices')
@@ -149,7 +149,7 @@
                                                 <span class="badge bg-info fs-12">{{ $child->code }}</span>
                                             </td>
                                             <td class="fw-medium text-info">{{ $child->name }}</td>
-                                            <td><span class="badge badge-soft-info px-3">{{ __('District Office') }}</span></td>
+                                            {{-- <td><span class="badge badge-soft-info px-3">{{ __('District Office') }}</span></td> --}}
                                             <td class="text-center">
                                                 <div class="btn-group">
                                                     @can('edit-offices')
@@ -170,7 +170,7 @@
                                                     <span class="badge bg-success fs-11">{{ $grandChild->code }}</span>
                                                 </td>
                                                 <td class="text-success">{{ $grandChild->name }}</td>
-                                                <td><span class="badge badge-soft-success px-3">{{ __('Field Office') }}</span></td>
+                                                {{-- <td><span class="badge badge-soft-success px-3">{{ __('Field Office') }}</span></td> --}}
                                                 <td class="text-center">
                                                     <div class="btn-group">
                                                         @can('edit-offices')

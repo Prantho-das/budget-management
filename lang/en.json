@@ -1,7 +1,7 @@
 {
   "Dashboard": "Dashboard",
   "Budgeting": "Budgeting",
-  "Budget Demand": "Budget Demand",
+  "Budget Demand": "Budget Demand Entry",
   "Estimation": "Estimation",
   "Approvals": "Approvals",
   "Setup": "Setup",
@@ -10,7 +10,7 @@
   "Users": "Users",
   "Offices": "Offices",
   "Expenses": "Expenses",
-  "Economic Codes": "Expense Codes",
+  "Economic Codes": "Economic Codes",
   "Permissions": "Permissions",
   "Roles": "Roles",
   "Profile": "Profile",

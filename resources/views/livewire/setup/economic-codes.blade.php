@@ -58,7 +58,7 @@
                                         <form>
                                             <div class="mb-3">
                                                 <label for="code" class="form-label">{{ __('Economic Code') }}</label>
-                                                <input type="text" class="form-control" id="code" wire:model.blur="code" placeholder="{{ __('e.g. 3257101') }}" {{ $isUsed ? 'disabled' : '' }}>
+                                                <input type="text" class="form-control" id="code" wire:model.live="code" placeholder="{{ __('e.g. 3257101') }}" {{ $isUsed ? 'disabled' : '' }}>
                                                 @error('code') <span class="text-danger">{{ $message }}</span>@enderror
                                             </div>
                                             <div class="mb-3">
