@@ -67,11 +67,11 @@
                             @if($activeTab === 'general')
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
-                                        <label class="form-label fw-semibold">{{ __('Site Name') }}</label>
+                                        <label class="form-label fw-semibold">{{ __('Software Name') }}</label>
                                         <input type="text" class="form-control" wire:model="settings.site_name">
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label class="form-label fw-semibold">{{ __('Site Title') }}</label>
+                                        <label class="form-label fw-semibold">{{ __('Reporting Title') }}</label>
                                         <input type="text" class="form-control" wire:model="settings.site_title">
                                     </div>
                                     <div class="col-md-6 mb-3">
