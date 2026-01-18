@@ -108,63 +108,83 @@
                     @endif
 
                     <div class="table-responsive">
-                        <table class="table table-hover table-centered table-nowrap mb-0">
-                            <thead class="table-light text-center">
+                        <table class="table table-centered align-middle table-nowrap mb-0">
+                            <thead class="table-light">
                                 <tr>
-                                    <th style="width: 80px;">{{ __('ID') }}</th>
-                                    <th class="text-start">{{ __('Office Name') }}</th>
-                                    <th>{{ __('Code') }}</th>
-                                    <th class="text-start">{{ __('Supervising Office') }}</th>
-                                    <th>{{ __('Action') }}</th>
+                                    <th style="width: 80px;">{{ __('SL') }}</th>
+                                    <th style="width: 150px;">{{ __('Office Code') }}</th>
+                                    <th>{{ __('Office Name') }}</th>
+                                    <th>{{ __('Type') }}</th>
+                                    <th class="text-center">{{ __('Action') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($rpo_units as $unit)
-                                    <tr class="text-center">
-                                        <td><span class="text-muted">{{ $unit->id }}</span></td>
-                                        <td class="text-start">
-                                            <div class="d-flex align-items-center">
-                                                <div class="avatar-xs me-3">
-                                                    <span class="avatar-title rounded-circle bg-primary-subtle text-primary font-size-18">
-                                                        <i class="bx bx-buildings"></i>
-                                                    </span>
-                                                </div>
-                                                <h5 class="font-size-14 mb-0 text-truncate" style="max-width: 300px;">{{ $unit->name }}</h5>
-                                            </div>
-                                        </td>
-                                        <td><span class="badge bg-primary-subtle text-primary font-size-12">{{ $unit->code }}</span></td>
-                                        <td class="text-start">
-                                            @if($unit->parent)
-                                                <span class="text-info font-size-13"><i class="bx bx-link me-1"></i>{{ $unit->parent->name }}</span>
-                                            @else
-                                                <span class="text-muted font-size-13 fst-italic">-</span>
-                                            @endif
-                                        </td>
+                                @foreach($rpo_units as $root)
+                                    @php $rootIdx = $loop->iteration; @endphp
+                                    <tr class="table-primary border-start border-4 border-primary">
+                                        <td>{{ $rootIdx }}</td>
                                         <td>
-                                            <div class="d-flex gap-2 justify-content-center">
+                                            <span class="badge bg-primary fs-13">{{ $root->code }}</span>
+                                        </td>
+                                        <td class="fw-bold text-primary">{{ $root->name }}</td>
+                                        <td><span class="badge badge-soft-primary px-3">{{ __('Headquarters') }}</span></td>
+                                        <td class="text-center">
+                                            <div class="btn-group">
                                                 @can('edit-offices')
-                                                    <button wire:click="edit({{ $unit->id }})" class="btn btn-sm btn-info btn-soft-info waves-effect waves-light" title="{{ __('Edit') }}">
-                                                        <i class="bx bx-edit-alt"></i>
-                                                    </button>
+                                                    <button wire:click="edit({{ $root->id }})" class="btn btn-sm btn-info btn-soft-info waves-effect waves-light" title="Edit"><i class="mdi mdi-pencil"></i></button>
                                                 @endcan
                                                 @can('delete-offices')
-                                                    <button onclick="confirm('{{ __('Are you sure you want to delete this office?') }}') || event.stopImmediatePropagation()" wire:click="delete({{ $unit->id }})" class="btn btn-sm btn-danger btn-soft-danger waves-effect waves-light" title="{{ __('Delete') }}">
-                                                        <i class="bx bx-trash"></i>
-                                                    </button>
+                                                    <button onclick="confirm('{{ __('Are you sure you want to delete this office?') }}') || event.stopImmediatePropagation()" wire:click="delete({{ $root->id }})" class="btn btn-sm btn-danger btn-soft-danger waves-effect waves-light" title="Delete"><i class="mdi mdi-trash-can"></i></button>
                                                 @endcan
                                             </div>
                                         </td>
                                     </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="5" class="text-center py-4">
-                                            <div class="text-muted">
-                                                <i class="bx bx-search-alt font-size-24 d-block mb-2"></i>
-                                                {{ __('No offices found matching your search.') }}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforelse
+                                    
+                                    @foreach($root->children as $child)
+                                        @php $childIdx = $loop->iteration; @endphp
+                                        <tr class="table-light">
+                                            <td style="padding-left: 20px;">{{ $rootIdx }}.{{ $childIdx }}</td>
+                                            <td>
+                                                <i class="mdi mdi-arrow-right-bottom me-1 text-muted"></i>
+                                                <span class="badge bg-info fs-12">{{ $child->code }}</span>
+                                            </td>
+                                            <td class="fw-medium text-info">{{ $child->name }}</td>
+                                            <td><span class="badge badge-soft-info px-3">{{ __('District Office') }}</span></td>
+                                            <td class="text-center">
+                                                <div class="btn-group">
+                                                    @can('edit-offices')
+                                                        <button wire:click="edit({{ $child->id }})" class="btn btn-sm btn-info btn-soft-info waves-effect waves-light" title="Edit"><i class="mdi mdi-pencil"></i></button>
+                                                    @endcan
+                                                    @can('delete-offices')
+                                                        <button onclick="confirm('{{ __('Are you sure you want to delete this office?') }}') || event.stopImmediatePropagation()" wire:click="delete({{ $child->id }})" class="btn btn-sm btn-danger btn-soft-danger waves-effect waves-light" title="Delete"><i class="mdi mdi-trash-can"></i></button>
+                                                    @endcan
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        @foreach($child->children as $grandChild)
+                                            <tr>
+                                                <td style="padding-left: 40px;">{{ $rootIdx }}.{{ $childIdx }}.{{ $loop->iteration }}</td>
+                                                <td>
+                                                    <i class="mdi mdi-subdirectory-arrow-right me-1 text-muted"></i>
+                                                    <span class="badge bg-success fs-11">{{ $grandChild->code }}</span>
+                                                </td>
+                                                <td class="text-success">{{ $grandChild->name }}</td>
+                                                <td><span class="badge badge-soft-success px-3">{{ __('Field Office') }}</span></td>
+                                                <td class="text-center">
+                                                    <div class="btn-group">
+                                                        @can('edit-offices')
+                                                            <button wire:click="edit({{ $grandChild->id }})" class="btn btn-sm btn-info btn-soft-info waves-effect waves-light" title="Edit"><i class="mdi mdi-pencil"></i></button>
+                                                        @endcan
+                                                        @can('delete-offices')
+                                                            <button onclick="confirm('{{ __('Are you sure you want to delete this office?') }}') || event.stopImmediatePropagation()" wire:click="delete({{ $grandChild->id }})" class="btn btn-sm btn-danger btn-soft-danger waves-effect waves-light" title="Delete"><i class="mdi mdi-trash-can"></i></button>
+                                                        @endcan
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    @endforeach
+                                @endforeach
                             </tbody>
                         </table>
                     </div>

@@ -12,30 +12,61 @@ class EconomicCodes extends Component
   public $isOpen = false;
   public $search = '';
 
+  public function updatedCode($value)
+  {
+    $length = strlen($value);
+
+    if ($length === 2) {
+      $this->selectedParentId = '';
+      $this->selectedSubHeadId = '';
+    } elseif ($length === 4) {
+      $parentCode = substr($value, 0, 2);
+      $parent = EconomicCode::where('code', $parentCode)->first();
+
+      if ($parent) {
+        $this->selectedParentId = $parent->id;
+        $this->selectedSubHeadId = '';
+      }
+    } elseif ($length === 6) {
+      $subHeadCode = substr($value, 0, 4);
+      $subHead = EconomicCode::where('code', $subHeadCode)->first();
+
+      if ($subHead) {
+        $this->selectedParentId = $subHead->parent_id;
+        // We need to ensure the subHead list is updated in the view, 
+        // which happens in render() based on selectedParentId.
+        // Livewire should handle the binding if the value matches an option.
+        $this->selectedSubHeadId = $subHead->id;
+      }
+    }
+
+    $this->dispatch('select2-reinit');
+  }
+
   protected $listeners = ['deleteConfirmed'];
 
   public function render()
   {
     abort_if(auth()->user()->cannot('view-economic-codes'), 403);
-    
+
     // Hierarchical fetch with live search
     $this->codes = EconomicCode::whereNull('parent_id')
-      ->with(['children' => function($query) {
-        $query->orderBy('code', 'asc')->with(['children' => function($q) {
+      ->with(['children' => function ($query) {
+        $query->orderBy('code', 'asc')->with(['children' => function ($q) {
           $q->orderBy('code', 'asc');
         }]);
       }])
-      ->when($this->search, function($query) {
-        $query->where(function($q) {
+      ->when($this->search, function ($query) {
+        $query->where(function ($q) {
           $term = '%' . $this->search . '%';
           $q->where('name', 'like', $term)
             ->orWhere('code', 'like', $term)
-            ->orWhereHas('children', function($subQ) use ($term) {
+            ->orWhereHas('children', function ($subQ) use ($term) {
               $subQ->where('name', 'like', $term)
                 ->orWhere('code', 'like', $term)
-                ->orWhereHas('children', function($projectQ) use ($term) {
+                ->orWhereHas('children', function ($projectQ) use ($term) {
                   $projectQ->where('name', 'like', $term)
-                           ->orWhere('code', 'like', $term);
+                    ->orWhere('code', 'like', $term);
                 });
             });
         });
@@ -123,6 +154,19 @@ class EconomicCodes extends Component
 
     $this->validate($validationRules);
 
+    // Custom Hierarchy Validation
+    if (!$this->isUsed) {
+      $length = strlen($this->code);
+      if ($length > 2 && empty($this->selectedParentId)) {
+        $this->addError('selectedParentId', __('First Stage is required for codes longer than 2 digits.'));
+        return;
+      }
+      if ($length > 4 && empty($this->selectedSubHeadId)) {
+        $this->addError('selectedSubHeadId', __('Second Stage is required for codes longer than 4 digits.'));
+        return;
+      }
+    }
+
     $data = [
       'name' => $this->name,
       'description' => $this->description,
@@ -183,7 +227,7 @@ class EconomicCodes extends Component
     if (is_array($id)) {
       $id = $id['id'] ?? $id[0];
     }
-    
+
     $code = EconomicCode::find($id);
     if ($code && $code->isUsed()) {
       session()->flash('error', __('This Economic Code is in use and cannot be deleted.'));

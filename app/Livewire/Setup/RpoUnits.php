@@ -7,36 +7,49 @@ use App\Models\RpoUnit;
 
 class RpoUnits extends Component
 {
-    public $rpo_units, $name, $code, $parent_id, $rpo_unit_id;
-    public $isOpen = false;
-    public $search = '';
+  public $rpo_units, $name, $code, $parent_id, $rpo_unit_id;
+  public $isOpen = false;
+  public $search = '';
 
-    // Robust delete application
-    protected $listeners = ['deleteConfirmed'];
+  // Robust delete application
+  protected $listeners = ['deleteConfirmed'];
 
-    public function render()
-    {
-        abort_if(auth()->user()->cannot('view-offices'), 403);
-        
-        $query = RpoUnit::with('parent')->orderBy('id', 'desc');
-        
-        if ($this->search) {
-            $query->where(function($q) {
-                $q->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhere('code', 'like', '%' . $this->search . '%');
+  public function render()
+  {
+    abort_if(auth()->user()->cannot('view-offices'), 403);
+
+    $this->rpo_units = RpoUnit::whereNull('parent_id')
+      ->with(['children' => function ($query) {
+        $query->orderBy('code', 'asc')->with(['children' => function ($q) {
+          $q->orderBy('code', 'asc');
+        }]);
+      }])
+      ->when($this->search, function ($query) {
+        $query->where(function ($q) {
+          $term = '%' . $this->search . '%';
+          $q->where('name', 'like', $term)
+            ->orWhere('code', 'like', $term)
+            ->orWhereHas('children', function ($subQ) use ($term) {
+              $subQ->where('name', 'like', $term)
+                ->orWhere('code', 'like', $term)
+                ->orWhereHas('children', function ($grandQ) use ($term) {
+                  $grandQ->where('name', 'like', $term)
+                    ->orWhere('code', 'like', $term);
+                });
             });
-        }
-        
-        $this->rpo_units = $query->get();
+        });
+      })
+      ->orderBy('code', 'asc')
+      ->get();
 
-        // Get potential parents (exclude the current unit and its children to avoid cycles)
-        $idsToExclude = $this->rpo_unit_id ? [$this->rpo_unit_id] : [];
-        $parents = RpoUnit::whereNotIn('id', $idsToExclude)->get();
+    // Get potential parents (exclude the current unit and its children to avoid cycles)
+    $idsToExclude = $this->rpo_unit_id ? [$this->rpo_unit_id] : [];
+    $parents = RpoUnit::whereNotIn('id', $idsToExclude)->get();
 
-        return view('livewire.setup.rpo-units', [
-            'parents' => $parents
-        ])->extends('layouts.skot')->section('content');
-    }
+    return view('livewire.setup.rpo-units', [
+      'parents' => $parents
+    ])->extends('layouts.skot')->section('content');
+  }
 
   public function create()
   {
@@ -66,9 +79,9 @@ class RpoUnits extends Component
   public function store()
   {
     if ($this->rpo_unit_id) {
-        abort_if(auth()->user()->cannot('edit-offices'), 403);
+      abort_if(auth()->user()->cannot('edit-offices'), 403);
     } else {
-        abort_if(auth()->user()->cannot('create-offices'), 403);
+      abort_if(auth()->user()->cannot('create-offices'), 403);
     }
 
     $this->validate([

@@ -57,8 +57,8 @@
                                         @endif
                                         <form>
                                             <div class="mb-3">
-                                                <label for="code" class="form-label">{{ __('Code') }}</label>
-                                                <input type="text" class="form-control" id="code" wire:model="code" placeholder="{{ __('e.g. 3257101') }}" {{ $isUsed ? 'disabled' : '' }}>
+                                                <label for="code" class="form-label">{{ __('Economic Code') }}</label>
+                                                <input type="text" class="form-control" id="code" wire:model.blur="code" placeholder="{{ __('e.g. 3257101') }}" {{ $isUsed ? 'disabled' : '' }}>
                                                 @error('code') <span class="text-danger">{{ $message }}</span>@enderror
                                             </div>
                                             <div class="mb-3">
@@ -68,7 +68,7 @@
                                             </div>
                                             <div class="mb-3">
                                                 <label for="selectedParentId" class="form-label">{{ __('First Stage') }}</label>
-                                                <select class="form-control" id="selectedParentId" wire:model.live="selectedParentId" {{ $isUsed ? 'disabled' : '' }}>
+                                                <select class="form-control" id="selectedParentId" wire:model.live="selectedParentId" disabled>
                                                     <option value="">{{ __('None (Root Level)') }}</option>
                                                     @foreach($rootCodes as $pCode)
                                                         <option value="{{ $pCode->id }}">
@@ -82,7 +82,7 @@
                                             @if($selectedParentId && $subHeadCodes->count() > 0)
                                                 <div class="mb-3">
                                                     <label for="selectedSubHeadId" class="form-label">{{ __('Second Stage') }}</label>
-                                                    <select class="form-control" id="selectedSubHeadId" wire:model.live="selectedSubHeadId" {{ $isUsed ? 'disabled' : '' }}>
+                                                    <select class="form-control" id="selectedSubHeadId" wire:model.live="selectedSubHeadId" disabled>
                                                         <option value="">{{ __('None (Parent Head is the actual parent)') }}</option>
                                                         @foreach($subHeadCodes as $child)
                                                             <option value="{{ $child->id }}">
