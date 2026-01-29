@@ -72,6 +72,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/setup/roles', \App\Livewire\Setup\Roles::class)->middleware('can:view-roles')->name('setup.roles');
     Route::get('/setup/offices', \App\Livewire\Setup\RpoUnits::class)->middleware('can:view-offices')->name('setup.rpo-units');
     Route::get('/setup/expenses', \App\Livewire\Setup\Expenses::class)->middleware('can:view-expenses')->name('setup.expenses');
+    Route::get('/setup/expenses/create', \App\Livewire\Setup\ExpenseCreate::class)->middleware('can:create-expenses')->name('setup.expenses.create');
     Route::get('/setup/economic-codes', \App\Livewire\Setup\EconomicCodes::class)->middleware('can:view-economic-codes')->name('setup.economic-codes');
     Route::get('/setup/budget-types', \App\Livewire\Setup\BudgetTypes::class)->middleware('can:view-budget-types')->name('setup.budget-types');
     Route::get('/setup/users', \App\Livewire\Setup\Users::class)->middleware('can:view-users')->name('setup.users');
