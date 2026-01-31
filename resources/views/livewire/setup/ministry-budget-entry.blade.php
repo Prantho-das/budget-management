@@ -174,8 +174,8 @@
                                                         {{ number_format($previous_revised_data[$layer3->id] ?? 0, 2) }}
                                                     </td>
                                                 @endif
-                                                <td>
-                                                    <input type="number" step="0.01" class="form-control form-control-sm text-end" 
+                                                <td style="width: 200px;">
+                                                    <input type="number" step="0.01" class="form-control text-end font-size-15 fw-bold" 
                                                            wire:model.live="budget_data.{{ $layer3->id }}"
                                                            placeholder="0.00">
                                                 </td>

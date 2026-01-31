@@ -319,10 +319,10 @@
                                             {{-- Estimation (9) --}}
                                             <td class="text-end">
                                                 @if($type === 'office')
-                                                    <input type="number" class="form-control form-control-sm text-end {{ $isParent ? 'fw-bold' : '' }}" 
+                                                    <input type="number" class="form-control text-end {{ $isParent ? 'fw-bold' : '' }} font-size-14" 
                                                            value="{{ $row['projection_1'] ?: $row['estimation_suggestion'] }}"
                                                            wire:change.debounce.500ms="updateAmount({{ $office->id }}, $event.target.value, 'projection_1')"
-                                                           style="min-width: 90px;"
+                                                           style="min-width: 110px; padding: 8px;"
                                                            {{ $isParent ? 'readonly' : '' }}>
                                                 @else
                                                     <span class="fw-bold">{{ number_format($row['projection_1'] ?: $row['estimation_suggestion'], 0) }}</span>
@@ -332,10 +332,10 @@
                                             {{-- Projection 1 (10) --}}
                                             <td class="text-end">
                                                 @if($type === 'office')
-                                                    <input type="number" class="form-control form-control-sm text-end {{ $isParent ? 'fw-bold' : '' }}" 
+                                                    <input type="number" class="form-control text-end {{ $isParent ? 'fw-bold' : '' }} font-size-14" 
                                                            value="{{ $row['projection_2'] ?: $row['projection1_suggestion'] }}"
                                                            wire:change.debounce.500ms="updateAmount({{ $office->id }}, $event.target.value, 'projection_2')"
-                                                           style="min-width: 90px;"
+                                                           style="min-width: 110px; padding: 8px;"
                                                            {{ $isParent ? 'readonly' : '' }}>
                                                 @else
                                                     <span class="fw-bold">{{ number_format($row['projection_2'] ?: $row['projection1_suggestion'], 0) }}</span>
@@ -360,10 +360,10 @@
                                                              $limitWarning = "Max: " . number_format($remaining + $currentVal);
                                                         }
                                                     @endphp
-                                                    <input type="number" class="form-control form-control-sm text-end {{ $isParent ? 'fw-bold' : '' }}" 
+                                                    <input type="number" class="form-control text-end {{ $isParent ? 'fw-bold' : '' }} font-size-14" 
                                                            value="{{ $row['projection_3'] ?: $row['projection2_suggestion'] }}"
                                                            wire:change.debounce.500ms="updateAmount({{ $office->id }}, $event.target.value, 'projection_3')"
-                                                           style="min-width: 90px;"
+                                                           style="min-width: 110px; padding: 8px;"
                                                            @if($economic_code_id && $maxLimit > 0) 
                                                                max="{{ $maxLimit }}" 
                                                                title="{{ $limitWarning }}" 

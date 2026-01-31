@@ -357,10 +357,10 @@
                                                     @endfor
 
                                                     <!-- Current demand input -->
-                                                    <td style="width: 150px;">
+                                                    <td style="width: 200px;">
                                                         <div class="form-group mb-0">
                                                             <input type="text"
-                                                                class="form-control form-control-sm text-end"
+                                                                class="form-control text-end font-size-15 fw-bold"
                                                                 wire:model.defer="demands.{{ $layer3->id }}"
                                                                 placeholder="0"
                                                                 {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
@@ -389,7 +389,7 @@
 
                                                     <!-- Remarks -->
                                                     <td>
-                                                        <input type="text" class="form-control form-control-sm"
+                                                        <input type="text" class="form-control"
                                                             wire:model.defer="remarks.{{ $layer3->id }}"
                                                             placeholder="{{ __('Note...') }}"
                                                             {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
