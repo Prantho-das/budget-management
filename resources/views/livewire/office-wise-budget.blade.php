@@ -345,10 +345,30 @@
                                             {{-- Projection 2 (11) --}}
                                             <td class="text-end">
                                                 @if($type === 'office')
+                                                    @php
+                                                        // Calculate Max Limit if Economic Code is selected
+                                                        $maxLimit = 0;
+                                                        $limitWarning = '';
+                                                        $remaining = 0;
+                                                        
+                                                        // Only apply if an Economic Code is selected and limits exist
+                                                        if($economic_code_id && isset($ministryLimits[$economic_code_id])) {
+                                                             $remaining = $ministryLimits[$economic_code_id]['remaining'];
+                                                             // Add current value back to remaining to allow editing
+                                                             $currentVal = $row['projection_3'] ?: 0;
+                                                             $maxLimit = $remaining + $currentVal;
+                                                             $limitWarning = "Max: " . number_format($remaining + $currentVal);
+                                                        }
+                                                    @endphp
                                                     <input type="number" class="form-control form-control-sm text-end {{ $isParent ? 'fw-bold' : '' }}" 
                                                            value="{{ $row['projection_3'] ?: $row['projection2_suggestion'] }}"
                                                            wire:change.debounce.500ms="updateAmount({{ $office->id }}, $event.target.value, 'projection_3')"
                                                            style="min-width: 90px;"
+                                                           @if($economic_code_id && $maxLimit > 0) 
+                                                               max="{{ $maxLimit }}" 
+                                                               title="{{ $limitWarning }}" 
+                                                               data-bs-toggle="tooltip"
+                                                           @endif
                                                            {{ $isParent ? 'readonly' : '' }}>
                                                 @else
                                                     <span class="fw-bold">{{ number_format($row['projection_3'] ?: $row['projection2_suggestion'], 0) }}</span>

@@ -138,6 +138,14 @@ class OfficeWiseBudget extends Component
         // Grand Totals Calculation
         $totals = $this->calculateGrandTotals($hierarchicalData);
 
+        // Validation against Ministry Budget
+        $validator = new \App\Services\MinistryBudgetValidationService();
+        $ministryLimits = $validator->getMinistryBudgetSummary(
+            $this->fiscal_year_id,
+           $this->selected_office_id, // Filter by selected office if set, else Global
+            $this->budget_type_id
+        );
+
         return view('livewire.office-wise-budget', [
             'fiscalYears' => $fiscalYears,
             'budgetTypes' => $budgetTypes,
@@ -147,7 +155,8 @@ class OfficeWiseBudget extends Component
             'selectedFy' => $selectedFy,
             'fullPrevYears' => $fullPrevYears,
             'flattenedTable' => $flattenedTable,
-            'totals' => $totals
+            'totals' => $totals,
+            'ministryLimits' => $ministryLimits
         ])->extends('layouts.skot')->section('content');
     }
     private function getHierarchicalEconomicCodes()

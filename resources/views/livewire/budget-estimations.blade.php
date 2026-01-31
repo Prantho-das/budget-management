@@ -267,87 +267,136 @@
                                             ->keyBy('economic_code_id');
                                     @endphp
 
-                                    @foreach ($economicCodes as $code)
-                                        <tr class="{{ $code->parent_id == null ? 'parent-expense-code' : '' }}">
-                                            <td>
-                                                <span
-                                                    class="badge  bg-{{ $code->parent_id ? 'secondary' : 'primary' }}-subtle text-{{ $code->parent_id ? 'secondary' : 'primary' }} p-2">
-                                                    {{ $code->code }}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <div class="text-dark">{{ $code->name }}</div>
-                                                @if ($code->description)
-                                                    <small class="text-muted d-block text-truncate"
-                                                        style="max-width: 200px;">
-                                                        {{ $code->description }}
-                                                    </small>
-                                                @endif
-                                            </td>
-
-                                            <!-- Previous 3 years actual expenditure -->
+                                    @foreach ($economicCodes as $layer1)
+                                        @php $rootIdx = $loop->iteration; @endphp
+                                        <tr class="table-primary border-start border-4 border-primary">
+                                            <td colspan="2"><strong>{{ $rootIdx }}. {{ $layer1->code }} - {{ $layer1->name }}</strong></td>
                                             @for ($i = 0; $i < 3; $i++)
-                                                <td class="text-end">
-                                                    @if (isset($previousDemands[$code->id]["year_{$i}"]))
-                                                        {{ number_format($previousDemands[$code->id]["year_{$i}"]['amount'], 0) }}
-                                                    @else
-                                                        <span class="opacity-25">-</span>
-                                                    @endif
+                                                <td class="text-end fw-bold">
+                                                    @php
+                                                        // Calculate Subtotal for Layer 1
+                                                        $layer1Ids = $layer1->children->flatMap->children->pluck('id')->toArray();
+                                                        $L1Total = 0;
+                                                         if (isset($layer1Ids) && count($layer1Ids) > 0) {
+                                                            foreach($layer1Ids as $lid) {
+                                                                if(isset($previousDemands[$lid]["year_{$i}"])) {
+                                                                    $L1Total += $previousDemands[$lid]["year_{$i}"]['amount'];
+                                                                }
+                                                            }
+                                                        }
+                                                    @endphp
+                                                    {{ $L1Total > 0 ? number_format($L1Total, 0) : '-' }}
                                                 </td>
                                             @endfor
-
-                                            <!-- Current demand input -->
-                                            <td style="
-    text-align: end;
-">
-                                                <div class="form-group ">
-                                                    @if ($code->parent_id != null)
-                                                        <input type="text"
-                                                            class="form-control form-control-sm text-end"
-                                                            wire:model.defer="demands.{{ $code->id }}"
-                                                            placeholder="0"
-                                                            {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
-
-                                                        @php
-                                                            $yCount = count($prevYears);
-                                                            $latestIdx = $yCount - 1;
-                                                        @endphp
-                                                        @if (($status === 'draft' || $status === 'rejected') && $latestIdx >= 0 && isset($previousDemands[$code->id]["year_{$latestIdx}"]))
-                                                            @php
-                                                                $suggested = round(
-                                                                    $previousDemands[$code->id]["year_{$latestIdx}"]['amount'] *
-                                                                        1.1,
-                                                                );
-                                                            @endphp
-                                                           
-                                                            <button class="btn btn-soft-info btn-sm px-2 py-0 border-0" 
-                                                                type="button" 
-                                                                wire:click="applySuggestion({{ $code->id }})"
-                                                                title="{{ __('Click to apply 10% increase') }}">
-                                                                <small class="fw-bold">{{ __('Suggest: ') . number_format($suggested) }}</small>
-                                                            </button>
-                                                        @endif
-                                                    @endif
-                                                </div>
+                                            <td class="text-end fw-bold text-primary">
+                                                @php
+                                                     $L1CurrentTotal = collect($demands)->only($layer1Ids)->sum();
+                                                @endphp
+                                                {{ $L1CurrentTotal > 0 ? number_format($L1CurrentTotal) : '-' }}
                                             </td>
-
-                                            <!-- Remarks -->
-                                            <td>
-                                                @if ($code->parent_id != null)
-                                                    <input type="text" class="form-control form-control-sm"
-                                                        wire:model.defer="remarks.{{ $code->id }}"
-                                                        placeholder="{{ __('Note...') }}"
-                                                        {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
-                                                    
-                                                    @if (($status === 'draft' || $status === 'rejected') && isset($previousDemands[$code->id]['year_0']))
-                                                        @php
-                                                            $suggested = round($previousDemands[$code->id]['year_0']['amount'] * 1.10);
-                                                        @endphp
-                                                        
-                                                    @endif
-                                                @endif
-                                            </td>
+                                            <td></td>
                                         </tr>
+
+                                        @foreach ($layer1->children as $layer2)
+                                            @php $subIdx = $loop->iteration; @endphp
+                                            <tr class="table-light">
+                                                <td colspan="2" style="padding-left: 25px;">
+                                                    <i class="mdi mdi-arrow-right-bottom me-1 text-muted"></i>
+                                                    <span class="badge bg-info-subtle text-info">{{ $layer2->code }}</span> 
+                                                    <span class="fw-medium text-info">{{ $layer2->name }}</span>
+                                                </td>
+                                                @for ($i = 0; $i < 3; $i++)
+                                                    <td class="text-end fw-medium text-secondary">
+                                                        @php
+                                                            // Calculate Subtotal for Layer 2
+                                                            $layer2Ids = $layer2->children->pluck('id')->toArray();
+                                                            $L2Total = 0;
+                                                            if (isset($layer2Ids) && count($layer2Ids) > 0) {
+                                                                foreach($layer2Ids as $lid) {
+                                                                    if(isset($previousDemands[$lid]["year_{$i}"])) {
+                                                                        $L2Total += $previousDemands[$lid]["year_{$i}"]['amount'];
+                                                                    }
+                                                                }
+                                                            }
+                                                        @endphp
+                                                        {{ $L2Total > 0 ? number_format($L2Total, 0) : '-' }}
+                                                    </td>
+                                                @endfor
+                                                 <td class="text-end fw-medium text-info">
+                                                    @php
+                                                         $L2CurrentTotal = collect($demands)->only($layer2Ids)->sum();
+                                                    @endphp
+                                                    {{ $L2CurrentTotal > 0 ? number_format($L2CurrentTotal) : '-' }}
+                                                </td>
+                                                <td></td>
+                                            </tr>
+
+                                            @foreach ($layer2->children as $layer3)
+                                                 <tr>
+                                                    <td style="width: 120px; padding-left: 50px;">
+                                                        <span class="badge bg-light text-dark border">{{ $layer3->code }}</span>
+                                                    </td>
+                                                    <td>
+                                                        {{ $layer3->name }}
+                                                        @if ($layer3->description)
+                                                            <small class="text-muted d-block text-truncate" style="max-width: 250px;">
+                                                                {{ $layer3->description }}
+                                                            </small>
+                                                        @endif
+                                                    </td>
+
+                                                    <!-- Previous 3 years actual expenditure -->
+                                                    @for ($i = 0; $i < 3; $i++)
+                                                        <td class="text-end">
+                                                            @if (isset($previousDemands[$layer3->id]["year_{$i}"]))
+                                                                {{ number_format($previousDemands[$layer3->id]["year_{$i}"]['amount'], 0) }}
+                                                            @else
+                                                                <span class="opacity-25">-</span>
+                                                            @endif
+                                                        </td>
+                                                    @endfor
+
+                                                    <!-- Current demand input -->
+                                                    <td style="width: 150px;">
+                                                        <div class="form-group mb-0">
+                                                            <input type="text"
+                                                                class="form-control form-control-sm text-end"
+                                                                wire:model.defer="demands.{{ $layer3->id }}"
+                                                                placeholder="0"
+                                                                {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
+
+                                                            @php
+                                                                $yCount = count($prevYears);
+                                                                $latestIdx = $yCount - 1;
+                                                            @endphp
+                                                            @if (($status === 'draft' || $status === 'rejected') && $latestIdx >= 0 && isset($previousDemands[$layer3->id]["year_{$latestIdx}"]))
+                                                                @php
+                                                                    $suggested = round(
+                                                                        $previousDemands[$layer3->id]["year_{$latestIdx}"]['amount'] *
+                                                                            1.1,
+                                                                    );
+                                                                @endphp
+                                                               
+                                                                <button class="btn btn-soft-info btn-sm px-2 py-0 border-0 w-100 text-end mt-1" 
+                                                                    type="button" 
+                                                                    wire:click="applySuggestion({{ $layer3->id }})"
+                                                                    title="{{ __('Click to apply 10% increase') }}">
+                                                                    <small class="fw-bold" style="font-size: 10px;">{{ __('Sugg: ') . number_format($suggested) }}</small>
+                                                                </button>
+                                                            @endif
+                                                        </div>
+                                                    </td>
+
+                                                    <!-- Remarks -->
+                                                    <td>
+                                                        <input type="text" class="form-control form-control-sm"
+                                                            wire:model.defer="remarks.{{ $layer3->id }}"
+                                                            placeholder="{{ __('Note...') }}"
+                                                            {{ $status !== 'draft' && $status !== 'rejected' ? 'disabled' : '' }}>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        @endforeach
                                     @endforeach
                                 </tbody>
                             </table>

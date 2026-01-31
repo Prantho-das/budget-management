@@ -66,6 +66,75 @@
           </div>
       </div>
 
+      @if(collect($ministryBudgetSummary)->isEmpty())
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        <i class="mdi mdi-alert-outline me-2"></i>
+                        <strong>{{ __('Warning') }}:</strong> {{ __('No Ministry Budget allocation found for this Fiscal Year and Budget Type.') }} 
+                        {{ __('Please ensure Ministry Budget Entry is completed first.') }}
+                        <a href="{{ route('setup.ministry-budget-entry') }}" class="alert-link">{{ __('Go to Entry') }}</a>
+                    </div>
+                </div>
+            </div>
+      @else
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white border-bottom-0">
+                         <h5 class="card-title text-primary mb-0"><i class="bx bx-buildings me-1"></i> {{ __('Ministry Budget Status Summary') }}</h5>
+                    </div>
+                    <div class="card-body">
+                         <div class="table-responsive">
+                            <table class="table table-sm align-middle table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>{{ __('Economic Code') }}</th>
+                                        <th class="text-end">{{ __('Allocated (Ministry)') }}</th>
+                                        <th class="text-end">{{ __('Already Released') }}</th>
+                                        <th class="text-end">{{ __('Remaining') }}</th>
+                                        <th class="text-end" style="width: 200px;">{{ __('Usage') }} %</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($ministryBudgetSummary as $codeId => $data)
+                                        <tr>
+                                            <td><strong>{{ $data['code'] }}</strong> - {{ explode(' - ', $data['code_name'])[1] ?? '' }}</td>
+                                            <td class="text-end">{{ number_format($data['allocated']) }}</td>
+                                            <td class="text-end">{{ number_format($data['released']) }}</td>
+                                            <td class="text-end">
+                                                <span class="badge {{ $data['remaining'] > 0 ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' }} font-size-12">
+                                                    {{ number_format($data['remaining']) }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <span class="font-size-12 me-2">{{ number_format($data['usage_percent'], 1) }}%</span>
+                                                    <div class="progress flex-grow-1" style="height: 6px;">
+                                                        <div class="progress-bar {{ $data['usage_percent'] > 90 ? 'bg-danger' : ($data['usage_percent'] > 75 ? 'bg-warning' : 'bg-success') }}" 
+                                                             role="progressbar" 
+                                                             style="width: {{ min($data['usage_percent'], 100) }}%">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                    <tr class="fw-bold bg-light">
+                                        <td>{{ __('Total') }}</td>
+                                        <td class="text-end">{{ number_format(collect($ministryBudgetSummary)->sum('allocated')) }}</td>
+                                        <td class="text-end">{{ number_format(collect($ministryBudgetSummary)->sum('released')) }}</td>
+                                        <td class="text-end">{{ number_format(collect($ministryBudgetSummary)->sum('remaining')) }}</td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+      @endif
  
       <div class="row">
           <div class="col-sm-12 col-md-12 col-lg-12">

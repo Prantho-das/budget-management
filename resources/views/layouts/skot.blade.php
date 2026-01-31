@@ -49,6 +49,14 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Global Table Font Resize */
+        .table, .table th, .table td {
+            font-size: 13px !important;
+        }
+        .table-sm th, .table-sm td {
+            font-size: 12px !important;
+        }
     </style>
 </head>
 

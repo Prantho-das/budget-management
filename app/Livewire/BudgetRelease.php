@@ -18,6 +18,9 @@ class BudgetRelease extends Component
     public $release_amounts = [];
     public $status = 'pending';
 
+    public $ministryBudgetSummary = [];
+    public $validationErrors = [];
+
     public function mount()
     {
         $activeFy = FiscalYear::where('status', true)->first() ?? FiscalYear::orderBy('end_date', 'desc')->first();
@@ -26,6 +29,34 @@ class BudgetRelease extends Component
         }
         $bt = BudgetType::first();
         $this->budget_type_id = $bt ? $bt->id : null;
+        
+        $this->loadMinistryBudgetSummary();
+    }
+
+    public function loadMinistryBudgetSummary()
+    {
+        if (!$this->fiscal_year_id || !$this->budget_type_id) {
+            $this->ministryBudgetSummary = [];
+            return;
+        }
+
+        $validator = new \App\Services\MinistryBudgetValidationService();
+        // Passing null for rpoUnitId gets global summary for HQ release
+        $this->ministryBudgetSummary = $validator->getMinistryBudgetSummary(
+            $this->fiscal_year_id,
+            null, 
+            $this->budget_type_id
+        );
+    }
+    
+    public function updatedFiscalYearId()
+    {
+        $this->loadMinistryBudgetSummary();
+    }
+
+    public function updatedBudgetTypeId()
+    {
+        $this->loadMinistryBudgetSummary();
     }
 
     public function render()
@@ -130,13 +161,30 @@ class BudgetRelease extends Component
             'currentReleased' => $currentReleased,
             'budgetTypes' => BudgetType::all(),
             'fiscalYears' => FiscalYear::orderBy('name', 'desc')->get(),
+            'ministryBudgetSummary' => $this->ministryBudgetSummary,
         ])->extends('layouts.skot')->section('content');
     }
 
-    public function updateRelease($codeId)
+    public function releaseToOffice($officeId, $economicCodeId, $amount)
     {
-        // Logic to update released_amount for all relevant estimations for this code
-        // This is a simplified version; usually, HQ releases to specific units or globally
-        // For now, let's keep it as a viewing/aggregate management tool as per images
+        $validator = new \App\Services\MinistryBudgetValidationService();
+        
+        $validation = $validator->validateRelease(
+            $this->fiscal_year_id,
+            $officeId,
+            $this->budget_type_id,
+            $economicCodeId,
+            (float) $amount
+        );
+        
+        if (!$validation['valid']) {
+            $this->validationErrors[$officeId . '_' . $economicCodeId] = $validation['message'];
+            session()->flash('error', $validation['message']);
+            return;
+        }
+        
+        // Logic to actually release would go here
+        // For now just success message as the method name suggests intention
+         session()->flash('success', 'Amount validated successfully. Ready for release.');
     }
 }

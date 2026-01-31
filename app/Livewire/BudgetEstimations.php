@@ -258,21 +258,15 @@ class BudgetEstimations extends Component
     public function render()
     {
         abort_if(auth()->user()->cannot('view-budget-estimations'), 403);
-        $economicCodes = EconomicCode::with(['children', 'parent'])
-            ->orderByRaw('CASE WHEN parent_id IS NULL THEN id ELSE parent_id END, id')
+        // Fetch Hierarchical Economic Codes (Root -> Layer 2 -> Layer 3)
+        $economicCodes = EconomicCode::whereNull('parent_id')
+            ->with(['children' => function($q) {
+                $q->orderBy('code')->with(['children' => function($q2) {
+                    $q2->orderBy('code');
+                }]);
+            }])
+            ->orderBy('code')
             ->get();
-
-        // Re-order to ensure children always follow parents
-        $orderedCodes = [];
-        $roots = $economicCodes->whereNull('parent_id')->sortBy('code');
-        foreach ($roots as $root) {
-            $orderedCodes[] = $root;
-            $children = $economicCodes->where('parent_id', $root->id)->sortBy('code');
-            foreach ($children as $child) {
-                $orderedCodes[] = $child;
-            }
-        }
-        $economicCodes = $orderedCodes;
         $fiscalYear = FiscalYear::find($this->fiscal_year_id);
         $office = RpoUnit::find($this->rpo_unit_id);
 
