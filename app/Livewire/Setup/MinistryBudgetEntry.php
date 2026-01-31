@@ -9,84 +9,112 @@ use App\Models\RpoUnit;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
+use App\Models\MinistryBudgetMaster;
+use App\Models\BudgetType;
+use Illuminate\Support\Facades\DB;
+
 class MinistryBudgetEntry extends Component
 {
     public $fiscal_years;
-
     public $rpo_units;
-
     public $economic_codes;
 
     public $fiscal_year_id;
-
     public $rpo_unit_id;
+    public $budget_type_id;
+    public $master_id;
 
     public $budget_data = []; // [economic_code_id => amount]
-    public $budget_type = '';
+    public $original_budget_data = []; // [economic_code_id => amount] - only for comparison
+    public $previous_revised_data = []; // [economic_code_id => amount] - aggregated previous revised
+    public $remarks;
 
-    public function mount()
+    public function mount($master_id = null)
     {
         $this->fiscal_years = FiscalYear::where('status', true)->get();
-        // Headquarters are root units (no parent)
         $this->rpo_units = RpoUnit::whereNull('parent_id')->where('status', true)->get();
-        // Load economic codes with children for tree structure
-        // Assuming 3 layers: Parent -> Child -> Sub-Child
         $this->economic_codes = EconomicCode::whereNull('parent_id')
             ->with(['children.children'])
             ->get();
 
-        // Set default fiscal year using helper
-        $currentFYName = current_fiscal_year();
-        $activeFY = $this->fiscal_years->firstWhere('name', $currentFYName);
-
-        if ($activeFY) {
-            $this->fiscal_year_id = $activeFY->id;
-        } elseif ($this->fiscal_years->isNotEmpty()) {
-            $this->fiscal_year_id = $this->fiscal_years->first()->id;
+        if ($master_id) {
+            $this->loadMasterData($master_id);
+        } else {
+            // Set default fiscal year using helper
+            $currentFYName = current_fiscal_year();
+            $activeFY = $this->fiscal_years->firstWhere('name', $currentFYName);
+            if ($activeFY) {
+                $this->fiscal_year_id = $activeFY->id;
+            }
         }
+    }
+
+    public function loadMasterData($id)
+    {
+        $master = MinistryBudgetMaster::with('allocations')->findOrFail($id);
+        $this->master_id = $master->id;
+        $this->fiscal_year_id = $master->fiscal_year_id;
+        $this->rpo_unit_id = $master->rpo_unit_id;
+        $this->budget_type_id = $master->budget_type_id;
+        $this->remarks = $master->remarks;
+
+        foreach ($master->allocations as $allocation) {
+            $this->budget_data[$allocation->economic_code_id] = (float) $allocation->amount;
+        }
+
+        $this->loadComparisonData();
     }
 
     public function updatedFiscalYearId()
     {
-        $this->loadExistingData();
+        $this->loadComparisonData();
     }
 
     public function updatedRpoUnitId()
     {
-        $this->loadExistingData();
+        $this->loadComparisonData();
     }
 
-    public function loadExistingData()
+    public function loadComparisonData()
     {
-        $this->budget_data = [];
-        $this->budget_type = '';
+        $this->original_budget_data = [];
+        $this->previous_revised_data = [];
 
         if ($this->fiscal_year_id && $this->rpo_unit_id) {
-            // First check for 'revised' budget
-            $allocations = MinistryAllocation::where('fiscal_year_id', $this->fiscal_year_id)
-                ->where('rpo_unit_id', $this->rpo_unit_id)
-                ->where('budget_type', 'revised')
-                ->get();
+            // Load Original
+            $originalMaster = MinistryBudgetMaster::where([
+                'fiscal_year_id' => $this->fiscal_year_id,
+                'rpo_unit_id' => $this->rpo_unit_id,
+            ])->whereHas('budgetType', function($q) {
+                $q->where('code', 'original');
+            })->with('allocations')->first();
 
-            if ($allocations->isNotEmpty()) {
-                $this->budget_type = 'revised';
-            }
-
-            // If no revised budget, check for 'original'
-            if ($allocations->isEmpty()) {
-                $allocations = MinistryAllocation::where('fiscal_year_id', $this->fiscal_year_id)
-                    ->where('rpo_unit_id', $this->rpo_unit_id)
-                    ->where('budget_type', 'original')
-                    ->get();
-
-                if ($allocations->isNotEmpty()) {
-                    $this->budget_type = 'original';
+            if ($originalMaster) {
+                foreach ($originalMaster->allocations as $allocation) {
+                    $this->original_budget_data[$allocation->economic_code_id] = (float) $allocation->amount;
                 }
             }
 
-            foreach ($allocations as $allocation) {
-                // Ensure amount is formatted properly, e.g. no trailing zeros if integer
-                $this->budget_data[$allocation->economic_code_id] = (float) $allocation->amount;
+            // Load Previous Revised (all revised batches EXCEPT current one if editing)
+            $query = MinistryBudgetMaster::where([
+                'fiscal_year_id' => $this->fiscal_year_id,
+                'rpo_unit_id' => $this->rpo_unit_id,
+            ])->whereHas('budgetType', function($q) {
+                $q->where('code', 'revised');
+            });
+
+            if ($this->master_id) {
+                $query->where('id', '<', $this->master_id); // Only batches BEFORE this one if editing, or all if new? 
+                // user said "previous revised budget". 
+            }
+
+            $revisedMasters = $query->with('allocations')->get();
+
+            foreach ($revisedMasters as $rm) {
+                foreach ($rm->allocations as $allocation) {
+                    $this->previous_revised_data[$allocation->economic_code_id] = 
+                        ($this->previous_revised_data[$allocation->economic_code_id] ?? 0) + (float) $allocation->amount;
+                }
             }
         }
     }
@@ -98,40 +126,62 @@ class MinistryBudgetEntry extends Component
             'rpo_unit_id' => 'required',
             'budget_data' => 'array',
         ]);
-        
-        // Determine Budget Type
-        // Check if ANY allocation exists for this FY and Unit.
-        $exists = MinistryAllocation::where('fiscal_year_id', $this->fiscal_year_id)
-            ->where('rpo_unit_id', $this->rpo_unit_id)
-            ->exists();
 
-        $type = $exists ? 'revised' : 'original';
+        DB::transaction(function () {
+            // Determine Budget Type
+            $originalExists = MinistryBudgetMaster::where([
+                'fiscal_year_id' => $this->fiscal_year_id,
+                'rpo_unit_id' => $this->rpo_unit_id,
+            ])->whereHas('budgetType', function($q) {
+                $q->where('code', 'original');
+            })->exists();
 
-        foreach ($this->budget_data as $codeId => $amount) {
-            // Only save if amount is numeric and >= 0.
-            // Null or empty strings might be passed, so we check.
-            if (! is_numeric($amount) && $amount !== null) {
-                continue;
-            }
-
-            // Treat empty/null as 0 or delete?
-            // For now, let's update or create. If 0, we keep it as 0 record.
-
-            MinistryAllocation::updateOrCreate(
-                [
+            $typeCode = $originalExists ? 'revised' : 'original';
+            $budgetType = BudgetType::where('code', $typeCode)->first();
+            
+            if (!$this->master_id) {
+                // Generate Batch No
+                $prefix = $typeCode === 'original' ? 'ORG' : 'REV';
+                $count = MinistryBudgetMaster::where([
                     'fiscal_year_id' => $this->fiscal_year_id,
                     'rpo_unit_id' => $this->rpo_unit_id,
+                    'budget_type_id' => $budgetType->id
+                ])->count();
+                $batch_no = $prefix . '-' . ($count + 1);
+
+                $master = MinistryBudgetMaster::create([
+                    'batch_no' => $batch_no,
+                    'fiscal_year_id' => $this->fiscal_year_id,
+                    'rpo_unit_id' => $this->rpo_unit_id,
+                    'budget_type_id' => $budgetType->id,
+                    'total_amount' => array_sum($this->budget_data),
+                    'remarks' => $this->remarks,
+                    'created_by' => Auth::id(),
+                ]);
+            } else {
+                $master = MinistryBudgetMaster::find($this->master_id);
+                $master->update([
+                    'total_amount' => array_sum($this->budget_data),
+                    'remarks' => $this->remarks,
+                ]);
+                // Delete existing allocations to re-save (full submission)
+                $master->allocations()->delete();
+            }
+
+            foreach ($this->budget_data as $codeId => $amount) {
+                if ($amount <= 0 && empty($amount)) continue;
+
+                MinistryAllocation::create([
+                    'ministry_budget_master_id' => $master->id,
                     'economic_code_id' => $codeId,
-                    'budget_type' => $type, // Include budget_type in the lookup
-                ],
-                [
                     'amount' => (float) $amount,
                     'created_by' => Auth::id(),
-                ]
-            );
-        }
+                ]);
+            }
+        });
 
-        session()->flash('message', __('Ministry Budget saved successfully as ' . ucfirst($type)));
+        session()->flash('message', __('Ministry Budget saved successfully.'));
+        return redirect()->route('setup.ministry-budget-list');
     }
 
     public function render()

@@ -11,14 +11,9 @@ class MinistryAllocation extends Model
 
     protected $guarded = [];
 
-    public function fiscalYear()
+    public function master()
     {
-        return $this->belongsTo(FiscalYear::class);
-    }
-
-    public function rpoUnit()
-    {
-        return $this->belongsTo(RpoUnit::class);
+        return $this->belongsTo(MinistryBudgetMaster::class, 'ministry_budget_master_id');
     }
 
     public function economicCode()
