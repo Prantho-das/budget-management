@@ -222,6 +222,8 @@
                             <ul class="sub-menu" aria-expanded="false">
                                 {{-- <li><a href="{{ route('budget.release') }}" wire:navigate
                                         key="t-release">{{ __('Budget Summary') }}</a></li> --}}
+                                <li><a href="{{ route('budget.ministry-entry') }}" wire:navigate
+                                        key="t-ministry-entry">{{ __('Ministry Budget Entry') }}</a></li>
                                 <li><a href="{{ route('budget.office-wise') }}" wire:navigate
                                         key="t-office-wise">{{ __('Ministry Budget Preparation') }}</a></li>
                             </ul>

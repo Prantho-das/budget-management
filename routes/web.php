@@ -96,6 +96,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/budget/office-wise', \App\Livewire\OfficeWiseBudget::class)->middleware('can:release-budget')->name('budget.office-wise');
     Route::get('/budget/status', \App\Livewire\BudgetStatus::class)->middleware('can:view-budget-estimations')->name('budget.status');
     Route::get('/budget/summary', \App\Livewire\BudgetSummary::class)->middleware('can:view-budget-estimations')->name('budget.summary');
+    Route::get('/budget/ministry-entry', \App\Livewire\Setup\MinistryBudgetEntry::class)->name('budget.ministry-entry');
 });
 
 
