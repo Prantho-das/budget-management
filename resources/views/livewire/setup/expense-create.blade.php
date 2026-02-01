@@ -194,10 +194,24 @@
                                             @error('fiscal_year_id') <span class="text-danger small">{{ $message }}</span>@enderror
                                         </div>
                                         <div class="col-md-4">
-                                            {{-- Placeholder to maintain layout or can leave empty --}}
+                                            @if(!empty($offices))
+                                                <label for="rpo_unit_id" class="form-label fw-semibold small mb-1">
+                                                    Select Office <span class="text-danger">*</span>
+                                                </label>
+                                                <select class="form-select form-select-sm" id="rpo_unit_id" wire:model.live="rpo_unit_id">
+                                                    <option value="">Select Office</option>
+                                                    @foreach($offices as $office)
+                                                        <option value="{{ $office->id }}">{{ $office->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                                @error('rpo_unit_id') <span class="text-danger small">{{ $message }}</span>@enderror
+                                            @else
+                                                {{-- Placeholder to maintain layout or can leave empty --}}
+                                                @error('rpo_unit_id') <div class="text-danger small">Office is required. Please contact admin.</div>@enderror
+                                            @endif
                                         </div>
                                     </div>
-                                    @if(auth()->check())
+                                    @if(auth()->check() && empty($offices))
                                         <input type="hidden" wire:model="rpo_unit_id" value="{{ auth()->user()->rpo_unit_id }}">
                                     @endif
                                 </div>

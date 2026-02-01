@@ -19,6 +19,15 @@ class ExpenseCreate extends Component
     public $expenseEntries = [];
     public $existingEntries = [];
 
+    protected function rules()
+    {
+        return [
+            'rpo_unit_id' => 'required',
+            'fiscal_year_id' => 'required',
+            'selectedMonth' => 'required',
+        ];
+    }
+
     public function mount()
     {
         abort_if(auth()->user()->cannot('create-expenses'), 403);
@@ -33,6 +42,8 @@ class ExpenseCreate extends Component
 
     public function updated($propertyName)
     {
+        $this->validateOnly($propertyName);
+
         if (in_array($propertyName, ['selectedMonth', 'fiscal_year_id', 'rpo_unit_id'])) {
             $this->loadExistingEntries();
         }
@@ -57,11 +68,7 @@ class ExpenseCreate extends Component
     {
         abort_if(auth()->user()->cannot('create-expenses'), 403);
 
-        $this->validate([
-            'rpo_unit_id' => 'required',
-            'fiscal_year_id' => 'required',
-            'selectedMonth' => 'required',
-        ]);
+        $this->validate();
 
         if (empty($this->expenseEntries)) {
             session()->flash('error', __('Please enter at least one expense amount.'));
@@ -170,9 +177,15 @@ class ExpenseCreate extends Component
 
         $fiscalYears = FiscalYear::orderBy('name', 'desc')->get();
 
+        $offices = [];
+        if (auth()->user()->can('view-all-offices-data') || auth()->user()->hasRole('Admin')) {
+            $offices = RpoUnit::all();
+        }
+
         return view('livewire.setup.expense-create', [
             'economicCodes' => $orderedCodes,
             'fiscalYears' => $fiscalYears,
+            'offices' => $offices,
         ])->extends('layouts.skot')->section('content');
     }
 }
