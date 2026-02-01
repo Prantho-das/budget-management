@@ -34,7 +34,12 @@ class MinistryBudgetEntry extends Component
         $this->fiscal_years = FiscalYear::where('status', true)->get();
         $this->rpo_units = RpoUnit::whereNull('parent_id')->where('status', true)->get();
         $this->economic_codes = EconomicCode::whereNull('parent_id')
-            ->with(['children.children'])
+            ->with(['children' => function ($q) {
+                $q->orderBy('code', 'asc')->with(['children' => function ($q) {
+                    $q->orderBy('code', 'asc');
+                }]);
+            }])
+            ->orderBy('code', 'asc')
             ->get();
 
         if ($master_id) {
@@ -85,7 +90,7 @@ class MinistryBudgetEntry extends Component
             $originalMaster = MinistryBudgetMaster::where([
                 'fiscal_year_id' => $this->fiscal_year_id,
                 'rpo_unit_id' => $this->rpo_unit_id,
-            ])->whereHas('budgetType', function($q) {
+            ])->whereHas('budgetType', function ($q) {
                 $q->where('code', 'original');
             })->with('allocations')->first();
 
@@ -99,7 +104,7 @@ class MinistryBudgetEntry extends Component
             $query = MinistryBudgetMaster::where([
                 'fiscal_year_id' => $this->fiscal_year_id,
                 'rpo_unit_id' => $this->rpo_unit_id,
-            ])->whereHas('budgetType', function($q) {
+            ])->whereHas('budgetType', function ($q) {
                 $q->where('code', 'revised');
             });
 
@@ -112,7 +117,7 @@ class MinistryBudgetEntry extends Component
 
             foreach ($revisedMasters as $rm) {
                 foreach ($rm->allocations as $allocation) {
-                    $this->previous_revised_data[$allocation->economic_code_id] = 
+                    $this->previous_revised_data[$allocation->economic_code_id] =
                         ($this->previous_revised_data[$allocation->economic_code_id] ?? 0) + (float) $allocation->amount;
                 }
             }
@@ -132,13 +137,13 @@ class MinistryBudgetEntry extends Component
             $originalExists = MinistryBudgetMaster::where([
                 'fiscal_year_id' => $this->fiscal_year_id,
                 'rpo_unit_id' => $this->rpo_unit_id,
-            ])->whereHas('budgetType', function($q) {
+            ])->whereHas('budgetType', function ($q) {
                 $q->where('code', 'original');
             })->exists();
 
             $typeCode = $originalExists ? 'revised' : 'original';
             $budgetType = BudgetType::where('code', $typeCode)->first();
-            
+
             if (!$this->master_id) {
                 // Generate Batch No
                 $prefix = $typeCode === 'original' ? 'ORG' : 'REV';
