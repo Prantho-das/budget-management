@@ -29,7 +29,7 @@ class EconomicCode extends Model
 
     public function children()
     {
-        return $this->hasMany(EconomicCode::class, 'parent_id');
+        return $this->hasMany(EconomicCode::class, 'parent_id')->orderBy('code', 'asc');
     }
 
     public function budgetEstimations()

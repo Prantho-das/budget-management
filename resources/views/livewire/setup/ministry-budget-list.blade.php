@@ -26,7 +26,7 @@
 
                     <div class="d-flex justify-content-between mb-3">
                         <h4 class="card-title">{{ __('Ministry Budget List') }}</h4>
-                        <a href="{{ route('setup.ministry-budget-entry') }}" class="btn btn-primary waves-effect waves-light">
+                        <a href="{{ route('setup.ministry-budget-entry') }}" class="btn btn-primary waves-effect waves-light" wire:navigate>
                             <i class="mdi mdi-plus me-1"></i> {{ __('Create New Budget') }}
                         </a>
                     </div>
@@ -59,7 +59,7 @@
                                         <td class="text-end">{{ number_format($budget->total_amount, 2) }}</td>
                                         <td class="text-center">
                                             <a href="{{ route('setup.ministry-budget-entry', ['master_id' => $budget->id]) }}" 
-                                               class="btn btn-sm btn-info btn-soft-info waves-effect waves-light" title="{{ __('Edit') }}">
+                                               class="btn btn-sm btn-info btn-soft-info waves-effect waves-light" title="{{ __('Edit') }}" wire:navigate>
                                                 <i class="mdi mdi-pencil"></i>
                                             </a>
                                             <button onclick="confirm('{{ __('Are you sure?') }}') || event.stopImmediatePropagation()" 

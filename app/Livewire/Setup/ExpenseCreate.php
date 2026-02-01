@@ -16,6 +16,7 @@ class ExpenseCreate extends Component
     public $selectedMonth;
     public $fiscal_year_id;
     public $rpo_unit_id;
+    public $isHq = false;
     public $expenseEntries = [];
     public $existingEntries = [];
 
@@ -46,7 +47,12 @@ class ExpenseCreate extends Component
             $this->fiscal_year_id = get_active_fiscal_year_id();
         }
 
-        $this->rpo_unit_id = auth()->user()->rpo_unit_id;
+        $user = auth()->user();
+        $this->rpo_unit_id = $user->rpo_unit_id;
+
+        // Determine if user is from Headquarters
+        $userOffice = $user->office;
+        $this->isHq = $userOffice && $userOffice->parent_id === null;
 
         $this->loadExistingEntries();
     }
@@ -77,6 +83,7 @@ class ExpenseCreate extends Component
 
     public function store()
     {
+        dd(request()->all());
         abort_if(auth()->user()->cannot('create-expenses'), 403);
 
         $this->validate();
@@ -154,7 +161,7 @@ class ExpenseCreate extends Component
 
         if ($hasEntry) {
             session()->flash('message', 'Expenses Created Successfully.');
-            return $this->redirect(route('setup.expenses'), navigate: true);
+           // return $this->redirect(route('setup.expenses'), navigate: true);
         } else {
             session()->flash('error', __('No valid amounts entered.'));
         }
@@ -189,7 +196,7 @@ class ExpenseCreate extends Component
         $fiscalYears = FiscalYear::orderBy('name', 'desc')->get();
 
         $offices = [];
-        if (auth()->user()->can('view-all-offices-data') || auth()->user()->hasRole('Admin')) {
+        if ($this->isHq || auth()->user()->hasRole('Admin')) {
             $offices = RpoUnit::all();
         }
 

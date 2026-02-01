@@ -17,7 +17,6 @@ class MinistryBudgetEntry extends Component
 {
     public $fiscal_years;
     public $rpo_units;
-    public $economic_codes;
 
     public $fiscal_year_id;
     public $rpo_unit_id;
@@ -33,14 +32,6 @@ class MinistryBudgetEntry extends Component
     {
         $this->fiscal_years = FiscalYear::where('status', true)->get();
         $this->rpo_units = RpoUnit::whereNull('parent_id')->where('status', true)->get();
-        $this->economic_codes = EconomicCode::whereNull('parent_id')
-            ->with(['children' => function ($q) {
-                $q->orderBy('code', 'asc')->with(['children' => function ($q) {
-                    $q->orderBy('code', 'asc');
-                }]);
-            }])
-            ->orderBy('code', 'asc')
-            ->get();
 
         if ($master_id) {
             $this->loadMasterData($master_id);
@@ -186,12 +177,19 @@ class MinistryBudgetEntry extends Component
         });
 
         session()->flash('message', __('Ministry Budget saved successfully.'));
-        return redirect()->route('setup.ministry-budget-list');
+        return $this->redirect(route('setup.ministry-budget-list'), navigate: true);
     }
 
     public function render()
     {
-        return view('livewire.setup.ministry-budget-entry')
+        $economic_codes = EconomicCode::whereNull('parent_id')
+            ->with(['children.children'])
+            ->orderBy('code', 'asc')
+            ->get();
+
+        return view('livewire.setup.ministry-budget-entry', [
+            'economic_codes' => $economic_codes
+        ])
             ->extends('layouts.skot')
             ->section('content');
     }

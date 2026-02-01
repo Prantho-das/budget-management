@@ -138,13 +138,13 @@
 
                             <!-- item-->
                             <a href="{{ route('lang.switch', 'en') }}" class="dropdown-item notify-item language"
-                                data-lang="en">
+                                data-lang="en" wire:navigate>
                                 {{-- <img src="{{ asset('assets/images/flags/us.jpg') }}" alt="user-image" class="me-1" height="12">  --}}
                                 <span class="align-middle">{{ __('English') }}</span>
                             </a>
 
                             <a href="{{ route('lang.switch', 'bn') }}" class="dropdown-item notify-item language"
-                                data-lang="bn">
+                                data-lang="bn" wire:navigate>
                                 <span class="align-middle">{{ __('Bangla') }}</span>
                             </a>
                         </div>

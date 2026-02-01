@@ -194,7 +194,7 @@
                                             @error('fiscal_year_id') <span class="text-danger small">{{ $message }}</span>@enderror
                                         </div>
                                         <div class="col-md-4">
-                                            @if(!empty($offices))
+                                            @if($isHq || auth()->user()->hasRole('Admin'))
                                                 <label for="rpo_unit_id" class="form-label fw-semibold small mb-1">
                                                     Select Office <span class="text-danger">*</span>
                                                 </label>
@@ -206,14 +206,13 @@
                                                 </select>
                                                 @error('rpo_unit_id') <span class="text-danger small">{{ $message }}</span>@enderror
                                             @else
-                                                {{-- Placeholder to maintain layout or can leave empty --}}
-                                                @error('rpo_unit_id') <div class="text-danger small">Office is required. Please contact admin.</div>@enderror
+                                                <label class="form-label fw-semibold small mb-1">Office</label>
+                                                <div class="form-control form-control-sm bg-light">
+                                                    {{ auth()->user()->office->name ?? 'N/A' }}
+                                                </div>
+                                                <input type="hidden" wire:model="rpo_unit_id">
                                             @endif
                                         </div>
-                                    </div>
-                                    @if(auth()->check() && empty($offices))
-                                        <input type="hidden" wire:model="rpo_unit_id" value="{{ auth()->user()->rpo_unit_id }}">
-                                    @endif
                                 </div>
                                 
                                 @if($rpo_unit_id && $fiscal_year_id)

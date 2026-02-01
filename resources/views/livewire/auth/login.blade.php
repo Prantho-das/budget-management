@@ -62,7 +62,7 @@
                     </button>
                 </div>
                 <div class="form-text">
-                  <a class="forget-pass" href="{{ route('password.request') }}">  {{ __('Forget Password ?') }}</a>
+                  <a class="forget-pass" href="{{ route('password.request') }}" wire:navigate>  {{ __('Forget Password ?') }}</a>
                 </div>
             </form>
         </div>

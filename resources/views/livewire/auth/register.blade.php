@@ -19,7 +19,7 @@
         </div>
         <div class="card-body pt-0"> 
             <div>
-                <a href="{{ route('home') }}">
+                <a href="{{ route('home') }}" wire:navigate>
                     <div class="avatar-md profile-user-wid mb-4">
                         <span class="avatar-title rounded-circle bg-light">
                             <img src="{{ asset('assets/images/logo.svg') }}" alt="" class="rounded-circle" height="34">
@@ -77,7 +77,7 @@
         
         <div>
             @if (Route::has('login'))
-                <p>Already have an account ? <a href="{{ route('login') }}" class="fw-medium text-primary"> Login</a> </p>
+                <p>Already have an account ? <a href="{{ route('login') }}" class="fw-medium text-primary" wire:navigate> Login</a> </p>
             @endif
             <p>© {{ date('Y') }} {{ get_setting('site_name', 'Budget Management System') }}. Crafted with <i class="mdi mdi-heart text-danger"></i> by Themesbrand</p>
         </div>
