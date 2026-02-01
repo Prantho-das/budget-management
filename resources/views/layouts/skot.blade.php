@@ -22,7 +22,6 @@
 
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
-    @livewireStyles
     <style>
         /* Global Loader */
         #global-loader {
@@ -320,6 +319,7 @@
 
             <div class="page-content">
                 <div class="container-fluid">
+                    {{ $slot ?? '' }}
                     @yield('content')
                 </div>
                 <!-- container-fluid -->
@@ -522,7 +522,6 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 
-
     @stack('scripts')
     <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
         @csrf
@@ -595,10 +594,11 @@
             });
         }
         
-        // Listen for standard form POST submits only
+        // Listen for standard form POST submits only (Non-Livewire)
         document.addEventListener('submit', function(e) {
             let loader = document.getElementById('global-loader');
-            if (loader && e.target.method && e.target.method.toUpperCase() !== 'GET') {
+            // Only show loader if it's NOT a Livewire form
+            if (loader && e.target.method && e.target.method.toUpperCase() !== 'GET' && !e.target.hasAttribute('wire:submit')) {
                 loader.style.display = 'flex';
             }
         });
@@ -653,7 +653,7 @@
             });
         });
     </script>
-    @livewireScripts
+    
 </body>
 
 </html>

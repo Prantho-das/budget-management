@@ -19,6 +19,12 @@ class ExpenseCreate extends Component
     public $isHq = false;
     public $expenseEntries = [];
     public $existingEntries = [];
+    public $budgetAllocations = [];
+    public $previousExpenses = [];
+    public $officeName;
+    public $fiscalYearName;
+    public $totalBudget = 0;
+    public $totalPrevious = 0;
 
     protected function rules()
     {
@@ -62,13 +68,18 @@ class ExpenseCreate extends Component
         $this->validateOnly($propertyName);
 
         if (in_array($propertyName, ['selectedMonth', 'fiscal_year_id', 'rpo_unit_id'])) {
-            $this->loadExistingEntries();
+            $this->loadData();
         }
     }
 
-    public function loadExistingEntries()
+    public function loadData()
     {
         if ($this->selectedMonth && $this->fiscal_year_id && $this->rpo_unit_id) {
+            // Set Names
+            $this->officeName = RpoUnit::find($this->rpo_unit_id)?->name;
+            $this->fiscalYearName = FiscalYear::find($this->fiscal_year_id)?->name;
+
+            // Load Existing Entries for the current month
             $this->existingEntries = Expense::where('fiscal_year_id', $this->fiscal_year_id)
                 ->where('rpo_unit_id', $this->rpo_unit_id)
                 ->whereMonth('date', $this->selectedMonth)
@@ -76,14 +87,50 @@ class ExpenseCreate extends Component
                 ->groupBy('economic_code_id')
                 ->map(fn($group) => $group->sum('amount'))
                 ->toArray();
+
+            // Load Budget Allocations
+            $allocations = BudgetAllocation::where([
+                'rpo_unit_id' => $this->rpo_unit_id,
+                'fiscal_year_id' => $this->fiscal_year_id,
+            ])->get();
+
+            $this->budgetAllocations = $allocations->groupBy('economic_code_id')
+                ->map(fn($group) => $group->sum('amount'))
+                ->toArray();
+
+            $this->totalBudget = $allocations->sum('amount');
+
+            // Load Previous Expenses (before selected month)
+            $prevExpenses = Expense::where([
+                'rpo_unit_id' => $this->rpo_unit_id,
+                'fiscal_year_id' => $this->fiscal_year_id,
+            ])
+                ->where('date', '<', date('Y') . '-' . $this->selectedMonth . '-01')
+                ->get();
+
+            $this->previousExpenses = $prevExpenses->groupBy('economic_code_id')
+                ->map(fn($group) => $group->sum('amount'))
+                ->toArray();
+
+            $this->totalPrevious = $prevExpenses->sum('amount');
         } else {
             $this->existingEntries = [];
+            $this->budgetAllocations = [];
+            $this->previousExpenses = [];
+            $this->officeName = null;
+            $this->fiscalYearName = null;
+            $this->totalBudget = 0;
+            $this->totalPrevious = 0;
         }
+    }
+
+    public function loadExistingEntries()
+    {
+        $this->loadData();
     }
 
     public function store()
     {
-        dd(request()->all());
         abort_if(auth()->user()->cannot('create-expenses'), 403);
 
         $this->validate();
@@ -161,7 +208,7 @@ class ExpenseCreate extends Component
 
         if ($hasEntry) {
             session()->flash('message', 'Expenses Created Successfully.');
-           // return $this->redirect(route('setup.expenses'), navigate: true);
+            // return $this->redirect(route('setup.expenses'), navigate: true);
         } else {
             session()->flash('error', __('No valid amounts entered.'));
         }
@@ -204,6 +251,6 @@ class ExpenseCreate extends Component
             'economicCodes' => $orderedCodes,
             'fiscalYears' => $fiscalYears,
             'offices' => $offices,
-        ])->extends('layouts.skot')->section('content');
+        ])->layout('layouts.skot');
     }
 }

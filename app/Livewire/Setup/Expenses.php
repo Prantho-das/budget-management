@@ -127,7 +127,7 @@ class Expenses extends Component
             'fiscalYears' => $fiscalYears,
             'economicCodes' => $orderedCodes, // Hierarchical list
             'budgetTypes' => $budgetTypes,
-        ])->extends('layouts.skot')->section('content');
+        ])->layout('layouts.skot');
     }
 
     public function updated($propertyName)
@@ -145,7 +145,7 @@ class Expenses extends Component
                 ->whereMonth('date', $this->selectedMonth)
                 ->get()
                 ->groupBy('economic_code_id')
-                ->map(fn ($group) => $group->sum('amount'))
+                ->map(fn($group) => $group->sum('amount'))
                 ->toArray();
         } else {
             $this->existingEntries = [];
@@ -165,7 +165,7 @@ class Expenses extends Component
                 'economic_code_id' => $this->economic_code_id,
                 'rpo_unit_id' => $this->rpo_unit_id,
                 'fiscal_year_id' => $this->fiscal_year_id,
-            ])->when($this->expense_id, fn ($q) => $q->where('id', '!=', $this->expense_id))
+            ])->when($this->expense_id, fn($q) => $q->where('id', '!=', $this->expense_id))
                 ->sum('amount');
 
             $this->totalReleased = $released;
@@ -266,10 +266,10 @@ class Expenses extends Component
                 }
             }
 
-            $expenseDate = $year.'-'.$this->selectedMonth.'-01';
+            $expenseDate = $year . '-' . $this->selectedMonth . '-01';
 
             // Auto-generate Batch/Voucher Code
-            $autoCode = 'EXP-'.date('Ymd').'-'.strtoupper(\Illuminate\Support\Str::random(6));
+            $autoCode = 'EXP-' . date('Ymd') . '-' . strtoupper(\Illuminate\Support\Str::random(6));
 
             $hasApproverInOffice = User::where('rpo_unit_id', $this->rpo_unit_id)
                 ->permission('approve-expenses')
@@ -287,7 +287,7 @@ class Expenses extends Component
                     $hasEntry = true;
 
                     Expense::create([
-                        'code' => $autoCode.'-'.$codeId,
+                        'code' => $autoCode . '-' . $codeId,
                         'amount' => $amount,
                         'description' => $desc,
                         'date' => $expenseDate,

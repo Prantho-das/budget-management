@@ -1,3 +1,5 @@
+<div>
+
 <style>
     .expense-voucher-form {
         background: white;
@@ -113,7 +115,8 @@
                     {{-- Expense Voucher Form --}}
                     <div class="expense-voucher-form card border shadow-sm mb-4">
                         <div class="card-body p-0">
-                            <form wire:submit.prevent="store">
+                            <form wire:submit.prevent.stop="store">
+                                @csrf
                                 {{-- Form Header Section --}}
                                 <div class="voucher-header bg-light border-bottom p-3">
                                     <div class="row align-items-center">
@@ -122,21 +125,11 @@
                                             <div class="row g-2 small">
                                                 <div class="col-md-4">
                                                     <strong>Office:</strong> 
-                                                    @if($rpo_unit_id)
-                                                        @php $office = \App\Models\RpoUnit::find($rpo_unit_id); @endphp
-                                                        {{ $office->name ?? 'N/A' }}
-                                                    @else
-                                                        -
-                                                    @endif
+                                                    {{ $officeName ?? '-' }}
                                                 </div>
                                                 <div class="col-md-4">
                                                     <strong>Fiscal Year:</strong>
-                                                    @if($fiscal_year_id)
-                                                        @php $fy = \App\Models\FiscalYear::find($fiscal_year_id); @endphp
-                                                        {{ $fy->name ?? 'N/A' }}
-                                                    @else
-                                                        -
-                                                    @endif
+                                                    {{ $fiscalYearName ?? '-' }}
                                                 </div>
                                                 <div class="col-md-4">
                                                     <strong>Month:</strong>
@@ -235,7 +228,7 @@
                                             <tbody>
                                                 @php $serialNo = 1; @endphp
                                                 @foreach($economicCodes as $code)
-                                                    <tr class="{{ $code->parent_id == null ? 'table-secondary fw-bold' : '' }}">
+                                                    <tr wire:key="economic-code-{{ $code->id }}" class="{{ $code->parent_id == null ? 'table-secondary fw-bold' : '' }}">
                                                         {{-- Serial Number --}}
                                                         <td class="text-center small">
                                                             @php
@@ -282,12 +275,7 @@
                                                             {{-- Budget Allocation --}}
                                                             <td class="text-end">
                                                                 @php
-                                                                     // Fetch budget allocation for this code
-                                                                    $budgetAllocation = \App\Models\BudgetAllocation::where([
-                                                                        'economic_code_id' => $code->id,
-                                                                        'rpo_unit_id' => $rpo_unit_id,
-                                                                        'fiscal_year_id' => $fiscal_year_id,
-                                                                    ])->sum('amount');
+                                                                     $budgetAllocation = $budgetAllocations[$code->id] ?? 0;
                                                                 @endphp
                                                                 <span class="font-monospace small {{ $budgetAllocation > 0 ? 'text-info fw-semibold' : 'text-muted' }}">
                                                                     {{ number_format($budgetAllocation, 2) }}
@@ -297,13 +285,7 @@
                                                             {{-- Previous Total (Up to last month) --}}
                                                             <td class="text-end">
                                                                 @php
-                                                                    $previousTotal = \App\Models\Expense::where([
-                                                                        'economic_code_id' => $code->id,
-                                                                        'rpo_unit_id' => $rpo_unit_id,
-                                                                        'fiscal_year_id' => $fiscal_year_id,
-                                                                    ])
-                                                                    ->where('date', '<', date('Y') . '-' . $selectedMonth . '-01')
-                                                                    ->sum('amount');
+                                                                    $previousTotal = $previousExpenses[$code->id] ?? 0;
                                                                 @endphp
                                                                 <span class="font-monospace small text-primary">
                                                                     {{ number_format($previousTotal, 2) }}
@@ -361,25 +343,11 @@
                                                     
                                                     {{-- Total Budget --}}
                                                     <td class="text-end font-monospace text-info">
-                                                        @php
-                                                            $totalBudget = \App\Models\BudgetAllocation::where([
-                                                                'rpo_unit_id' => $rpo_unit_id,
-                                                                'fiscal_year_id' => $fiscal_year_id,
-                                                              ])->sum('amount');
-                                                        @endphp
                                                         {{ number_format($totalBudget, 2) }}
                                                     </td>
                                                     
                                                     {{-- Total Previous --}}
                                                     <td class="text-end font-monospace text-primary">
-                                                        @php
-                                                            $totalPrevious = \App\Models\Expense::where([
-                                                                'rpo_unit_id' => $rpo_unit_id,
-                                                                'fiscal_year_id' => $fiscal_year_id,
-                                                            ])
-                                                            ->where('date', '<', date('Y') . '-' . $selectedMonth . '-01')
-                                                            ->sum('amount');
-                                                        @endphp
                                                         {{ number_format($totalPrevious, 2) }}
                                                     </td>
                                                     
@@ -435,10 +403,12 @@
                                         All amounts should be entered in BDT (৳)
                                     </div>
                                     <div class="d-flex gap-2">
-                                        <button wire:click="cancel" type="button" class="btn btn-secondary btn-sm px-4">
+                                        <button type="button" wire:click="cancel" class="btn btn-secondary btn-sm px-4">
                                             <i class="bx bx-x me-1"></i>Cancel
                                         </button>
-                                        <button type="submit" class="btn btn-primary btn-sm px-4" wire:loading.attr="disabled">
+                                        <button type="submit"
+                                        class="btn btn-primary btn-sm px-4"
+                                        wire:loading.attr="disabled">
                                             <i class="bx bx-save me-1" wire:loading.remove></i>
                                             <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading></span>
                                             Save Expenses
@@ -452,4 +422,7 @@
             </div>
         </div>
     </div>
+</div>
+
+    
 </div>
