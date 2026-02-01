@@ -12,20 +12,21 @@ class BudgetEstimation extends Model
     use HasFactory, LogsActivity;
 
     protected $fillable = [
+        'budget_estimation_master_id',
         'fiscal_year_id',
         'budget_type_id',
         'rpo_unit_id',
         'economic_code_id',
         'amount_demand',
         'amount_approved',
-        'status',
-        'current_stage',
-        'workflow_step_id',
+        'status',          // Deprecated, use Master
+        'current_stage',   // Deprecated, use Master
+        'workflow_step_id',// Deprecated, use Master (mostly)
         'target_office_id',
         'approval_log',
-        'remarks',
+        'remarks',         // Keep for row-level remarks
         'approver_remarks',
-        'batch_id',
+        'batch_id',        // Deprecated
         'revised_amount',
         'projection_1',
         'projection_2',
@@ -35,6 +36,11 @@ class BudgetEstimation extends Model
     protected $casts = [
         'approval_log' => 'json',
     ];
+
+    public function master()
+    {
+        return $this->belongsTo(BudgetEstimationMaster::class, 'budget_estimation_master_id');
+    }
 
     public function budgetType()
     {

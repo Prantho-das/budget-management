@@ -49,6 +49,24 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Global Table Font Resize */
+        .table, .table th, .table td {
+            font-size: 13px !important;
+        }
+        .table-sm th, .table-sm td {
+            font-size: 12px !important;
+        }
+
+        /* Hide numeric spin buttons globally */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
     </style>
 </head>
 
@@ -222,6 +240,8 @@
                             <ul class="sub-menu" aria-expanded="false">
                                 {{-- <li><a href="{{ route('budget.release') }}" wire:navigate
                                         key="t-release">{{ __('Budget Summary') }}</a></li> --}}
+                                <li><a href="{{ route('setup.ministry-budget-list') }}" wire:navigate
+                                        key="t-ministry-entry">{{ __('Ministry Budget Entry List') }}</a></li>
                                 <li><a href="{{ route('budget.office-wise') }}" wire:navigate
                                         key="t-office-wise">{{ __('Ministry Budget Preparation') }}</a></li>
                             </ul>
