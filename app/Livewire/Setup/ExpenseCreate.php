@@ -32,9 +32,20 @@ class ExpenseCreate extends Component
     {
         abort_if(auth()->user()->cannot('create-expenses'), 403);
 
-        $activeFyId = get_active_fiscal_year_id();
-        $this->fiscal_year_id = $activeFyId;
-        $this->selectedMonth = date('m');
+        // Set default month to previous month
+        $prevMonthDate = now()->subMonth();
+        $this->selectedMonth = $prevMonthDate->format('m');
+
+        // Find fiscal year for the previous month
+        $fyName = current_fiscal_year($prevMonthDate);
+        $fy = FiscalYear::where('name', $fyName)->first();
+
+        if ($fy) {
+            $this->fiscal_year_id = $fy->id;
+        } else {
+            $this->fiscal_year_id = get_active_fiscal_year_id();
+        }
+
         $this->rpo_unit_id = auth()->user()->rpo_unit_id;
 
         $this->loadExistingEntries();
