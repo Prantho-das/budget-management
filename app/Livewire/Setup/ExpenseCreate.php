@@ -16,7 +16,6 @@ class ExpenseCreate extends Component
     public $selectedMonth;
     public $fiscal_year_id;
     public $rpo_unit_id;
-    public $budget_type_id;
     public $expenseEntries = [];
     public $existingEntries = [];
 
@@ -28,9 +27,6 @@ class ExpenseCreate extends Component
         $this->fiscal_year_id = $activeFyId;
         $this->selectedMonth = date('m');
         $this->rpo_unit_id = auth()->user()->rpo_unit_id;
-
-        $defaultBudgetType = BudgetType::where('status', true)->orderBy('order_priority')->first();
-        $this->budget_type_id = $defaultBudgetType ? $defaultBudgetType->id : '';
 
         $this->loadExistingEntries();
     }
@@ -107,6 +103,20 @@ class ExpenseCreate extends Component
             if ($amount > 0) {
                 $hasEntry = true;
 
+                // Find Budget Type dynamically from allocation
+                $allocation = BudgetAllocation::where([
+                    'economic_code_id' => $codeId,
+                    'rpo_unit_id' => $this->rpo_unit_id,
+                    'fiscal_year_id' => $this->fiscal_year_id,
+                ])->first();
+
+                $entryBudgetTypeId = $allocation ? $allocation->budget_type_id : null;
+
+                if (!$entryBudgetTypeId) {
+                    $defaultType = BudgetType::where('status', true)->orderBy('order_priority')->first();
+                    $entryBudgetTypeId = $defaultType ? $defaultType->id : null;
+                }
+
                 Expense::create([
                     'code' => $autoCode . '-' . $codeId,
                     'amount' => $amount,
@@ -115,7 +125,7 @@ class ExpenseCreate extends Component
                     'rpo_unit_id' => $this->rpo_unit_id,
                     'fiscal_year_id' => $this->fiscal_year_id,
                     'economic_code_id' => $codeId,
-                    'budget_type_id' => $this->budget_type_id,
+                    'budget_type_id' => $entryBudgetTypeId,
                     'status' => $targetStatus,
                     'created_by' => auth()->id(),
                     'approved_by' => $approvedBy,
@@ -159,12 +169,10 @@ class ExpenseCreate extends Component
         }
 
         $fiscalYears = FiscalYear::orderBy('name', 'desc')->get();
-        $budgetTypes = BudgetType::where('status', true)->get();
 
         return view('livewire.setup.expense-create', [
             'economicCodes' => $orderedCodes,
             'fiscalYears' => $fiscalYears,
-            'budgetTypes' => $budgetTypes,
         ])->extends('layouts.skot')->section('content');
     }
 }

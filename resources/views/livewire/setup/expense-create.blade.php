@@ -194,14 +194,7 @@
                                             @error('fiscal_year_id') <span class="text-danger small">{{ $message }}</span>@enderror
                                         </div>
                                         <div class="col-md-4">
-                                            <label for="budget_type_id" class="form-label fw-semibold small mb-1">
-                                                Budget Type
-                                            </label>
-                                            <select class="form-select form-select-sm" id="budget_type_id" wire:model.live="budget_type_id">
-                                                @foreach($budgetTypes as $type)
-                                                    <option value="{{ $type->id }}">{{ $type->name }}</option>
-                                                @endforeach
-                                            </select>
+                                            {{-- Placeholder to maintain layout or can leave empty --}}
                                         </div>
                                     </div>
                                     @if(auth()->check())
