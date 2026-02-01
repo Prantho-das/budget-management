@@ -439,8 +439,10 @@
                                         <button wire:click="cancel" type="button" class="btn btn-secondary btn-sm px-4">
                                             <i class="bx bx-x me-1"></i>Cancel
                                         </button>
-                                        <button type="submit" class="btn btn-primary btn-sm px-4">
-                                            <i class="bx bx-save me-1"></i> Save Expenses
+                                        <button type="submit" class="btn btn-primary btn-sm px-4" wire:loading.attr="disabled">
+                                            <i class="bx bx-save me-1" wire:loading.remove></i>
+                                            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading></span>
+                                            Save Expenses
                                         </button>
                                     </div>
                                 </div>

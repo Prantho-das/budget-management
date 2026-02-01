@@ -154,7 +154,7 @@ class ExpenseCreate extends Component
 
         if ($hasEntry) {
             session()->flash('message', 'Expenses Created Successfully.');
-            return redirect()->route('setup.expenses');
+            return $this->redirect(route('setup.expenses'), navigate: true);
         } else {
             session()->flash('error', __('No valid amounts entered.'));
         }
@@ -162,7 +162,7 @@ class ExpenseCreate extends Component
 
     public function cancel()
     {
-        return redirect()->route('setup.expenses');
+        return $this->redirect(route('setup.expenses'), navigate: true);
     }
 
     public function render()
