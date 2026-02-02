@@ -55,7 +55,7 @@
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label for="parent-office" class="form-label font-weight-bold text-muted small text-uppercase">{{ __('Parent Office') }}</label>
+                            <label for="parent-office" class="form-label font-weight-bold text-muted small text-uppercase">{{ __('Office Group') }}</label>
                             <select id="parent-office" class="form-select shadow-sm border-primary" wire:model.live="parent_office_id">
                                 <option value="">{{ __('Select Office Group') }}</option>
                                 @foreach($parentOffices as $office)
