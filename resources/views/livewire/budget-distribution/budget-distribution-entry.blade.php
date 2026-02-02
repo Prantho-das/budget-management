@@ -45,13 +45,6 @@ $numto = new Rakibhstu\Banglanumber\NumberToBangla();
 
                     
                                     @endphp
-@foreach($fiscalYears as $fy)
-        @php
-            $fiscial_year_explode = explode("-",$fy->name);
-        @endphp
-        {{ dd($fiscial_year_explode) }}
-        {{ $numto->bnNum($fiscial_year_explode[0]) }}-{{ $numto->bnNum($fiscial_year_explode[1]) }}
-@endforeach
 
 
 
@@ -61,7 +54,7 @@ $numto = new Rakibhstu\Banglanumber\NumberToBangla();
                                                                     <option value="{{ $fy->id }}">
 
                                                                         @php
-    $fiscial_year_explode = explode($fy->name, '-');
+    $fiscial_year_explode = explode("-",$fy->name);
                                                                         @endphp
                                                                         {{ dd($fiscial_year_explode) }}
                                                                         {{ $numto->bnNum($fiscial_year_explode[0]) }}-{{ $numto->bnNum($fiscial_year_explode[1]) }}
