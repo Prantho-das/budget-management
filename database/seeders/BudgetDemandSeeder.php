@@ -21,13 +21,14 @@ class BudgetDemandSeeder extends Seeder
     public function run(): void
     {
         $activeFiscalYear = FiscalYear::where('status', 1)->first();
-        if (!$activeFiscalYear) {
+        if (! $activeFiscalYear) {
             // Fallback to 2022-23 if none active
             $activeFiscalYear = FiscalYear::where('name', '2022-23')->first() ?? FiscalYear::first();
         }
 
-        if (!$activeFiscalYear) {
+        if (! $activeFiscalYear) {
             $this->command->error('No fiscal years found.');
+
             return;
         }
 
@@ -38,7 +39,7 @@ class BudgetDemandSeeder extends Seeder
             ->get();
 
         $budgetType = BudgetType::where('code', 'original')->first();
-        if (!$budgetType) {
+        if (! $budgetType) {
             $budgetType = BudgetType::first();
         }
 
@@ -71,7 +72,7 @@ class BudgetDemandSeeder extends Seeder
                         'created_by' => $user->id ?? 1,
                         'status' => $targetStatus,
                         'total_amount' => 0,
-                        'batch_no' => 'SEED-' . $fy->name . '-' . now()->format('His') . '-' . $office->id,
+                        'batch_no' => 'SEED-'.$fy->name.'-'.now()->format('His').'-'.$office->id,
                     ]);
 
                     $totalAmount = 0;
@@ -84,7 +85,7 @@ class BudgetDemandSeeder extends Seeder
                             'economic_code_id' => $code->id,
                         ])->exists();
 
-                        if (!$exists) {
+                        if (! $exists) {
                             $amount = rand(50000, 500000);
                             $approvedAmount = $isHistorical ? $amount : null;
                             $totalAmount += $amount;
@@ -104,7 +105,7 @@ class BudgetDemandSeeder extends Seeder
                         }
                     }
 
-                    if (!empty($batchData)) {
+                    if (! empty($batchData)) {
                         BudgetEstimation::insert($batchData);
                         $master->increment('total_amount', $totalAmount);
                     }
@@ -116,7 +117,7 @@ class BudgetDemandSeeder extends Seeder
                 $this->command->getOutput()->progressFinish();
             } catch (\Exception $e) {
                 DB::rollBack();
-                $this->command->error("Seeding failed for {$fy->name}: " . $e->getMessage());
+                $this->command->error("Seeding failed for {$fy->name}: ".$e->getMessage());
             }
         }
 
