@@ -19,5 +19,10 @@ class FiscalYear extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
+
+    public function getBnNameAttribute()
+    {
+        return bn_num($this->name);
+    }
     //
 }
