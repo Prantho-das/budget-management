@@ -56,7 +56,7 @@
                                     </div>
                                 </div>
                                 <div class="mt-4">
-                                    <a href="{{ route('profile.edit') }}" class="btn btn-primary waves-effect waves-light btn-sm">{{ __('View Profile') }} <i class="mdi mdi-arrow-right ms-1"></i></a>
+                                    <a href="{{ route('profile.edit') }}" wire:navigate class="btn btn-primary waves-effect waves-light btn-sm">{{ __('View Profile') }} <i class="mdi mdi-arrow-right ms-1"></i></a>
                                 </div>
                             </div>
                         </div>

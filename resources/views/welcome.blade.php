@@ -98,13 +98,13 @@
                 <div class="d-flex align-items-center">
                     @if (Route::has('login'))
                         @auth
-                            <a href="{{ url('/dashboard') }}" class="btn btn-primary btn-rounded waves-effect waves-light">
+                            <a href="{{ url('/dashboard') }}" wire:navigate class="btn btn-primary btn-rounded waves-effect waves-light">
                                 <i class="bx bx-home-circle me-1"></i> Dashboard
                             </a>
                         @else
-                            <a href="{{ route('login') }}" class="btn btn-link text-muted me-3 fw-medium">Log in</a>
+                            <a href="{{ route('login') }}" wire:navigate class="btn btn-link text-muted me-3 fw-medium">Log in</a>
                             @if (Route::has('register'))
-                                <a href="{{ route('register') }}" class="btn btn-primary btn-rounded waves-effect waves-light">Get Started</a>
+                                <a href="{{ route('register') }}" wire:navigate class="btn btn-primary btn-rounded waves-effect waves-light">Get Started</a>
                             @endif
                         @endauth
                     @endif
@@ -122,7 +122,7 @@
                         <h1 class="hero-title">Smart <span>Budgeting</span> Solutions for Offices</h1>
                         <p class="hero-desc">Streamline your financial planning, hierarchical approvals, and user management with our enterprise-grade budget system. Built for precision and scale.</p>
                         <div class="d-flex gap-3 mt-4">
-                            <a href="{{ route('login') }}" class="btn btn-primary btn-lg p-3 px-5 btn-rounded shadow-lg">Login to System</a>
+                            <a href="{{ route('login') }}" wire:navigate class="btn btn-primary btn-lg p-3 px-5 btn-rounded shadow-lg">Login to System</a>
                             <a href="#features" class="btn btn-light btn-lg p-3 px-5 btn-rounded">Learn More</a>
                         </div>
                     </div>

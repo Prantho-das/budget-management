@@ -49,19 +49,13 @@ class FortifyServiceProvider extends ServiceProvider
     private function configureViews(): void
     {
         Fortify::loginView(function () {
-            $n1 = rand(1, 10);
-            $n2 = rand(1, 10);
-            session()->put('captcha_answer', $n1 + $n2);
-            
-            return view('livewire.auth.login', [
-                'captcha_question' => "$n1 + $n2 = ?"
-            ]);
+            return view('auth-login-wrapper');
         });
         
         Fortify::verifyEmailView(fn () => view('livewire.auth.verify-email'));
         Fortify::twoFactorChallengeView(fn () => view('livewire.auth.two-factor-challenge'));
         Fortify::confirmPasswordView(fn () => view('livewire.auth.confirm-password'));
-        Fortify::registerView(fn () => view('livewire.auth.register'));
+        Fortify::registerView(fn () => view('auth-register-wrapper'));
         Fortify::resetPasswordView(fn () => view('livewire.auth.reset-password'));
         Fortify::requestPasswordResetLinkView(fn () => view('livewire.auth.forgot-password'));
     }

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
 use Laravel\Fortify\Features;
 use App\Models\BudgetEstimation;
+use Rakibhstu\Banglanumber\NumberToBangla;
 
 Route::get('/', function () {
     return view('welcome');
@@ -28,6 +29,10 @@ Route::get('debug', function () {
     echo 'Data realigned successfully.';
 });
 Route::get('/current-fiscal-year', function () {
+    $numto = new NumberToBangla();
+
+    echo $numto->bnNum(current_fiscal_year());
+
     // 1. Current fiscal year only
     dump(current_fiscal_year());
     // → "2025-26"

@@ -59,7 +59,7 @@
                                             {{ number_format($office['total_demand'], 2) }}
                                         </td>
                                         <td class="text-center">
-                                            <a href="{{ route('budget.distribution.entry', ['office_id' => $office['id']]) }}" class="btn btn-primary btn-sm btn-rounded waves-effect waves-light">
+                                            <a href="{{ route('budget.distribution.entry', ['office_id' => $office['id']]) }}" wire:navigate class="btn btn-primary btn-sm btn-rounded waves-effect waves-light">
                                                 <i class="bx bx-edit-alt me-1"></i> {{ __('Approval') }}
                                             </a>
                                         </td>

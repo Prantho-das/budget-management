@@ -73,7 +73,7 @@
                         <i class="mdi mdi-alert-outline me-2"></i>
                         <strong>{{ __('Warning') }}:</strong> {{ __('No Ministry Budget allocation found for this Fiscal Year and Budget Type.') }} 
                         {{ __('Please ensure Ministry Budget Entry is completed first.') }}
-                        <a href="{{ route('setup.ministry-budget-entry') }}" class="alert-link">{{ __('Go to Entry') }}</a>
+                        <a href="{{ route('setup.ministry-budget-entry') }}" wire:navigate class="alert-link">{{ __('Go to Entry') }}</a>
                     </div>
                 </div>
             </div>
