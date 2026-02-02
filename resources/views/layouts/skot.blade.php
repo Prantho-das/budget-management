@@ -202,11 +202,11 @@
                                 <ul class="sub-menu" aria-expanded="false">
                                     @can('create-budget-estimations')
                                         <li><a href="{{ route('budget.estimations') }}" wire:navigate
-                                                key="t-estimations">{{ __('Budget Demand') }}</a></li>
+                                                key="t-estimations">{{ __('Entry') }}</a></li>
                                     @endcan
                                     @canany(['approve-budget', 'reject-budget', 'release-budget'])
                                         <li><a href="{{ route('budget.approvals') }}" wire:navigate
-                                                key="t-approvals">{{ __('Approvals') }}</a></li>
+                                                key="t-approvals">{{ __('Approval') }}</a></li>
                                     @endcanany
                                     {{-- @can('release-budget')
                                         <li>
