@@ -45,12 +45,23 @@ $numto = new Rakibhstu\Banglanumber\NumberToBangla();
 
                     
                                     @endphp
+@foreach($fiscalYears as $fy)
+        @php
+            $fiscial_year_explode = explode($fy->name, '-');
+        @endphp
+        {{ dd($fiscial_year_explode) }}
+        {{ $numto->bnNum($fiscial_year_explode[0]) }}-{{ $numto->bnNum($fiscial_year_explode[1]) }}
+@endforeach
+
+
+
+
                             <select id="fy-select" class="form-select shadow-sm border-primary" wire:model.live="fiscal_year_id">
                                 @foreach($fiscalYears as $fy)
                                                                     <option value="{{ $fy->id }}">
 
                                                                         @php
-                                    $fiscial_year_explode = explode($fy->name,'-');
+    $fiscial_year_explode = explode($fy->name, '-');
                                                                         @endphp
                                                                         {{ dd($fiscial_year_explode) }}
                                                                         {{ $numto->bnNum($fiscial_year_explode[0]) }}-{{ $numto->bnNum($fiscial_year_explode[1]) }}
