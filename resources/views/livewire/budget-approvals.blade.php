@@ -45,10 +45,10 @@
                                             $uniqueKey = $officeData['id'] . '_' . str_replace(' ', '_', $officeData['budget_type_id']);
                                         @endphp
                                         <tr>
-                                            <td>{{ $officeData['name'] }} <br><small class="text-muted">{{ $officeData['code'] }}</small></td>
+                                            <td>{{ $officeData['name'] }} <br><small class="text-muted">{{ bn_num($officeData['code']) }}</small></td>
                                             <td><span class="badge badge-soft-info">{{ $officeData['budget_type_name'] }}</span></td>
-                                            <td><strong>{{ number_format($officeData['total_demand'], 2) }}</strong></td>
-                                            <td><small class="text-muted">{{ date('d M Y, h:i A', strtotime($officeData['created_at'])) }}</small></td>
+                                            <td><strong>{{ bn_comma_format($officeData['total_demand'], 2) }}</strong></td>
+                                            <td><small class="text-muted">{{ bn_num(date('d', strtotime($officeData['created_at']))) }} {{ __(date('M', strtotime($officeData['created_at']))) }} {{ bn_num(date('Y', strtotime($officeData['created_at']))) }}, {{ bn_num(date('h:i A', strtotime($officeData['created_at']))) }}</small></td>
                                             <td>
                                                 <span class="badge badge-soft-primary font-size-12">{{ __($officeData['current_stage']) }}</span>
                                                 @if($officeData['is_drafted'])
@@ -130,18 +130,18 @@
                                 <tbody>
                                     @foreach($demands as $codeId => $data)
                                         <tr>
-                                            <td><strong>{{ $data['code'] }}</strong></td>
+                                            <td><strong>{{ bn_num($data['code']) }}</strong></td>
                                             <td>{{ $data['name'] }}</td>
                                             @for($i = 0; $i < 3; $i++)
                                                 <td class="text-end">
                                                     @if(isset($previousDemands[$codeId]["year_{$i}"]))
-                                                        <strong class="text-info">{{ number_format($previousDemands[$codeId]["year_{$i}"]['amount'], 2) }}</strong>
+                                                        <strong class="text-info">{{ bn_comma_format($previousDemands[$codeId]["year_{$i}"]['amount'], 2) }}</strong>
                                                     @else
                                                         <span class="text-muted">-</span>
                                                     @endif
                                                 </td>
                                             @endfor
-                                            <td>{{ number_format($data['demand'], 2) }}</td>
+                                            <td>{{ bn_comma_format($data['demand'], 2) }}</td>
                                             <td><small>{{ $data['remarks'] ?: '-' }}</small></td>
                                             <td>
                                                 <div class="input-group input-group-sm">

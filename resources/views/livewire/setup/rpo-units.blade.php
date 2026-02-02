@@ -122,9 +122,9 @@
                                 @foreach($rpo_units as $root)
                                     @php $rootIdx = $loop->iteration; @endphp
                                     <tr class="table-primary border-start border-4 border-primary">
-                                        <td>{{ $rootIdx }}</td>
+                                        <td>{{ bn_num($rootIdx) }}</td>
                                         <td>
-                                            <span class="badge bg-primary fs-13">{{ $root->code }}</span>
+                                            <span class="badge bg-primary fs-13">{{ bn_num($root->code) }}</span>
                                         </td>
                                         <td class="fw-bold text-primary">{{ $root->name }}</td>
                                         {{-- <td><span class="badge badge-soft-primary px-3">{{ __('Headquarters') }}</span></td> --}}
@@ -143,10 +143,10 @@
                                     @foreach($root->children as $child)
                                         @php $childIdx = $loop->iteration; @endphp
                                         <tr class="table-light">
-                                            <td style="padding-left: 20px;">{{ $rootIdx }}.{{ $childIdx }}</td>
+                                            <td style="padding-left: 20px;">{{ bn_num($rootIdx) . '.' . bn_num($childIdx) }}</td>
                                             <td>
                                                 <i class="mdi mdi-arrow-right-bottom me-1 text-muted"></i>
-                                                <span class="badge bg-info fs-12">{{ $child->code }}</span>
+                                                <span class="badge bg-info fs-12">{{ bn_num($child->code) }}</span>
                                             </td>
                                             <td class="fw-medium text-info">{{ $child->name }}</td>
                                             {{-- <td><span class="badge badge-soft-info px-3">{{ __('District Office') }}</span></td> --}}
@@ -164,10 +164,10 @@
 
                                         @foreach($child->children as $grandChild)
                                             <tr>
-                                                <td style="padding-left: 40px;">{{ $rootIdx }}.{{ $childIdx }}.{{ $loop->iteration }}</td>
+                                                <td style="padding-left: 40px;">{{ bn_num($rootIdx) . '.' . bn_num($childIdx) . '.' . bn_num($loop->iteration) }}</td>
                                                 <td>
                                                     <i class="mdi mdi-subdirectory-arrow-right me-1 text-muted"></i>
-                                                    <span class="badge bg-success fs-11">{{ $grandChild->code }}</span>
+                                                    <span class="badge bg-success fs-11">{{ bn_num($grandChild->code) }}</span>
                                                 </td>
                                                 <td class="text-success">{{ $grandChild->name }}</td>
                                                 {{-- <td><span class="badge badge-soft-success px-3">{{ __('Field Office') }}</span></td> --}}

@@ -83,12 +83,12 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($fiscal_years as $fiscal)
+                                    @foreach($fiscal_years as $fiscal)
                                     <tr>
-                                        <td>{{ $fiscal->id }}</td>
-                                        <td>{{ $fiscal->name }}</td>
-                                        <td>{{ $fiscal->start_date }}</td>
-                                        <td>{{ $fiscal->end_date }}</td>
+                                        <td>{{ bn_num($fiscal->id) }}</td>
+                                        <td>{{ $fiscal->bn_name }}</td>
+                                        <td>{{ bn_num(date('d-m-Y', strtotime($fiscal->start_date))) }}</td>
+                                        <td>{{ bn_num(date('d-m-Y', strtotime($fiscal->end_date))) }}</td>
                                         <td>
                                             @if($fiscal->status)
                                                 <span class="badge bg-success">{{ __('Active') }}</span>

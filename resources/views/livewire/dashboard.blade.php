@@ -47,11 +47,11 @@
                             <div class="pt-4">
                                 <div class="row">
                                     <div class="col-6">
-                                        <h5 class="font-size-15">{{ $pendingApprovals }}</h5>
+                                        <h5 class="font-size-15">{{ bn_num($pendingApprovals) }}</h5>
                                         <p class="text-muted mb-0">{{ __('Pending Request') }}</p>
                                     </div>
                                     <div class="col-6">
-                                        <h5 class="font-size-15">{{ number_format($budgetRemaining / 100000, 2) }} L</h5>
+                                        <h5 class="font-size-15">{{ bn_comma_format($budgetRemaining / 100000, 2) }} L</h5>
                                         <p class="text-muted mb-0">{{ __('Remaining') }}</p>
                                     </div>
                                 </div>
@@ -80,7 +80,7 @@
                             <div class="d-flex">
                                 <div class="flex-grow-1">
                                     <p class="text-muted fw-medium">{{ __('Total Estimated') }}</p>
-                                    <h4 class="mb-0">{{ number_format($totalEstimated) }}</h4>
+                                    <h4 class="mb-0">{{ bn_comma_format($totalEstimated) }}</h4>
                                 </div>
 
                                 <div class="flex-shrink-0 align-self-center">
@@ -100,7 +100,7 @@
                             <div class="d-flex">
                                 <div class="flex-grow-1">
                                     <p class="text-muted fw-medium">{{ __('Total Allocated') }}</p>
-                                    <h4 class="mb-0">{{ number_format($totalAllocated) }}</h4>
+                                    <h4 class="mb-0">{{ bn_comma_format($totalAllocated) }}</h4>
                                 </div>
 
                                 <div class="flex-shrink-0 align-self-center">
@@ -120,7 +120,7 @@
                             <div class="d-flex">
                                 <div class="flex-grow-1">
                                     <p class="text-muted fw-medium">{{ __('Total Expense') }}</p>
-                                    <h4 class="mb-0">{{ number_format($totalExpense) }}</h4>
+                                    <h4 class="mb-0">{{ bn_comma_format($totalExpense) }}</h4>
                                 </div>
 
                                 <div class="flex-shrink-0 align-self-center">
@@ -143,7 +143,7 @@
                         <div class="ms-auto">
                             <ul class="nav nav-pills"> 
                                 <li class="nav-item"> 
-                                    <a class="nav-link active" href="#">{{ $fiscalYear->name }}</a> 
+                                    <a class="nav-link active" href="#">{{ $fiscalYear->bn_name }}</a> 
                                 </li> 
                             </ul>
                         </div>
@@ -184,7 +184,7 @@
                             <tbody>
                                 @foreach($recentActivities as $activity)
                                 <tr>
-                                    <td>{{ $activity->updated_at->format('d M, Y') }}</td>
+                                    <td>{{ bn_num($activity->updated_at->format('d')) }} {{ __($activity->updated_at->format('M')) }}, {{ bn_num($activity->updated_at->format('Y')) }}</td>
                                     <td>{{ $activity->office->name ?? 'N/A' }}</td>
                                     <td>{{ $activity->budgetType->name ?? 'N/A' }}</td>
                                     <td>
@@ -193,7 +193,7 @@
                                         </span>
                                     </td>
                                     <td>
-                                        {{ number_format($activity->amount_approved > 0 ? $activity->amount_approved : $activity->amount_demand) }}
+                                        {{ bn_comma_format($activity->amount_approved > 0 ? $activity->amount_approved : $activity->amount_demand) }}
                                     </td>
                                 </tr>
                                 @endforeach

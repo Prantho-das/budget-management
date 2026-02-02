@@ -44,11 +44,11 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($budgets as $budget)
+                                    @foreach($budgets as $budget)
                                     <tr>
-                                        <td><strong>{{ $budget->batch_no }}</strong></td>
+                                        <td><strong>{{ bn_num($budget->batch_no) }}</strong></td>
                                         <td>{{ $budget->rpoUnit->name ?? 'N/A' }}</td>
-                                        <td>{{ $budget->fiscalYear->name ?? 'N/A' }}</td>
+                                        <td>{{ $budget->fiscalYear->bn_name ?? 'N/A' }}</td>
                                         <td>
                                             @if($budget->budgetType)
                                                 <span class="badge {{ $budget->budgetType->code == 'original' ? 'bg-primary' : 'bg-warning' }}">
@@ -56,7 +56,7 @@
                                                 </span>
                                             @endif
                                         </td>
-                                        <td class="text-end">{{ number_format($budget->total_amount, 2) }}</td>
+                                        <td class="text-end">{{ bn_comma_format($budget->total_amount, 2) }}</td>
                                         <td class="text-center">
                                             <a href="{{ route('setup.ministry-budget-entry', ['master_id' => $budget->id]) }}" 
                                                class="btn btn-sm btn-info btn-soft-info waves-effect waves-light" title="{{ __('Edit') }}" wire:navigate>

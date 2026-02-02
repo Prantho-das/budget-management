@@ -53,11 +53,7 @@ $numto = new Rakibhstu\Banglanumber\NumberToBangla();
                                 @foreach($fiscalYears as $fy)
                                                                     <option value="{{ $fy->id }}">
 
-                                                                        @php
-    $fiscial_year_explode = explode("-",$fy->name);
-                                                                        @endphp
-                                                                      
-                                                                        {{ $numto->bnNum($fiscial_year_explode[0]) }}-{{ $numto->bnNum($fiscial_year_explode[1]) }}
+                                                                        {{ bn_num($fy->name) }}
                                                                     </option>
                                 @endforeach
                             </select>
@@ -75,7 +71,7 @@ $numto = new Rakibhstu\Banglanumber\NumberToBangla();
                             <select id="parent-office" class="form-select shadow-sm border-primary" wire:model.live="parent_office_id">
                                 <option value="">{{ __('Select Office Group') }}</option>
                                 @foreach($parentOffices as $office)
-                                    <option value="{{ $office->id }}">{{ $office->code }} - {{ $office->name }}</option>
+                                    <option value="{{ $office->id }}">{{ bn_num($office->code) }} - {{ $office->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -93,7 +89,7 @@ $numto = new Rakibhstu\Banglanumber\NumberToBangla();
                                     <th rowspan="2" style="min-width: 250px; left: 0; z-index: 11;" class="bg-primary sticky-left align-middle">{{ __('Office Name') }}</th>
                                     @foreach($economicCodes as $code)
                                         <th class="text-center" style="min-width: 280px;" title="{{ $code->name }}">
-                                            <div class="font-size-13">{{ $code->code }}</div>
+                                            <div class="font-size-13">{{ bn_num($code->code) }}</div>
                                             <div class="font-size-11 opacity-75 fw-normal text-truncate" style="max-width: 270px;">{{ $code->name }}</div>
                                         </th>
                                     @endforeach
@@ -104,7 +100,7 @@ $numto = new Rakibhstu\Banglanumber\NumberToBangla();
                                         <th class="p-1">
                                             <div class="d-flex justify-content-center gap-2 font-size-10">
                                                 @foreach($prevFiscalYears as $fy)
-                                                    <span class="opacity-75" style="min-width: 50px;">{{ $fy->name }}</span>
+                                                    <span class="opacity-75" style="min-width: 50px;">{{ bn_num($fy->name) }}</span>
                                                 @endforeach
                                                 <span class="fw-bold" style="min-width: 100px;">Current Allocation</span>
                                             </div>
@@ -118,7 +114,7 @@ $numto = new Rakibhstu\Banglanumber\NumberToBangla();
                                         <tr wire:key="office-{{ $child->id }}-{{ $fiscal_year_id }}-{{ $budget_type_id }}">
                                             <td class="fw-medium bg-light sticky-left" style="left: 0; z-index: 5;">
                                                 <div class="d-flex flex-column">
-                                                    <span class="text-primary fw-bold">{{ $child->code }}</span>
+                                                    <span class="text-primary fw-bold">{{ bn_num($child->code) }}</span>
                                                     <span class="font-size-12 text-muted">{{ $child->name }}</span>
                                                 </div>
                                             </td>
@@ -128,7 +124,7 @@ $numto = new Rakibhstu\Banglanumber\NumberToBangla();
                                                         {{-- Historical Values aligned with header --}}
                                                         @foreach($prevFiscalYears as $fy)
                                                             <div class="text-center font-size-11 fw-semibold {{ ($history[$child->id][$code->id][$fy->id] ?? 0) > 0 ? 'text-dark' : 'text-muted opacity-50' }}" style="min-width: 50px;">
-                                                                {{ number_format(($history[$child->id][$code->id][$fy->id] ?? 0), 0) }}
+                                                                {{ bn_comma_format(($history[$child->id][$code->id][$fy->id] ?? 0), 0) }}
                                                             </div>
                                                         @endforeach
                                                         
@@ -146,7 +142,7 @@ $numto = new Rakibhstu\Banglanumber\NumberToBangla();
                                                                     type="button" 
                                                                     wire:click="applySuggestion({{ $child->id }}, {{ $code->id }})"
                                                                     style="padding: 0 4px; border-radius: 3px;">
-                                                                    <small class="fw-bold" style="font-size: 8px;">{{ __('Bud: ') . number_format($ministryAllocations[$code->id]) }}</small>
+                                                                    <small class="fw-bold" style="font-size: 8px;">{{ __('Bud: ') . bn_comma_format($ministryAllocations[$code->id]) }}</small>
                                                                 </button>
                                                             @endif
                                                         </div>
@@ -155,9 +151,9 @@ $numto = new Rakibhstu\Banglanumber\NumberToBangla();
                                             @endforeach
                                             <td class="text-end fw-bold text-primary font-size-14 bg-light shadow-sm">
                                                 @php
-        $total = collect($distributions[$child->id] ?? [])->sum();
+                                                    $total = collect($distributions[$child->id] ?? [])->sum();
                                                 @endphp
-                                                {{ number_format($total, 2) }}
+                                                {{ bn_comma_format($total, 2) }}
                                             </td>
                                         </tr>
                                     @empty
@@ -189,18 +185,18 @@ $numto = new Rakibhstu\Banglanumber\NumberToBangla();
         $isExceeded = $ministryBudget > 0 && $colTotal > $ministryBudget;
                                                 @endphp
                                                 <div class="font-size-13 {{ $isExceeded ? 'text-danger animate-pulse' : 'text-success' }}">
-                                                    {{ number_format($colTotal, 2) }}
+                                                    {{ bn_comma_format($colTotal, 2) }}
                                                     @if($isExceeded)
-                                                        <i class="bx bx-error-circle ms-1" title="Exceeds Ministry Allocation ({{ number_format($ministryBudget) }})"></i>
+                                                        <i class="bx bx-error-circle ms-1" title="Exceeds Ministry Allocation ({{ bn_comma_format($ministryBudget) }})"></i>
                                                     @endif
                                                 </div>
                                             </td>
                                         @endforeach
                                         <td class="text-end text-success font-size-15 bg-light">
                                             @php
-    $grandTotal = collect($distributions)->map(fn($o) => collect($o)->sum())->sum();
+                                                $grandTotal = collect($distributions)->map(fn($o) => collect($o)->sum())->sum();
                                             @endphp
-                                            {{ number_format($grandTotal, 2) }}
+                                            {{ bn_comma_format($grandTotal, 2) }}
                                         </td>
                                     </tr>
                                 </tfoot>

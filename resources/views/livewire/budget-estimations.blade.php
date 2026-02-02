@@ -28,8 +28,8 @@
                         <div class="text-white">
                             <h6 class="text-uppercase mb-3 font-size-13 text-white-50">{{ __('Total Demand Amount') }}
                             </h6>
-                            <h4 class="mb-4 text-white">{{ number_format($totalDemand, 2) }}</h4>
-                            <span class="badge bg-white text-primary"> {{ $currentFiscalYear->name }} </span> <span
+                            <h4 class="mb-4 text-white">{{ bn_comma_format($totalDemand, 2) }}</h4>
+                            <span class="badge bg-white text-primary"> {{ $currentFiscalYear->bn_name }} </span> <span
                                 class="ms-2 text-white-50">{{ __('Current FY') }}</span>
                         </div>
                     </div>
@@ -59,7 +59,7 @@
                         <div class="text-white">
                             <h6 class="text-uppercase mb-3 font-size-13 text-white-50">{{ __('Office Info') }}</h6>
                             <h4 class="mb-4 text-white">{{ $currentOffice->name }}</h4>
-                            <span class="badge bg-white text-success"> {{ $currentOffice->code }} </span> <span
+                            <span class="badge bg-white text-success"> {{ bn_num($currentOffice->code) }} </span> <span
                                 class="ms-2 text-white-50">{{ __('Office Code') }}</span>
                         </div>
                     </div>
@@ -94,7 +94,7 @@
                             <select wire:model.live="batch_id" class="form-select border-light shadow-none">
                                 @foreach ($allBatches as $batch)
                                     <option value="{{ $batch['batch_id'] }}">
-                                        {{ date('d M Y', strtotime($batch['created_at'])) }}
+                                        {{ bn_num(date('d', strtotime($batch['created_at']))) }} {{ __(date('M', strtotime($batch['created_at']))) }} {{ bn_num(date('Y', strtotime($batch['created_at']))) }}
                                         ({{ __($batch['status']) }})
                                     </option>
                                 @endforeach
@@ -238,7 +238,7 @@
                                         <th rowspan="2">{{ __('Economic Code') }}</th>
                                         <th rowspan="2">{{ __('Description') }}</th>
                                         <th colspan="3">{{ __('Original') }}</th>
-                                        <th rowspan="2">{{ __('Demand') }}<br>{{ current_fiscal_year() }}</th>
+                                        <th rowspan="2">{{ __('Demand') }}<br>{{ bn_num(current_fiscal_year()) }}</th>
                                         <th rowspan="2">{{ __('Remarks') }}</th>
                                     </tr>
                                     </tr>
@@ -255,7 +255,7 @@
                                                 ->reverse();
                                         @endphp
                                         @foreach ($prevYears as $py)
-                                            <th>{{ $py->name }}</th>
+                                            <th>{{ $py->bn_name }}</th>
                                         @endforeach
                                     </tr>
                                 </thead>
@@ -270,7 +270,7 @@
                                         @foreach ($economicCodes as $layer1)
                                             @php $rootIdx = $loop->iteration; @endphp
                                             <tr class="table-primary border-start border-4 border-primary">
-                                                <td><strong>{{ $rootIdx }}. {{ $layer1->code }}</strong></td>
+                                                <td><strong>{{ bn_num($rootIdx) }}. {{ bn_num($layer1->code) }}</strong></td>
                                                 <td><strong>{{ $layer1->name }}</strong></td>
                                                 @for ($i = 0; $i < 3; $i++)
                                                     <td class="text-end fw-bold">
@@ -286,14 +286,14 @@
                                                                 }
                                                             }
                                                         @endphp
-                                                        {{ $L1Total > 0 ? number_format($L1Total, 0) : '-' }}
+                                                        {{ $L1Total > 0 ? bn_comma_format($L1Total, 0) : '-' }}
                                                     </td>
                                                 @endfor
                                                 <td class="text-end fw-bold text-primary">
                                                     @php
                                                          $L1CurrentTotal = collect($demands)->only($layer1Ids)->sum();
                                                     @endphp
-                                                    {{ $L1CurrentTotal > 0 ? number_format($L1CurrentTotal) : '-' }}
+                                                    {{ $L1CurrentTotal > 0 ? bn_comma_format($L1CurrentTotal) : '-' }}
                                                 </td>
                                                 <td></td>
                                             </tr>
@@ -303,7 +303,7 @@
                                                 <tr class="table-light">
                                                     <td style="padding-left: 25px;">
                                                         <i class="mdi mdi-arrow-right-bottom me-1 text-muted"></i>
-                                                        <span class="badge bg-info-subtle text-info">{{ $layer2->code }}</span> 
+                                                        <span class="badge bg-info-subtle text-info">{{ bn_num($layer2->code) }}</span> 
                                                     </td>
                                                     <td class="fw-medium text-info">{{ $layer2->name }}</td>
                                                 @for ($i = 0; $i < 3; $i++)
@@ -320,14 +320,14 @@
                                                                 }
                                                             }
                                                         @endphp
-                                                        {{ $L2Total > 0 ? number_format($L2Total, 0) : '-' }}
+                                                        {{ $L2Total > 0 ? bn_comma_format($L2Total, 0) : '-' }}
                                                     </td>
                                                 @endfor
                                                  <td class="text-end fw-medium text-info">
                                                     @php
                                                          $L2CurrentTotal = collect($demands)->only($layer2Ids)->sum();
                                                     @endphp
-                                                    {{ $L2CurrentTotal > 0 ? number_format($L2CurrentTotal) : '-' }}
+                                                    {{ $L2CurrentTotal > 0 ? bn_comma_format($L2CurrentTotal) : '-' }}
                                                 </td>
                                                 <td></td>
                                             </tr>
@@ -335,7 +335,7 @@
                                             @foreach ($layer2->children as $layer3)
                                                  <tr>
                                                     <td style="width: 120px; padding-left: 50px;">
-                                                        <span class="badge bg-light text-dark border">{{ $layer3->code }}</span>
+                                                        <span class="badge bg-light text-dark border">{{ bn_num($layer3->code) }}</span>
                                                     </td>
                                                     <td>
                                                         {{ $layer3->name }}
@@ -350,7 +350,7 @@
                                                     @for ($i = 0; $i < 3; $i++)
                                                         <td class="text-end">
                                                             @if (isset($previousDemands[$layer3->id]["year_{$i}"]))
-                                                                {{ number_format($previousDemands[$layer3->id]["year_{$i}"]['amount'], 0) }}
+                                                                {{ bn_comma_format($previousDemands[$layer3->id]["year_{$i}"]['amount'], 0) }}
                                                             @else
                                                                 <span class="opacity-25">-</span>
                                                             @endif
@@ -382,7 +382,7 @@
                                                                     type="button" 
                                                                     wire:click="applySuggestion({{ $layer3->id }})"
                                                                     title="{{ __('Click to apply 10% increase') }}">
-                                                                    <small class="fw-bold" style="font-size: 10px;">{{ __('Sugg: ') . number_format($suggested) }}</small>
+                                                                    <small class="fw-bold" style="font-size: 10px;">{{ __('Sugg: ') . bn_comma_format($suggested) }}</small>
                                                                 </button>
                                                             @endif
                                                         </div>

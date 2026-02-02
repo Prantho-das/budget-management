@@ -36,7 +36,7 @@
                             <select class="form-select" wire:model.live="fiscal_year_id" {{ $master_id ? 'disabled' : '' }}>
                                 <option value="">{{ __('Select Fiscal Year') }}</option>
                                 @foreach($fiscal_years as $fy)
-                                    <option value="{{ $fy->id }}">{{ $fy->name }}</option>
+                                    <option value="{{ $fy->id }}">{{ $fy->bn_name }}</option>
                                 @endforeach
                             </select>
                             @error('fiscal_year_id') <span class="text-danger">{{ $message }}</span> @enderror
@@ -46,7 +46,7 @@
                             <select class="form-select" wire:model.live="rpo_unit_id" {{ $master_id ? 'disabled' : '' }}>
                                 <option value="">{{ __('Select Unit') }}</option>
                                 @foreach($rpo_units as $unit)
-                                    <option value="{{ $unit->id }}">{{ $unit->name }} ({{ $unit->code }})</option>
+                                    <option value="{{ $unit->id }}">{{ $unit->name }} ({{ bn_num($unit->code) }})</option>
                                 @endforeach
                             </select>
                             @error('rpo_unit_id') <span class="text-danger">{{ $message }}</span> @enderror
@@ -65,7 +65,7 @@
                     @if($master_id)
                         <div class="alert alert-info py-2 mb-3">
                             <i class="mdi mdi-information-outline me-1"></i>
-                            <strong>{{ __('Editing Batch:') }}</strong> {{ \App\Models\MinistryBudgetMaster::find($master_id)->batch_no }} | 
+                            <strong>{{ __('Editing Batch:') }}</strong> {{ bn_num(\App\Models\MinistryBudgetMaster::find($master_id)->batch_no) }} | 
                             <strong>{{ __('Type:') }}</strong> {{ \App\Models\MinistryBudgetMaster::find($master_id)->budgetType->name }}
                         </div>
                     @endif
@@ -87,11 +87,11 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($economic_codes as $layer1)
+                                    @foreach($economic_codes as $layer1)
                                     @php $rootIdx = $loop->iteration; @endphp
                                     <tr class="table-primary border-start border-4 border-primary">
-                                        <td>{{ $rootIdx }}</td>
-                                        <td><strong>{{ $layer1->code }}</strong></td>
+                                        <td>{{ bn_num($rootIdx) }}</td>
+                                        <td><strong>{{ bn_num($layer1->code) }}</strong></td>
                                         <td class="fw-bold text-primary">{{ $layer1->name }}</td>
                                         @if(count($original_budget_data) > 0)
                                             <td class="text-end fw-bold">
@@ -99,7 +99,7 @@
                                                     $layer1Ids = $layer1->children->flatMap->children->pluck('id')->toArray();
                                                     $layer1OrigTotal = collect($original_budget_data)->only($layer1Ids)->sum();
                                                 @endphp
-                                                {{ number_format($layer1OrigTotal, 2) }}
+                                                {{ bn_comma_format($layer1OrigTotal, 2) }}
                                             </td>
                                         @endif
                                         @if(count($previous_revised_data) > 0)
@@ -108,7 +108,7 @@
                                                     $layer1Ids = $layer1->children->flatMap->children->pluck('id')->toArray();
                                                     $layer1AddTotal = collect($previous_revised_data)->only($layer1Ids)->sum();
                                                 @endphp
-                                                {{ number_format($layer1AddTotal, 2) }}
+                                                {{ bn_comma_format($layer1AddTotal, 2) }}
                                             </td>
                                         @endif
                                         <td class="text-end fw-bold text-primary">
@@ -116,17 +116,17 @@
                                                 $layer1Ids = $layer1->children->flatMap->children->pluck('id')->toArray();
                                                 $layer1Total = collect($budget_data)->only($layer1Ids)->sum();
                                             @endphp
-                                            {{ number_format($layer1Total, 2) }}
+                                            {{ bn_comma_format($layer1Total, 2) }}
                                         </td>
                                     </tr>
 
-                                    @foreach($layer1->children as $layer2)
+                                        @foreach($layer1->children as $layer2)
                                         @php $subIdx = $loop->iteration; @endphp
                                         <tr class="table-light" wire:key="l2-{{ $layer2->id }}">
-                                            <td style="padding-left: 20px;">{{ $rootIdx }}.{{ $subIdx }}</td>
+                                            <td style="padding-left: 20px;">{{ bn_num($rootIdx) . '.' . bn_num($subIdx) }}</td>
                                             <td>
                                                 <i class="mdi mdi-arrow-right-bottom me-1 text-muted"></i>
-                                                <span class="badge bg-info fs-12">{{ $layer2->code }}</span>
+                                                <span class="badge bg-info fs-12">{{ bn_num($layer2->code) }}</span>
                                             </td>
                                             <td class="fw-medium text-info">{{ $layer2->name }}</td>
                                             @if(count($original_budget_data) > 0)
@@ -135,7 +135,7 @@
                                                         $layer2Ids = $layer2->children->pluck('id')->toArray();
                                                         $layer2OrigTotal = collect($original_budget_data)->only($layer2Ids)->sum();
                                                     @endphp
-                                                    {{ number_format($layer2OrigTotal, 2) }}
+                                                    {{ bn_comma_format($layer2OrigTotal, 2) }}
                                                 </td>
                                             @endif
                                             @if(count($previous_revised_data) > 0)
@@ -144,7 +144,7 @@
                                                         $layer2Ids = $layer2->children->pluck('id')->toArray();
                                                         $layer2AddTotal = collect($previous_revised_data)->only($layer2Ids)->sum();
                                                     @endphp
-                                                    {{ number_format($layer2AddTotal, 2) }}
+                                                    {{ bn_comma_format($layer2AddTotal, 2) }}
                                                 </td>
                                             @endif
                                             <td class="text-end fw-medium text-info">
@@ -152,26 +152,26 @@
                                                     $layer2Ids = $layer2->children->pluck('id')->toArray();
                                                     $layer2Total = collect($budget_data)->only($layer2Ids)->sum();
                                                 @endphp
-                                                {{ number_format($layer2Total, 2) }}
+                                                {{ bn_comma_format($layer2Total, 2) }}
                                             </td>
                                         </tr>
 
                                         @foreach($layer2->children as $layer3)
                                             <tr wire:key="l3-{{ $layer3->id }}">
-                                                <td style="padding-left: 40px;">{{ $rootIdx }}.{{ $subIdx }}.{{ $loop->iteration }}</td>
+                                                <td style="padding-left: 40px;">{{ bn_num($rootIdx) . '.' . bn_num($subIdx) . '.' . bn_num($loop->iteration) }}</td>
                                                 <td>
                                                     <i class="mdi mdi-subdirectory-arrow-right me-1 text-muted"></i>
-                                                    {{ $layer3->code }}
+                                                    {{ bn_num($layer3->code) }}
                                                 </td>
                                                 <td>{{ $layer3->name }}</td>
                                                 @if(count($original_budget_data) > 0)
                                                     <td class="text-end text-muted">
-                                                        {{ number_format($original_budget_data[$layer3->id] ?? 0, 2) }}
+                                                        {{ bn_comma_format($original_budget_data[$layer3->id] ?? 0, 2) }}
                                                     </td>
                                                 @endif
                                                 @if(count($previous_revised_data) > 0)
                                                     <td class="text-end text-muted">
-                                                        {{ number_format($previous_revised_data[$layer3->id] ?? 0, 2) }}
+                                                        {{ bn_comma_format($previous_revised_data[$layer3->id] ?? 0, 2) }}
                                                     </td>
                                                 @endif
                                                 <td style="width: 200px;">
@@ -188,12 +188,12 @@
                                 <tr>
                                     <th colspan="3" class="text-end">{{ __('GRAND TOTAL') }}</th>
                                     @if(count($original_budget_data) > 0)
-                                        <th class="text-end">{{ number_format(array_sum($original_budget_data), 2) }}</th>
+                                        <th class="text-end">{{ bn_comma_format(array_sum($original_budget_data), 2) }}</th>
                                     @endif
                                     @if(count($previous_revised_data) > 0)
-                                        <th class="text-end">{{ number_format(array_sum($previous_revised_data), 2) }}</th>
+                                        <th class="text-end">{{ bn_comma_format(array_sum($previous_revised_data), 2) }}</th>
                                     @endif
-                                    <th class="text-end text-primary fs-14">{{ number_format(array_sum($budget_data), 2) }}</th>
+                                    <th class="text-end text-primary fs-14">{{ bn_comma_format(array_sum($budget_data), 2) }}</th>
                                 </tr>
                             </tfoot>
                         </table>

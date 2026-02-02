@@ -75,3 +75,64 @@ if (!function_exists('get_active_fiscal_year_id')) {
         return $fy ? $fy->id : null;
     }
 }
+
+if (!function_exists('bn_num')) {
+    /**
+     * Convert English number to Bangla number
+     */
+    function bn_num($number)
+    {
+        if (is_null($number) || $number === '') return '';
+        
+        // Handle numbers with hyphens like fiscal years "2025-26"
+        if (is_string($number) && strpos($number, '-') !== false) {
+            $parts = explode('-', $number);
+            $bnParts = array_map(function($part) {
+                if (is_numeric($part)) {
+                    $numto = new \Rakibhstu\Banglanumber\NumberToBangla();
+                    return $numto->bnNum($part);
+                }
+                return $part;
+            }, $parts);
+            return implode('-', $bnParts);
+        }
+
+        if (!is_numeric($number)) return $number;
+        
+        $numto = new \Rakibhstu\Banglanumber\NumberToBangla();
+        return $numto->bnNum($number);
+    }
+}
+
+if (!function_exists('bn_money')) {
+    /**
+     * Convert number to Bangla currency format (In Words)
+     */
+    function bn_money($number)
+    {
+        if (is_null($number) || $number === '') return '';
+        if (!is_numeric($number)) return $number;
+        
+        $numto = new \Rakibhstu\Banglanumber\NumberToBangla();
+        return $numto->bnMoney($number);
+    }
+}
+
+if (!function_exists('bn_comma_format')) {
+    /**
+     * Format number with commas and then convert to Bangla numbers
+     */
+    function bn_comma_format($number, $decimal = 0)
+    {
+        if (is_null($number) || $number === '') return '';
+        if (!is_numeric($number)) return $number;
+        
+        $formatted = number_format($number, $decimal);
+        
+        // Map English digits to Bangla digits
+        $en = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+        $bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+        
+        return str_replace($en, $bn, $formatted);
+    }
+}

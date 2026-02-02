@@ -99,17 +99,17 @@
                                 <tbody>
                                     @foreach($ministryBudgetSummary as $codeId => $data)
                                         <tr>
-                                            <td><strong>{{ $data['code'] }}</strong> - {{ explode(' - ', $data['code_name'])[1] ?? '' }}</td>
-                                            <td class="text-end">{{ number_format($data['allocated']) }}</td>
-                                            <td class="text-end">{{ number_format($data['released']) }}</td>
+                                            <td><strong>{{ bn_num($data['code']) }}</strong> - {{ explode(' - ', $data['code_name'])[1] ?? '' }}</td>
+                                            <td class="text-end">{{ bn_comma_format($data['allocated']) }}</td>
+                                            <td class="text-end">{{ bn_comma_format($data['released']) }}</td>
                                             <td class="text-end">
                                                 <span class="badge {{ $data['remaining'] > 0 ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' }} font-size-12">
-                                                    {{ number_format($data['remaining']) }}
+                                                    {{ bn_comma_format($data['remaining']) }}
                                                 </span>
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    <span class="font-size-12 me-2">{{ number_format($data['usage_percent'], 1) }}%</span>
+                                                    <span class="font-size-12 me-2">{{ bn_comma_format($data['usage_percent'], 1) }}%</span>
                                                     <div class="progress flex-grow-1" style="height: 6px;">
                                                         <div class="progress-bar {{ $data['usage_percent'] > 90 ? 'bg-danger' : ($data['usage_percent'] > 75 ? 'bg-warning' : 'bg-success') }}" 
                                                              role="progressbar" 
@@ -122,9 +122,9 @@
                                     @endforeach
                                     <tr class="fw-bold bg-light">
                                         <td>{{ __('Total') }}</td>
-                                        <td class="text-end">{{ number_format(collect($ministryBudgetSummary)->sum('allocated')) }}</td>
-                                        <td class="text-end">{{ number_format(collect($ministryBudgetSummary)->sum('released')) }}</td>
-                                        <td class="text-end">{{ number_format(collect($ministryBudgetSummary)->sum('remaining')) }}</td>
+                                        <td class="text-end">{{ bn_comma_format(collect($ministryBudgetSummary)->sum('allocated')) }}</td>
+                                        <td class="text-end">{{ bn_comma_format(collect($ministryBudgetSummary)->sum('released')) }}</td>
+                                        <td class="text-end">{{ bn_comma_format(collect($ministryBudgetSummary)->sum('remaining')) }}</td>
                                         <td></td>
                                     </tr>
                                 </tbody>
@@ -174,28 +174,28 @@
                                           <th rowspan="2">ব্যাখ্যামূলক <br> মন্তব্য</th>
                                       </tr>
                                       <tr>
-                                          <th>2022-2023</th>
-                                          <th>2023-24</th>
+                                          <th>{{ bn_num('2022-2023') }}</th>
+                                          <th>{{ bn_num('2023-24') }}</th>
 
-                                          <th>প্রথম ৬ মাস <br> 2024-25</th>
-                                          <th>2024-25</th>
-                                          <th>2024-25</th>
-                                          <th>2025-26</th>
-                                          <th>2026-27</th>
-                                          <th>2027-28</th>
+                                          <th>প্রথম ৬ মাস <br> {{ bn_num('2024-25') }}</th>
+                                          <th>{{ bn_num('2024-25') }}</th>
+                                          <th>{{ bn_num('2024-25') }}</th>
+                                          <th>{{ bn_num('2025-26') }}</th>
+                                          <th>{{ bn_num('2026-27') }}</th>
+                                          <th>{{ bn_num('2027-28') }}</th>
                                       </tr>
                                       <tr>
-                                          <th>1</th>
-                                          <th>2</th>
-                                          <th>3</th>
-                                          <th>4</th>
-                                          <th>5</th>
-                                          <th>6</th>
-                                          <th>7</th>
-                                          <th>8</th>
-                                          <th>9</th>
-                                          <th>10</th>
-                                          <th>11</th>
+                                          <th>{{ bn_num(1) }}</th>
+                                          <th>{{ bn_num(2) }}</th>
+                                          <th>{{ bn_num(3) }}</th>
+                                          <th>{{ bn_num(4) }}</th>
+                                          <th>{{ bn_num(5) }}</th>
+                                          <th>{{ bn_num(6) }}</th>
+                                          <th>{{ bn_num(7) }}</th>
+                                          <th>{{ bn_num(8) }}</th>
+                                          <th>{{ bn_num(9) }}</th>
+                                          <th>{{ bn_num(10) }}</th>
+                                          <th>{{ bn_num(11) }}</th>
                                       </tr>
                                   </thead>
                                   <tbody>
@@ -204,7 +204,7 @@
                                               <td class="text-center">
                                                   <span
                                                       class="badge bg-{{ $code->parent_id ? 'secondary' : 'primary' }}-subtle text-{{ $code->parent_id ? 'secondary' : 'primary' }}">
-                                                      {{ $code->code }}
+                                                      {{ bn_num($code->code) }}
                                                   </span>
                                               </td>
                                               <td>{{ $code->name }}</td>
@@ -213,7 +213,7 @@
                                               @for ($i = 0; $i < 3; $i++)
                                                   <td class="text-end">
                                                       @php $val = $historicalData["year_{$i}"][$code->id] ?? 0; @endphp
-                                                      {{ $val > 0 ? number_format($val, 0) : '-' }}
+                                                      {{ $val > 0 ? bn_comma_format($val, 0) : '-' }}
                                                   </td>
                                               @endfor
 
@@ -226,13 +226,13 @@
                                                   $balance = $approved - $released;
                                               @endphp
                                               <td class="text-end text-info fw-bold">
-                                                  {{ $demand > 0 ? number_format($demand, 0) : '-' }}</td>
+                                                  {{ $demand > 0 ? bn_comma_format($demand, 0) : '-' }}</td>
                                               <td class="text-end text-success fw-bold">
-                                                  {{ $approved > 0 ? number_format($approved, 0) : '-' }}</td>
+                                                  {{ $approved > 0 ? bn_comma_format($approved, 0) : '-' }}</td>
                                               <td class="text-end text-warning fw-bold">
-                                                  {{ $released > 0 ? number_format($released, 0) : '-' }}</td>
+                                                  {{ $released > 0 ? bn_comma_format($released, 0) : '-' }}</td>
                                               <td class="text-end fw-bold">
-                                                  {{ $balance > 0 ? number_format($balance, 0) : '-' }}</td>
+                                                  {{ $balance > 0 ? bn_comma_format($balance, 0) : '-' }}</td>
                                               <td> </td>
                                               <td> </td>
                                           </tr>
@@ -251,7 +251,7 @@
                                                           }
                                                       }
                                                   @endphp
-                                                  {{ $totalY > 0 ? number_format($totalY, 0) : '-' }}
+                                                  {{ $totalY > 0 ? bn_comma_format($totalY, 0) : '-' }}
                                               </td>
                                           @endfor
                                           <td class="text-end text-info">
@@ -263,7 +263,7 @@
                                                       }
                                                   }
                                               @endphp
-                                              {{ $totalD > 0 ? number_format($totalD, 0) : '-' }}
+                                              {{ $totalD > 0 ? bn_comma_format($totalD, 0) : '-' }}
                                           </td>
                                           <td class="text-end text-success">
                                               @php
@@ -274,7 +274,7 @@
                                                       }
                                                   }
                                               @endphp
-                                              {{ $totalA > 0 ? number_format($totalA, 0) : '-' }}
+                                              {{ $totalA > 0 ? bn_comma_format($totalA, 0) : '-' }}
                                           </td>
                                           <td class="text-end text-warning">
                                               @php
@@ -285,10 +285,10 @@
                                                       }
                                                   }
                                               @endphp
-                                              {{ $totalR > 0 ? number_format($totalR, 0) : '-' }}
+                                              {{ $totalR > 0 ? bn_comma_format($totalR, 0) : '-' }}
                                           </td>
                                           <td class="text-end">
-                                              {{ $totalA - $totalR > 0 ? number_format($totalA - $totalR, 0) : '-' }}
+                                              {{ $totalA - $totalR > 0 ? bn_comma_format($totalA - $totalR, 0) : '-' }}
                                           </td>
                                           <td></td>
                                           <td></td>
