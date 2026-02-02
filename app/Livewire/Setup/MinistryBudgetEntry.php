@@ -43,6 +43,14 @@ class MinistryBudgetEntry extends Component
                 $this->fiscal_year_id = $activeFY->id;
             }
         }
+
+        // Initialize budget_data with 0 for all economic codes
+        $allCodes = EconomicCode::whereNotNull('parent_id')->get();
+        foreach ($allCodes as $code) {
+            if (!isset($this->budget_data[$code->id])) {
+                $this->budget_data[$code->id] = 0;
+            }
+        }
     }
 
     public function loadMasterData($id)
@@ -120,7 +128,8 @@ class MinistryBudgetEntry extends Component
         $this->validate([
             'fiscal_year_id' => 'required',
             'rpo_unit_id' => 'required',
-            'budget_data' => 'array',
+            'budget_data' => 'nullable|array',
+            'budget_data.*' => 'nullable|numeric|min:0',
         ]);
 
         DB::transaction(function () {

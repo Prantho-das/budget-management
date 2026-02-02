@@ -267,44 +267,45 @@
                                             ->keyBy('economic_code_id');
                                     @endphp
 
-                                    @foreach ($economicCodes as $layer1)
-                                        @php $rootIdx = $loop->iteration; @endphp
-                                        <tr class="table-primary border-start border-4 border-primary">
-                                            <td colspan="2"><strong>{{ $rootIdx }}. {{ $layer1->code }} - {{ $layer1->name }}</strong></td>
-                                            @for ($i = 0; $i < 3; $i++)
-                                                <td class="text-end fw-bold">
-                                                    @php
-                                                        // Calculate Subtotal for Layer 1
-                                                        $layer1Ids = $layer1->children->flatMap->children->pluck('id')->toArray();
-                                                        $L1Total = 0;
-                                                         if (isset($layer1Ids) && count($layer1Ids) > 0) {
-                                                            foreach($layer1Ids as $lid) {
-                                                                if(isset($previousDemands[$lid]["year_{$i}"])) {
-                                                                    $L1Total += $previousDemands[$lid]["year_{$i}"]['amount'];
+                                        @foreach ($economicCodes as $layer1)
+                                            @php $rootIdx = $loop->iteration; @endphp
+                                            <tr class="table-primary border-start border-4 border-primary">
+                                                <td><strong>{{ $rootIdx }}. {{ $layer1->code }}</strong></td>
+                                                <td><strong>{{ $layer1->name }}</strong></td>
+                                                @for ($i = 0; $i < 3; $i++)
+                                                    <td class="text-end fw-bold">
+                                                        @php
+                                                            // Calculate Subtotal for Layer 1
+                                                            $layer1Ids = $layer1->children->flatMap->children->pluck('id')->toArray();
+                                                            $L1Total = 0;
+                                                             if (isset($layer1Ids) && count($layer1Ids) > 0) {
+                                                                foreach($layer1Ids as $lid) {
+                                                                    if(isset($previousDemands[$lid]["year_{$i}"])) {
+                                                                        $L1Total += $previousDemands[$lid]["year_{$i}"]['amount'];
+                                                                    }
                                                                 }
                                                             }
-                                                        }
+                                                        @endphp
+                                                        {{ $L1Total > 0 ? number_format($L1Total, 0) : '-' }}
+                                                    </td>
+                                                @endfor
+                                                <td class="text-end fw-bold text-primary">
+                                                    @php
+                                                         $L1CurrentTotal = collect($demands)->only($layer1Ids)->sum();
                                                     @endphp
-                                                    {{ $L1Total > 0 ? number_format($L1Total, 0) : '-' }}
+                                                    {{ $L1CurrentTotal > 0 ? number_format($L1CurrentTotal) : '-' }}
                                                 </td>
-                                            @endfor
-                                            <td class="text-end fw-bold text-primary">
-                                                @php
-                                                     $L1CurrentTotal = collect($demands)->only($layer1Ids)->sum();
-                                                @endphp
-                                                {{ $L1CurrentTotal > 0 ? number_format($L1CurrentTotal) : '-' }}
-                                            </td>
-                                            <td></td>
-                                        </tr>
+                                                <td></td>
+                                            </tr>
 
-                                        @foreach ($layer1->children as $layer2)
-                                            @php $subIdx = $loop->iteration; @endphp
-                                            <tr class="table-light">
-                                                <td colspan="2" style="padding-left: 25px;">
-                                                    <i class="mdi mdi-arrow-right-bottom me-1 text-muted"></i>
-                                                    <span class="badge bg-info-subtle text-info">{{ $layer2->code }}</span> 
-                                                    <span class="fw-medium text-info">{{ $layer2->name }}</span>
-                                                </td>
+                                            @foreach ($layer1->children as $layer2)
+                                                @php $subIdx = $loop->iteration; @endphp
+                                                <tr class="table-light">
+                                                    <td style="padding-left: 25px;">
+                                                        <i class="mdi mdi-arrow-right-bottom me-1 text-muted"></i>
+                                                        <span class="badge bg-info-subtle text-info">{{ $layer2->code }}</span> 
+                                                    </td>
+                                                    <td class="fw-medium text-info">{{ $layer2->name }}</td>
                                                 @for ($i = 0; $i < 3; $i++)
                                                     <td class="text-end fw-medium text-secondary">
                                                         @php

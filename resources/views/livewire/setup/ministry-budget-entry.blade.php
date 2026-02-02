@@ -122,7 +122,7 @@
 
                                     @foreach($layer1->children as $layer2)
                                         @php $subIdx = $loop->iteration; @endphp
-                                        <tr class="table-light">
+                                        <tr class="table-light" wire:key="l2-{{ $layer2->id }}">
                                             <td style="padding-left: 20px;">{{ $rootIdx }}.{{ $subIdx }}</td>
                                             <td>
                                                 <i class="mdi mdi-arrow-right-bottom me-1 text-muted"></i>
@@ -157,7 +157,7 @@
                                         </tr>
 
                                         @foreach($layer2->children as $layer3)
-                                            <tr>
+                                            <tr wire:key="l3-{{ $layer3->id }}">
                                                 <td style="padding-left: 40px;">{{ $rootIdx }}.{{ $subIdx }}.{{ $loop->iteration }}</td>
                                                 <td>
                                                     <i class="mdi mdi-subdirectory-arrow-right me-1 text-muted"></i>
@@ -176,7 +176,7 @@
                                                 @endif
                                                 <td style="width: 200px;">
                                                     <input type="number" step="0.01" class="form-control text-end font-size-15 fw-bold" 
-                                                           wire:model.live="budget_data.{{ $layer3->id }}"
+                                                           wire:model.live.debounce.500ms="budget_data.{{ $layer3->id }}"
                                                            placeholder="0.00">
                                                 </td>
                                             </tr>

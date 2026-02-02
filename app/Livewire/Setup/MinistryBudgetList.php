@@ -15,7 +15,9 @@ class MinistryBudgetList extends Component
 
     public function delete($id)
     {
-        MinistryBudgetMaster::findOrFail($id)->delete();
+        $master = MinistryBudgetMaster::findOrFail($id);
+        $master->allocations()->delete();
+        $master->delete();
         session()->flash('message', __('Ministry Budget deleted successfully.'));
     }
 
