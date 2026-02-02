@@ -197,7 +197,7 @@
                             <li>
                                 <a href="javascript: void(0);" class="has-arrow waves-effect">
                                     <i class="bx bx-file"></i>
-                                    <span key="t-utility">{{ __('Budgeting') }}</span>
+                                    <span key="t-utility">{{ __('Budget Demand') }}</span>
                                 </a>
                                 <ul class="sub-menu" aria-expanded="false">
                                     @can('create-budget-estimations')
