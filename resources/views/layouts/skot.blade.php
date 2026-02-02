@@ -298,7 +298,7 @@
                             <li>
                                 <a href="javascript: void(0);" class="has-arrow waves-effect">
                                     <i class="bx bx-cog"></i>
-                                    <span key="t-setup">{{ __('Setup') }}</span>
+                                    <span key="t-setup">{{ __('Settings') }}</span>
                                 </a>
                                 <ul class="sub-menu" aria-expanded="false">
                                     @can('view-fiscal-years')
@@ -512,7 +512,7 @@
                         alt="layout images">
                 </div>
                 <div class="form-check form-switch mb-5">
-                    <input class="form-check-input theme-choice" type="checkbox" id="dark-rtl-mode-switch">
+                    {{-- <input class="form-check-input theme-choice" type="checkbox" id="dark-rtl-mode-switch"> --}}
                     <label class="form-check-label" for="dark-rtl-mode-switch">Dark RTL Mode</label>
                 </div>
 

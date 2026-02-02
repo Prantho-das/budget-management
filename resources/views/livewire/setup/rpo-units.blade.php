@@ -75,7 +75,7 @@
                                                 </div>
 
                                                 <div class="col-md-12 mb-3">
-                                                    <label for="parent_id" class="form-label fw-bold">{{ __('Supervising Office (Parent)') }}</label>
+                                                    <label for="parent_id" class="form-label fw-bold">{{ __('Office Group') }}</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text"><i class="bx bx-git-merge"></i></span>
                                                         <select class="form-select" id="parent_id" wire:model="parent_id">
