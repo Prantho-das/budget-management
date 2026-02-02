@@ -230,7 +230,20 @@
                                     @endcan
                                 </ul>
                             </li>
+                            <li>
+                                <a href="javascript: void(0);" class="has-arrow waves-effect">
+                                    <i class="bx bx-share-alt"></i>
+                                    <span key="t-budget-distribution">{{ __('Budget Distribution') }}</span>
+                                </a>
+                                <ul class="sub-menu" aria-expanded="false">
+                                    <li><a href="{{ route('budget.distribution.entry') }}" wire:navigate
+                                            key="t-distribution-entry">{{ __('Entry') }}</a></li>
+                                    <li><a href="{{ route('budget.distribution.list') }}" wire:navigate
+                                            key="t-distribution-list">{{ __('List') }}</a></li>
+                                </ul>
+                            </li>
                         @endcan
+
                         @canany(['release-budget'])
                         <li>
                             <a href="javascript: void(0);" class="has-arrow waves-effect">
@@ -243,7 +256,8 @@
                                 <li><a href="{{ route('setup.ministry-budget-list') }}" wire:navigate
                                         key="t-ministry-entry">{{ __('Ministry Budget Entry List') }}</a></li>
                                 <li><a href="{{ route('budget.office-wise') }}" wire:navigate
-                                        key="t-office-wise">{{ __('Ministry Budget Preparation') }}</a></li>
+                        key="t-office-wise">{{ __('Ministry Budget Preparation') }}</a></li>
+
                             </ul>
                         </li>
                     @endcan
@@ -256,8 +270,31 @@
                             </li>
                         @endcan
 
-                        @canany(['view-fiscal-years', 'view-budget-types', 'view-users', 'view-offices',
-                            'view-economic-codes', 'view-roles', 'view-permissions', 'view-system-settings'])
+                        @canany(['view-users', 'view-roles', 'view-permissions'])
+                            <li>
+                                <a href="javascript: void(0);" class="has-arrow waves-effect">
+                                    <i class="bx bx-user-circle"></i>
+                                    <span key="t-user-management">{{ __('Access Control') }}</span>
+                                </a>
+                                <ul class="sub-menu" aria-expanded="false">
+                                    @can('view-users')
+                                        <li><a href="{{ route('setup.users') }}" wire:navigate
+                                                key="t-users">{{ __('Users') }}</a></li>
+                                    @endcan
+                                    @can('view-roles')
+                                        <li><a href="{{ route('setup.roles') }}" wire:navigate
+                                                key="t-roles">{{ __('Roles') }}</a></li>
+                                    @endcan
+                                    @can('view-permissions')
+                                        <li><a href="{{ route('setup.permissions') }}" wire:navigate
+                                                key="t-permissions">{{ __('Permissions') }}</a></li>
+                                    @endcan
+                                </ul>
+                            </li>
+                        @endcan
+
+                        @canany(['view-fiscal-years', 'view-budget-types', 'view-offices',
+                            'view-economic-codes', 'view-system-settings'])
                             <li>
                                 <a href="javascript: void(0);" class="has-arrow waves-effect">
                                     <i class="bx bx-cog"></i>
@@ -272,10 +309,6 @@
                                         <li><a href="{{ route('setup.budget-types') }}" wire:navigate
                                                 key="t-budget-types">{{ __('Budget Types') }}</a></li>
                                     @endcan
-                                    @can('view-users')
-                                        <li><a href="{{ route('setup.users') }}" wire:navigate
-                                                key="t-users">{{ __('Users') }}</a></li>
-                                    @endcan
                                     @can('view-offices')
                                         <li><a href="{{ route('setup.rpo-units') }}" wire:navigate
                                                 key="t-offices">{{ __('Offices') }}</a></li>
@@ -283,14 +316,6 @@
                                     @can('view-economic-codes')
                                         <li><a href="{{ route('setup.economic-codes') }}" wire:navigate
                                                 key="t-economic-codes">{{ __('Economic Codes') }}</a></li>
-                                    @endcan
-                                    @can('view-roles')
-                                        <li><a href="{{ route('setup.roles') }}" wire:navigate
-                                                key="t-roles">{{ __('Roles') }}</a></li>
-                                    @endcan
-                                    @can('view-permissions')
-                                        <li><a href="{{ route('setup.permissions') }}" wire:navigate
-                                                key="t-permissions">{{ __('Permissions') }}</a></li>
                                     @endcan
                                     @can('view-system-settings')
                                         <li><a href="{{ route('setup.system-settings') }}" wire:navigate

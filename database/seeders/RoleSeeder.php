@@ -22,6 +22,8 @@ class RoleSeeder extends Seeder
             'approve-budget',
             'release-budget',
             'reject-budget',
+            'view-budget-distribution',
+            'create-budget-distribution',
             'view-reports',
             'view-all-offices-data'
         ]);

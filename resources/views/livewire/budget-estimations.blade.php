@@ -439,10 +439,6 @@
         @endif
 
 
-</div>
-</div>
-</div>
-</div>
 @endif
 </div>
 @push('scripts')

@@ -61,6 +61,8 @@ class PermissionSeeder extends Seeder
             'approve-budget' => 'Budget Approval',
             'reject-budget' => 'Budget Approval',
             'release-budget' => 'Budget Approval',
+            'view-budget-distribution' => 'Budget Distribution',
+            'create-budget-distribution' => 'Budget Distribution',
 
             // Security management
             'view-roles' => 'Roles',
