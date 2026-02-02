@@ -31,7 +31,7 @@ Route::get('debug', function () {
 Route::get('/current-fiscal-year', function () {
     $numto = new NumberToBangla();
 
-     dump(123456);
+     dump($numto->bnNum(123456));
     // 1. Current fiscal year only
     dump(current_fiscal_year());
     // → "2025-26"
