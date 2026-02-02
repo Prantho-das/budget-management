@@ -46,7 +46,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-3 d-none">
                             <label for="budget-type" class="form-label font-weight-bold text-muted small text-uppercase">{{ __('Budget Type') }}</label>
                             <select id="budget-type" class="form-select shadow-sm border-primary" wire:model.live="budget_type_id">
                                 @foreach($budgetTypes as $type)
@@ -57,7 +57,7 @@
                         <div class="col-md-3">
                             <label for="parent-office" class="form-label font-weight-bold text-muted small text-uppercase">{{ __('Parent Office') }}</label>
                             <select id="parent-office" class="form-select shadow-sm border-primary" wire:model.live="parent_office_id">
-                                <option value="">{{ __('Select Parent Office') }}</option>
+                                <option value="">{{ __('Select Office Group') }}</option>
                                 @foreach($parentOffices as $office)
                                     <option value="{{ $office->id }}">{{ $office->code }} - {{ $office->name }}</option>
                                 @endforeach
@@ -74,7 +74,7 @@
                         <table class="table table-bordered table-hover align-middle mb-0">
                             <thead class="table-light sticky-top" style="z-index: 10;">
                                 <tr class="text-nowrap bg-primary text-white">
-                                    <th rowspan="2" style="min-width: 250px; left: 0; z-index: 11;" class="bg-primary sticky-left align-middle">{{ __('Sub Office / Field Unit') }}</th>
+                                    <th rowspan="2" style="min-width: 250px; left: 0; z-index: 11;" class="bg-primary sticky-left align-middle">{{ __('Office Name') }}</th>
                                     @foreach($economicCodes as $code)
                                         <th class="text-center" style="min-width: 280px;" title="{{ $code->name }}">
                                             <div class="font-size-13">{{ $code->code }}</div>
