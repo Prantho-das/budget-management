@@ -42,14 +42,35 @@
                             @error('fiscal_year_id') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">{{ __('Headquarters Unit') }}</label>
-                            <select class="form-select" wire:model.live="rpo_unit_id" {{ $master_id ? 'disabled' : '' }}>
-                                <option value="">{{ __('Select Unit') }}</option>
+                            <label class="form-label">{{ __('Headquarters / Zone') }}</label>
+                            <select class="form-select" wire:model.live="head_unit_id" {{ $master_id ? 'disabled' : '' }}>
+                                <option value="">{{ __('Select Headquarters') }}</option>
                                 @foreach($rpo_units as $unit)
                                     <option value="{{ $unit->id }}">{{ $unit->name }} ({{ bn_num($unit->code) }})</option>
                                 @endforeach
                             </select>
-                            @error('rpo_unit_id') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+                        <div class="col-md-3">
+                             <label class="form-label">{{ __('Office / Unit') }}</label>
+                             @if($head_unit_id)
+                                <select class="form-select" wire:model.live="rpo_unit_id" {{ $master_id ? 'disabled' : '' }}>
+                                    <option value="">{{ __('Select Office') }}</option>
+                                    @foreach($child_units as $child)
+                                        @php
+                                            $disabled = in_array($child->id, $submitted_unit_ids) && !$master_id; 
+                                        @endphp
+                                        <option value="{{ $child->id }}" {{ $disabled ? 'disabled' : '' }} class="{{ $disabled ? 'text-muted' : '' }}">
+                                            {{ $child->name }} 
+                                            {{ $disabled ? '(Submitted)' : '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                             @else
+                                <select class="form-select" disabled>
+                                    <option value="">{{ __('Select Headquarters First') }}</option>
+                                </select>
+                             @endif
+                             @error('rpo_unit_id') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                         <div class="col-md-6 d-flex align-items-end justify-content-between gap-2">
                             <div class="flex-grow-1">
