@@ -237,9 +237,9 @@
                                 </a>
                                 <ul class="sub-menu" aria-expanded="false">
                                     <li><a href="{{ route('budget.distribution.entry') }}" wire:navigate
-                                            key="t-distribution-entry">{{ __('Entry') }}</a></li>
+                                            key="t-distribution-entry">{{ __('Adjustment') }}</a></li>
                                     <li><a href="{{ route('budget.distribution.list') }}" wire:navigate
-                                            key="t-distribution-list">{{ __('List') }}</a></li>
+                                            key="t-distribution-list">{{ __('Approval') }}</a></li>
                                 </ul>
                             </li>
                         @endcan
