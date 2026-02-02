@@ -40,9 +40,20 @@
                     <div class="row mb-4">
                         <div class="col-md-3">
                             <label for="fy-select" class="form-label font-weight-bold text-muted small text-uppercase">{{ __('Fiscal Year') }}</label>
+                            @php
+$numto = new Rakibhstu\Banglanumber\NumberToBangla();
+
+                    
+                                    @endphp
                             <select id="fy-select" class="form-select shadow-sm border-primary" wire:model.live="fiscal_year_id">
                                 @foreach($fiscalYears as $fy)
-                                    <option value="{{ $fy->id }}">{{ $fy->name }}</option>
+                                                                    <option value="{{ $fy->id }}">
+
+                                                                        @php
+                                    $fiscial_year_explode = explode($fy->name);
+                                                                        @endphp
+                                                                        {{ $numto->bnNum($fiscial_year_explode[0]) }}-{{ $numto->bnNum($fiscial_year_explode[1]) }}
+                                                                    </option>
                                 @endforeach
                             </select>
                         </div>
@@ -139,7 +150,7 @@
                                             @endforeach
                                             <td class="text-end fw-bold text-primary font-size-14 bg-light shadow-sm">
                                                 @php
-                                                    $total = collect($distributions[$child->id] ?? [])->sum();
+        $total = collect($distributions[$child->id] ?? [])->sum();
                                                 @endphp
                                                 {{ number_format($total, 2) }}
                                             </td>
@@ -168,9 +179,9 @@
                                         @foreach($economicCodes as $code)
                                             <td class="text-end text-success p-2">
                                                 @php
-                                                    $colTotal = collect($distributions)->map(fn($officeData) => $officeData[$code->id] ?? 0)->sum();
-                                                    $ministryBudget = $ministryAllocations[$code->id] ?? 0;
-                                                    $isExceeded = $ministryBudget > 0 && $colTotal > $ministryBudget;
+        $colTotal = collect($distributions)->map(fn($officeData) => $officeData[$code->id] ?? 0)->sum();
+        $ministryBudget = $ministryAllocations[$code->id] ?? 0;
+        $isExceeded = $ministryBudget > 0 && $colTotal > $ministryBudget;
                                                 @endphp
                                                 <div class="font-size-13 {{ $isExceeded ? 'text-danger animate-pulse' : 'text-success' }}">
                                                     {{ number_format($colTotal, 2) }}
@@ -182,7 +193,7 @@
                                         @endforeach
                                         <td class="text-end text-success font-size-15 bg-light">
                                             @php
-                                                $grandTotal = collect($distributions)->map(fn($o) => collect($o)->sum())->sum();
+    $grandTotal = collect($distributions)->map(fn($o) => collect($o)->sum())->sum();
                                             @endphp
                                             {{ number_format($grandTotal, 2) }}
                                         </td>
