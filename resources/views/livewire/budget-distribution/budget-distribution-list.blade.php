@@ -60,7 +60,7 @@
                                         </td>
                                         <td class="text-center">
                                             <a href="{{ route('budget.distribution.entry', ['office_id' => $office['id']]) }}" class="btn btn-primary btn-sm btn-rounded waves-effect waves-light">
-                                                <i class="bx bx-edit-alt me-1"></i> {{ __('Entry') }}
+                                                <i class="bx bx-edit-alt me-1"></i> {{ __('Approval') }}
                                             </a>
                                         </td>
                                     </tr>
