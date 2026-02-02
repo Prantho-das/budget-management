@@ -141,7 +141,7 @@
                                                         <strong>{{ __('Fiscal Year') }}:</strong>
                                                         @if($fiscal_year_id)
                                                             @php $fy = \App\Models\FiscalYear::find($fiscal_year_id); @endphp
-                                                            {{ $fy->name ?? 'N/A' }}
+                                                            {{ $fy->bn_name ?? 'N/A' }}
                                                         @else
                                                             -
                                                         @endif
@@ -149,7 +149,7 @@
                                                     <div class="col-md-4">
                                                         <strong>{{ __('Month') }}:</strong>
                                                         @if($selectedMonth)
-                                                            {{ DateTime::createFromFormat('!m', $selectedMonth)->format('F') }}
+                                                            {{ __(DateTime::createFromFormat('!m', $selectedMonth)->format('F')) }}
                                                         @else
                                                             -
                                                         @endif
@@ -159,7 +159,7 @@
                                             <div class="col-md-4 text-md-end">
                                                 <div class="small">
                                                     <div><strong>{{ __('Entry By') }}:</strong> {{ auth()->user()->name }}</div>
-                                                    <div><strong>{{ __('Date') }}:</strong> {{ date('d-M-Y') }}</div>
+                                                    <div><strong>{{ __('Date') }}:</strong> {{ bn_num(date('d')) }}-{{ __(date('M')) }}-{{ bn_num(date('Y')) }}</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -196,7 +196,7 @@
                                                 <select class="form-select form-select-sm" id="fiscal_year_id" wire:model.live="fiscal_year_id" {{ $expense_id ? 'disabled' : '' }}>
                                                     <option value="">{{ __('Select Year') }}</option>
                                                     @foreach($fiscalYears as $year)
-                                                        <option value="{{ $year->id }}">{{ $year->name }}</option>
+                                                        <option value="{{ $year->id }}">{{ $year->bn_name }}</option>
                                                     @endforeach
                                                 </select>
                                                 @error('fiscal_year_id') <span class="text-danger small">{{ $message }}</span>@enderror
@@ -239,7 +239,7 @@
                                                             {{-- Serial Number --}}
                                                             <td class="text-center small">
                                                                 @if($code->parent_id != null)
-                                                                    {{ $serialNo++ }}
+                                                                    {{ bn_num($serialNo++) }}
                                                                 @else
                                                                     -
                                                                 @endif
@@ -248,7 +248,7 @@
                                                             {{-- Economic Code --}}
                                                             <td class="text-center">
                                                                 <span class="badge {{ $code->parent_id ? 'bg-info text-white' : 'bg-dark' }} font-monospace">
-                                                                    {{ $code->code }}
+                                                                    {{ bn_num($code->code) }}
                                                                 </span>
                                                             </td>
                                                             
@@ -274,7 +274,7 @@
                                                                 <td class="text-end">
                                                                     @php $existing = $existingEntries[$code->id] ?? 0; @endphp
                                                                     <span class="font-monospace small {{ $existing > 0 ? 'text-success fw-semibold' : 'text-muted' }}">
-                                                                        {{ number_format($existing, 2) }}
+                                                                        {{ bn_comma_format($existing, 2) }}
                                                                     </span>
                                                                 </td>
                                                                 
@@ -290,7 +290,7 @@
                                                                         ->sum('amount');
                                                                     @endphp
                                                                     <span class="font-monospace small text-primary">
-                                                                        {{ number_format($previousTotal, 2) }}
+                                                                        {{ bn_comma_format($previousTotal, 2) }}
                                                                     </span>
                                                                 </td>
                                                                 
@@ -328,7 +328,7 @@
                                                                     $totalNew += floatval($entry['amount'] ?? 0);
                                                                 }
                                                             @endphp
-                                                            {{ number_format($totalNew, 2) }}
+                                                            {{ bn_comma_format($totalNew, 2) }}
                                                         </td>
                                                         <td></td>
                                                     </tr>
@@ -392,7 +392,7 @@
                                         <select wire:model.live="filter_fiscal_year_id" class="form-select form-select-sm">
                                             <option value="">{{ __('All Fiscal Years') }}</option>
                                             @foreach($fiscalYears as $year)
-                                                <option value="{{ $year->id }}">{{ $year->name }}</option>
+                                                <option value="{{ $year->id }}">{{ $year->bn_name }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -422,20 +422,23 @@
                                     @forelse($groupedExpenses as $monthYear => $monthExpenses)
                                         <tr class="bg-light-subtle">
                                             <td colspan="4" class="fw-bold text-primary">
-                                                <i class="bx bx-calendar me-1"></i> {{ $monthYear }}
+                                                <i class="bx bx-calendar me-1"></i> {{ bn_num($monthYear) }}
                                             </td>
                                             <td class="text-end fw-bold text-primary">
-                                                {{ __('Total') }}: {{ number_format($monthlyTotals[$monthYear] ?? 0, 2) }}
+                                                {{ __('Total') }}: {{ bn_comma_format($monthlyTotals[$monthYear] ?? 0, 2) }}
                                             </td>
                                             <td></td>
                                         </tr>
                                         @foreach($monthExpenses as $expense)
                                             <tr>
-                                                <td class="ps-4">{{ Carbon\Carbon::make($expense->date)->format('d-M-Y') }}</td>
-                                                <td>{{ $expense->code }}</td>
-                                                <td>{{ $expense->economicCode->code ?? '-' }} - {{ $expense->economicCode->name ?? '' }}</td>
+                                                <td class="ps-4">
+                                                    @php $expDate = Carbon\Carbon::make($expense->date); @endphp
+                                                    {{ bn_num($expDate->format('d')) }}-{{ __($expDate->format('M')) }}-{{ bn_num($expDate->format('Y')) }}
+                                                </td>
+                                                <td>{{ bn_num($expense->code) }}</td>
+                                                <td>{{ bn_num($expense->economicCode->code ?? '-') }} - {{ $expense->economicCode->name ?? '' }}</td>
                                                 <td>{{ $expense->office->name ?? '-' }}</td>
-                                                <td class="text-end">{{ number_format($expense->amount, 2) }}</td>
+                                                <td class="text-end">{{ bn_comma_format($expense->amount, 2) }}</td>
                                                 <td class="text-center">
                                                     @if($expense->status === App\Models\Expense::STATUS_APPROVED)
                                                         <span class="badge bg-success" title="{{ __('Approved by') }}: {{ $expense->approvedBy->name ?? 'N/A' }} {{ __('at') }} {{ $expense->approved_at }}">

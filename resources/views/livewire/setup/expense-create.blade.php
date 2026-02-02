@@ -128,13 +128,13 @@
                                                     {{ $officeName ?? '-' }}
                                                 </div>
                                                 <div class="col-md-4">
-                                                    <strong>Fiscal Year:</strong>
-                                                    {{ $fiscalYearName ?? '-' }}
+                                                    <strong>{{ __('Fiscal Year') }}:</strong>
+                                                    {{ bn_num($fiscalYearName) ?? '-' }}
                                                 </div>
                                                 <div class="col-md-4">
-                                                    <strong>Month:</strong>
+                                                    <strong>{{ __('Month') }}:</strong>
                                                     @if($selectedMonth)
-                                                        {{ DateTime::createFromFormat('!m', $selectedMonth)->format('F') }}
+                                                        {{ __(DateTime::createFromFormat('!m', $selectedMonth)->format('F')) }}
                                                     @else
                                                         -
                                                     @endif
@@ -143,8 +143,8 @@
                                         </div>
                                         <div class="col-md-4 text-md-end">
                                             <div class="small">
-                                                <div><strong>Entry By:</strong> {{ auth()->user()->name }}</div>
-                                                <div><strong>Date:</strong> {{ date('d-M-Y') }}</div>
+                                                <div><strong>{{ __('Entry By') }}:</strong> {{ auth()->user()->name }}</div>
+                                                <div><strong>{{ __('Date') }}:</strong> {{ bn_num(date('d')) }}-{{ __(date('M')) }}-{{ bn_num(date('Y')) }}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -181,7 +181,7 @@
                                             <select class="form-select form-select-sm" id="fiscal_year_id" wire:model.live="fiscal_year_id">
                                                 <option value="">Select Year</option>
                                                 @foreach($fiscalYears as $year)
-                                                    <option value="{{ $year->id }}">{{ $year->name }}</option>
+                                                    <option value="{{ $year->id }}">{{ $year->bn_name }}</option>
                                                 @endforeach
                                             </select>
                                             @error('fiscal_year_id') <span class="text-danger small">{{ $message }}</span>@enderror
@@ -235,7 +235,7 @@
                                                                 $hasChildren = collect($economicCodes)->where('parent_id', $code->id)->count() > 0;
                                                             @endphp
                                                             @if(!$hasChildren)
-                                                                {{ $serialNo++ }}
+                                                                {{ bn_num($serialNo++) }}
                                                             @else
                                                                 -
                                                             @endif
@@ -244,7 +244,7 @@
                                                         {{-- Economic Code --}}
                                                         <td class="text-center">
                                                             <span class="badge {{ $code->parent_id ? 'bg-info text-white' : 'bg-dark' }} font-monospace">
-                                                                {{ $code->code }}
+                                                                {{ bn_num($code->code) }}
                                                             </span>
                                                         </td>
                                                         
@@ -278,7 +278,7 @@
                                                                      $budgetAllocation = $budgetAllocations[$code->id] ?? 0;
                                                                 @endphp
                                                                 <span class="font-monospace small {{ $budgetAllocation > 0 ? 'text-info fw-semibold' : 'text-muted' }}">
-                                                                    {{ number_format($budgetAllocation, 2) }}
+                                                                    {{ bn_comma_format($budgetAllocation, 2) }}
                                                                 </span>
                                                             </td>
                                                             
@@ -288,7 +288,7 @@
                                                                     $previousTotal = $previousExpenses[$code->id] ?? 0;
                                                                 @endphp
                                                                 <span class="font-monospace small text-primary">
-                                                                    {{ number_format($previousTotal, 2) }}
+                                                                    {{ bn_comma_format($previousTotal, 2) }}
                                                                 </span>
                                                             </td>
                                                             
@@ -308,7 +308,7 @@
                                                                     $totalExpenditure = $previousTotal + $thisMonth;
                                                                 @endphp
                                                                 <span class="font-monospace small text-success fw-semibold">
-                                                                    {{ number_format($totalExpenditure, 2) }}
+                                                                    {{ bn_comma_format($totalExpenditure, 2) }}
                                                                 </span>
                                                             </td>
                                                             
@@ -318,7 +318,7 @@
                                                                     $balance = $budgetAllocation - $totalExpenditure;
                                                                 @endphp
                                                                 <span class="font-monospace small {{ $balance < 0 ? 'text-danger' : ($balance > 0 ? 'text-success' : 'text-muted') }} fw-semibold">
-                                                                    {{ number_format($balance, 2) }}
+                                                                    {{ bn_comma_format($balance, 2) }}
                                                                 </span>
                                                             </td>
                                                             
@@ -343,12 +343,12 @@
                                                     
                                                     {{-- Total Budget --}}
                                                     <td class="text-end font-monospace text-info">
-                                                        {{ number_format($totalBudget, 2) }}
+                                                        {{ bn_comma_format($totalBudget, 2) }}
                                                     </td>
                                                     
                                                     {{-- Total Previous --}}
                                                     <td class="text-end font-monospace text-primary">
-                                                        {{ number_format($totalPrevious, 2) }}
+                                                        {{ bn_comma_format($totalPrevious, 2) }}
                                                     </td>
                                                     
                                                     {{-- Total This Month (New Entries) --}}
@@ -359,7 +359,7 @@
                                                                 $totalThisMonth += floatval($entry['amount'] ?? 0);
                                                             }
                                                         @endphp
-                                                        {{ number_format($totalThisMonth, 2) }}
+                                                        {{ bn_comma_format($totalThisMonth, 2) }}
                                                     </td>
                                                     
                                                     {{-- Total Expenditure --}}
@@ -367,7 +367,7 @@
                                                         @php
                                                             $totalExpenditure = $totalPrevious + $totalThisMonth;
                                                         @endphp
-                                                        {{ number_format($totalExpenditure, 2) }}
+                                                        {{ bn_comma_format($totalExpenditure, 2) }}
                                                     </td>
                                                     
                                                     {{-- Total Balance --}}
@@ -376,7 +376,7 @@
                                                             $totalBalance = $totalBudget - $totalExpenditure;
                                                         @endphp
                                                         <span class="{{ $totalBalance < 0 ? 'text-danger' : 'text-success' }}">
-                                                            {{ number_format($totalBalance, 2) }}
+                                                            {{ bn_comma_format($totalBalance, 2) }}
                                                         </span>
                                                     </td>
                                                     

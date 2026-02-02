@@ -20,14 +20,14 @@
                 <div class="card-body">
                     <div class="row mb-4 align-items-center">
                         <div class="col-md-6">
-                            <h4 class="card-title">{{ __('Parent Offices Budget Demand') }} ({{ $selectedFy?->name }})</h4>
+                            <h4 class="card-title">{{ __('Parent Offices Budget Demand') }} ({{ bn_num($selectedFy?->name) }})</h4>
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label for="fy-select">{{ __('Filter by Fiscal Year') }}</label>
                                 <select id="fy-select" class="form-select" wire:model.live="fiscal_year_id">
                                     @foreach($fiscalYears as $fy)
-                                        <option value="{{ $fy->id }}">{{ $fy->name }}</option>
+                                        <option value="{{ $fy->id }}">{{ bn_num($fy->name) }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -48,15 +48,15 @@
                             <tbody>
                                 @forelse($offices as $office)
                                     <tr>
-                                        <td>{{ $office['code'] }}</td>
+                                        <td>{{ bn_num($office['code']) }}</td>
                                         <td>{{ $office['name'] }}</td>
                                         <td class="text-center">
                                             <span class="badge bg-soft-info text-info font-size-12">
-                                                {{ $office['sub_office_count'] }}
+                                                {{ bn_num($office['sub_office_count']) }}
                                             </span>
                                         </td>
                                         <td class="text-end text-primary font-weight-bold">
-                                            {{ number_format($office['total_demand'], 2) }}
+                                            {{ bn_comma_format($office['total_demand'], 2) }}
                                         </td>
                                         <td class="text-center">
                                             <a href="{{ route('budget.distribution.entry', ['office_id' => $office['id']]) }}" wire:navigate class="btn btn-primary btn-sm btn-rounded waves-effect waves-light">

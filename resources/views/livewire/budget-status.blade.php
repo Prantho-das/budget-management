@@ -22,7 +22,7 @@
                             <label class="form-label fw-semibold">{{ __('Fiscal Year') }}</label>
                             <select wire:model.live="fiscal_year_id" class="form-select">
                                 @foreach ($fiscalYears as $fy)
-                                    <option value="{{ $fy->id }}">{{ $fy->name }}</option>
+                                    <option value="{{ $fy->id }}">{{ $fy->bn_name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -63,15 +63,14 @@
                             <tbody>
                                 @forelse($estimations as $est)
                                     <tr>
-                                        <td class="text-center">
                                             <span
-                                                class="badge bg-soft-primary text-primary">{{ $est->economicCode->code }}</span>
+                                                class="badge bg-soft-primary text-primary">{{ bn_num($est->economicCode->code) }}</span>
                                             <div class="small text-muted mt-1">{{ $est->economicCode->name }}</div>
                                         </td>
                                         <td>{{ $est->office->name }}</td>
-                                        <td class="text-end fw-bold">{{ number_format($est->amount_demand, 0) }}</td>
+                                        <td class="text-end fw-bold">{{ bn_comma_format($est->amount_demand, 0) }}</td>
                                         <td class="text-end text-success">
-                                            {{ number_format($est->amount_approved ?: 0, 0) }}</td>
+                                            {{ bn_comma_format($est->amount_approved ?: 0, 0) }}</td>
                                         <td class="text-center">
                                             @if ($est->status === 'approved')
                                                 <span
@@ -171,7 +170,7 @@
                                             </td>
                                             <td class="text-end">
                                                 @if (isset($log['amount_demand']))
-                                                    {{ number_format($log['amount_demand'], 0) }}
+                                                    {{ bn_comma_format($log['amount_demand'], 0) }}
                                                 @else
                                                     <span class="text-muted italic">--</span>
                                                 @endif
@@ -179,10 +178,10 @@
                                             <td class="text-end">
                                                 @if (isset($log['amount_approved']))
                                                     <strong class="text-success">
-                                                        {{ number_format($log['amount_approved'], 0) }}</strong>
+                                                        {{ bn_comma_format($log['amount_approved'], 0) }}</strong>
                                                 @elseif(isset($log['amount_demand']))
                                                     <strong class="text-success">
-                                                        {{ number_format($log['amount_demand'], 0) }}</strong>
+                                                        {{ bn_comma_format($log['amount_demand'], 0) }}</strong>
                                                 @else
                                                     <span class="text-muted italic">--</span>
                                                 @endif

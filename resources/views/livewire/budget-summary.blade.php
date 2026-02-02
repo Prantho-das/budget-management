@@ -19,7 +19,7 @@
             <label class="form-label fw-semibold">{{ __('Fiscal Year') }}</label>
             <select wire:model.live="fiscal_year_id" class="form-select">
                 @foreach($fiscalYears as $fy)
-                    <option value="{{ $fy->id }}">{{ $fy->name }}</option>
+                    <option value="{{ $fy->id }}">{{ $fy->bn_name }}</option>
                 @endforeach
             </select>
         </div>
@@ -44,7 +44,7 @@
                         <div class="flex-grow-1">
                             <span class="text-muted mb-3 lh-1 d-block text-truncate">{{ __('Draft Budgets') }}</span>
                             <h4 class="mb-3">
-                                <span class="counter-value" data-target="{{ $totalDraft }}">{{ $totalDraft }}</span>
+                                <span class="counter-value" data-target="{{ $totalDraft }}">{{ bn_num($totalDraft) }}</span>
                             </h4>
                         </div>
                         <div class="flex-shrink-0 text-end dash-widget">
@@ -66,7 +66,7 @@
                         <div class="flex-grow-1">
                             <span class="text-muted mb-3 lh-1 d-block text-truncate">{{ __('Submitted') }}</span>
                             <h4 class="mb-3">
-                                <span class="counter-value" data-target="{{ $totalSubmitted }}">{{ $totalSubmitted }}</span>
+                                <span class="counter-value" data-target="{{ $totalSubmitted }}">{{ bn_num($totalSubmitted) }}</span>
                             </h4>
                         </div>
                         <div class="flex-shrink-0 text-end dash-widget">
@@ -88,7 +88,7 @@
                         <div class="flex-grow-1">
                             <span class="text-muted mb-3 lh-1 d-block text-truncate">{{ __('Released') }}</span>
                             <h4 class="mb-3">
-                                <span class="counter-value" data-target="{{ $totalReleased }}">{{ $totalReleased }}</span>
+                                <span class="counter-value" data-target="{{ $totalReleased }}">{{ bn_num($totalReleased) }}</span>
                             </h4>
                         </div>
                         <div class="flex-shrink-0 text-end dash-widget">
@@ -110,7 +110,7 @@
                         <div class="flex-grow-1">
                             <span class="text-muted mb-3 lh-1 d-block text-truncate">{{ __('Rejected') }}</span>
                             <h4 class="mb-3">
-                                <span class="counter-value" data-target="{{ $totalRejected }}">{{ $totalRejected }}</span>
+                                <span class="counter-value" data-target="{{ $totalRejected }}">{{ bn_num($totalRejected) }}</span>
                             </h4>
                         </div>
                         <div class="flex-shrink-0 text-end dash-widget">
@@ -133,7 +133,7 @@
                 <div class="card-body">
                     <h5 class="card-title mb-4">{{ __('Total Allocated') }}</h5>
                     <div class="text-center">
-                        <h2 class="text-primary mb-0">{{ number_format($totalAllocated, 2) }}</h2>
+                        <h2 class="text-primary mb-0">{{ bn_comma_format($totalAllocated, 2) }}</h2>
                         <p class="text-muted">{{ __('Total Budget Released') }}</p>
                     </div>
                 </div>
@@ -145,7 +145,7 @@
                 <div class="card-body">
                     <h5 class="card-title mb-4">{{ __('Total Expenses') }}</h5>
                     <div class="text-center">
-                        <h2 class="text-warning mb-0">{{ number_format($totalExpenses, 2) }}</h2>
+                        <h2 class="text-warning mb-0">{{ bn_comma_format($totalExpenses, 2) }}</h2>
                         <p class="text-muted">{{ __('Total Amount Spent') }}</p>
                     </div>
                 </div>
@@ -157,7 +157,7 @@
                 <div class="card-body">
                     <h5 class="card-title mb-4">{{ __('Available Balance') }}</h5>
                     <div class="text-center">
-                        <h2 class="text-success mb-0">{{ number_format($availableBalance, 2) }}</h2>
+                        <h2 class="text-success mb-0">{{ bn_comma_format($availableBalance, 2) }}</h2>
                         <p class="text-muted">{{ __('Remaining Budget') }}</p>
                     </div>
                 </div>
@@ -186,17 +186,17 @@
                             <tbody>
                                 @forelse($budgetByCode as $item)
                                     <tr>
-                                        <td><span class="badge bg-primary">{{ $item['code'] }}</span></td>
+                                        <td><span class="badge bg-primary">{{ bn_num($item['code']) }}</span></td>
                                         <td>{{ $item['name'] }}</td>
-                                        <td class="text-end fw-semibold">{{ number_format($item['allocated'], 2) }}</td>
-                                        <td class="text-end text-warning">{{ number_format($item['spent'], 2) }}</td>
-                                        <td class="text-end text-success">{{ number_format($item['balance'], 2) }}</td>
+                                        <td class="text-end fw-semibold">{{ bn_comma_format($item['allocated'], 2) }}</td>
+                                        <td class="text-end text-warning">{{ bn_comma_format($item['spent'], 2) }}</td>
+                                        <td class="text-end text-success">{{ bn_comma_format($item['balance'], 2) }}</td>
                                         <td class="text-center">
                                             <div class="progress" style="height: 20px;">
                                                 <div class="progress-bar {{ $item['utilization'] > 90 ? 'bg-danger' : ($item['utilization'] > 70 ? 'bg-warning' : 'bg-success') }}" 
                                                      role="progressbar" 
                                                      style="width: {{ min($item['utilization'], 100) }}%">
-                                                    {{ number_format($item['utilization'], 1) }}%
+                                                    {{ bn_num(number_format($item['utilization'], 1)) }}%
                                                 </div>
                                             </div>
                                         </td>

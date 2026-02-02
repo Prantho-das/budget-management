@@ -156,7 +156,7 @@
                                 <label class="form-label">{{ __('Fiscal Year') }}</label>
                                 <select wire:model.lazy="fiscal_year_id" class="form-select">
                                     @foreach ($fiscalYears as $fy)
-                                        <option value="{{ $fy->id }}">{{ $fy->name }}</option>
+                                        <option value="{{ $fy->id }}">{{ $fy->bn_name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -177,7 +177,7 @@
                                 <select wire:model.lazy="economic_code_id" class="form-select custom-select2">
                                     <option value="">{{ __('All Economic Codes (Summary)') }}</option>
                                     @foreach ($economicCodes as $ec)
-                                        <option value="{{ $ec->id }}">{{ $ec->code }} - {{ $ec->name }}
+                                        <option value="{{ $ec->id }}">{{ bn_num($ec->code) }} - {{ $ec->name }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -228,15 +228,15 @@
                                         $parts = explode('-', $fyName);
                                         $startYearNum = (int)$parts[0];
                                         
-                                        $h1 = $fullPrevYears[0]->name ?? 'N/A';
-                                        $h2 = $fullPrevYears[1]->name ?? 'N/A';
-                                        $h3_part = $fullPrevYears[1]->name ?? 'N/A';
-                                        $h4_part = $selectedFy->name;
+                                        $h1 = bn_num($fullPrevYears[0]->name ?? 'N/A');
+                                        $h2 = bn_num($fullPrevYears[1]->name ?? 'N/A');
+                                        $h3_part = bn_num($fullPrevYears[1]->name ?? 'N/A');
+                                        $h4_part = bn_num($selectedFy->name);
                                         
-                                        $budget_fy = $selectedFy->name;
-                                        $est_fy = $startYearNum + 1 . '-' . substr($startYearNum + 2, -2);
-                                        $proj1_fy = $startYearNum + 2 . '-' . substr($startYearNum + 3, -2);
-                                        $proj2_fy = $startYearNum + 3 . '-' . substr($startYearNum + 4, -2);
+                                        $budget_fy = bn_num($selectedFy->name);
+                                        $est_fy = bn_num($startYearNum + 1) . '-' . bn_num(substr($startYearNum + 2, -2));
+                                        $proj1_fy = bn_num($startYearNum + 2) . '-' . bn_num(substr($startYearNum + 3, -2));
+                                        $proj2_fy = bn_num($startYearNum + 3) . '-' . bn_num(substr($startYearNum + 4, -2));
                                     @endphp
                                     <tr class="table-primary text-center">
                                         <th rowspan="2">অফিসের নাম</th>
@@ -260,18 +260,18 @@
                                         <th>{{ $proj2_fy }}</th>
                                     </tr>
                                     <tr>
-                                        <th>1</th>
-                                        <th>2</th>
-                                        <th>3</th>
-                                        <th>4</th>
-                                        <th>5</th>
-                                        <th>6</th>
-                                        <th>7</th>
-                                        <th>8</th>
-                                        <th>9</th>
-                                        <th>10</th>
-                                        <th>11</th>
-                                        <th>12</th>
+                                        <th>{{ bn_num(1) }}</th>
+                                        <th>{{ bn_num(2) }}</th>
+                                        <th>{{ bn_num(3) }}</th>
+                                        <th>{{ bn_num(4) }}</th>
+                                        <th>{{ bn_num(5) }}</th>
+                                        <th>{{ bn_num(6) }}</th>
+                                        <th>{{ bn_num(7) }}</th>
+                                        <th>{{ bn_num(8) }}</th>
+                                        <th>{{ bn_num(9) }}</th>
+                                        <th>{{ bn_num(10) }}</th>
+                                        <th>{{ bn_num(11) }}</th>
+                                        <th>{{ bn_num(12) }}</th>
                                         {{-- <th>13</th> --}}
                                     </tr>
                                 </thead>
@@ -296,19 +296,19 @@
                                                     {{ $office->name }}
                                                 @endif
                                             </td>
-                                            <td class="text-center">{{ $type === 'office' ? $office->code : '-' }}</td>
+                                            <td class="text-center">{{ $type === 'office' ? bn_num($office->code) : '-' }}</td>
 
                                             {{-- Actual Expenditure (3, 4, 5, 6) --}}
-                                            <td class="text-end">{{ $row['history_full_1'] > 0 ? number_format($row['history_full_1'], 0) : '-' }}</td>
-                                            <td class="text-end">{{ $row['history_full_2'] > 0 ? number_format($row['history_full_2'], 0) : '-' }}</td>
-                                            <td class="text-end">{{ $row['history_part_1'] > 0 ? number_format($row['history_part_1'], 0) : '-' }}</td>
-                                            <td class="text-end text-primary fw-bold">{{ $row['history_part_2'] > 0 ? number_format($row['history_part_2'], 0) : '-' }}</td>
+                                            <td class="text-end">{{ $row['history_full_1'] > 0 ? bn_comma_format($row['history_full_1'], 0) : '-' }}</td>
+                                            <td class="text-end">{{ $row['history_full_2'] > 0 ? bn_comma_format($row['history_full_2'], 0) : '-' }}</td>
+                                            <td class="text-end">{{ $row['history_part_1'] > 0 ? bn_comma_format($row['history_part_1'], 0) : '-' }}</td>
+                                            <td class="text-end text-primary fw-bold">{{ $row['history_part_2'] > 0 ? bn_comma_format($row['history_part_2'], 0) : '-' }}</td>
 
                                             {{-- Budget (Demand) (7) --}}
-                                            <td class="text-end">{{ $row['demand'] > 0 ? number_format($row['demand'], 0) : '-' }}</td>
+                                            <td class="text-end">{{ $row['demand'] > 0 ? bn_comma_format($row['demand'], 0) : '-' }}</td>
 
                                             {{-- Revised (8) --}}
-                                            <td class="text-end">{{ $row['revised'] > 0 ? number_format($row['revised'], 0) : '-' }}</td>
+                                            <td class="text-end">{{ $row['revised'] > 0 ? bn_comma_format($row['revised'], 0) : '-' }}</td>
 
                                             {{-- Estimation (9) --}}
                                             <td class="text-end">
@@ -319,7 +319,7 @@
                                                            style="min-width: 110px; padding: 8px;"
                                                            {{ $isParent ? 'readonly' : '' }}>
                                                 @else
-                                                    <span class="fw-bold">{{ number_format($row['projection_1'] ?: $row['estimation_suggestion'], 0) }}</span>
+                                                    <span class="fw-bold">{{ bn_comma_format($row['projection_1'] ?: $row['estimation_suggestion'], 0) }}</span>
                                                 @endif
                                             </td>
 
@@ -332,7 +332,7 @@
                                                            style="min-width: 110px; padding: 8px;"
                                                            {{ $isParent ? 'readonly' : '' }}>
                                                 @else
-                                                    <span class="fw-bold">{{ number_format($row['projection_2'] ?: $row['projection1_suggestion'], 0) }}</span>
+                                                    <span class="fw-bold">{{ bn_comma_format($row['projection_2'] ?: $row['projection1_suggestion'], 0) }}</span>
                                                 @endif
                                             </td>
 
@@ -351,7 +351,7 @@
                                                              // Add current value back to remaining to allow editing
                                                              $currentVal = $row['projection_3'] ?: 0;
                                                              $maxLimit = $remaining + $currentVal;
-                                                             $limitWarning = "Max: " . number_format($remaining + $currentVal);
+                                                             $limitWarning = "Max: " . bn_comma_format($remaining + $currentVal, 0);
                                                         }
                                                     @endphp
                                                     <input type="number" class="form-control text-end {{ $isParent ? 'fw-bold' : '' }} font-size-14" 
@@ -365,7 +365,7 @@
                                                            @endif
                                                            {{ $isParent ? 'readonly' : '' }}>
                                                 @else
-                                                    <span class="fw-bold">{{ number_format($row['projection_3'] ?: $row['projection2_suggestion'], 0) }}</span>
+                                                    <span class="fw-bold">{{ bn_comma_format($row['projection_3'] ?: $row['projection2_suggestion'], 0) }}</span>
                                                 @endif
                                             </td>
 
@@ -377,15 +377,15 @@
                                 <tfoot class="table-light fw-bold">
                                     <tr class="text-end">
                                         <td colspan="2" class="text-center">{{ __('Grand Total') }}</td>
-                                        <td>{{ $totals['h1'] > 0 ? number_format($totals['h1'], 0) : '-' }}</td>
-                                        <td>{{ $totals['h2'] > 0 ? number_format($totals['h2'], 0) : '-' }}</td>
-                                        <td>{{ $totals['hp1'] > 0 ? number_format($totals['hp1'], 0) : '-' }}</td>
-                                        <td>{{ $totals['hp2'] > 0 ? number_format($totals['hp2'], 0) : '-' }}</td>
-                                        <td>{{ $totals['demand'] > 0 ? number_format($totals['demand'], 0) : '-' }}</td>
-                                        <td>{{ $totals['revised'] > 0 ? number_format($totals['revised'], 0) : '-' }}</td>
-                                        <td>{{ $totals['p1'] > 0 ? number_format($totals['p1'], 0) : '-' }}</td>
-                                        <td>{{ $totals['p2'] > 0 ? number_format($totals['p2'], 0) : '-' }}</td>
-                                        <td>{{ $totals['p3'] > 0 ? number_format($totals['p3'], 0) : '-' }}</td>
+                                        <td>{{ $totals['h1'] > 0 ? bn_comma_format($totals['h1'], 0) : '-' }}</td>
+                                        <td>{{ $totals['h2'] > 0 ? bn_comma_format($totals['h2'], 0) : '-' }}</td>
+                                        <td>{{ $totals['hp1'] > 0 ? bn_comma_format($totals['hp1'], 0) : '-' }}</td>
+                                        <td>{{ $totals['hp2'] > 0 ? bn_comma_format($totals['hp2'], 0) : '-' }}</td>
+                                        <td>{{ $totals['demand'] > 0 ? bn_comma_format($totals['demand'], 0) : '-' }}</td>
+                                        <td>{{ $totals['revised'] > 0 ? bn_comma_format($totals['revised'], 0) : '-' }}</td>
+                                        <td>{{ $totals['p1'] > 0 ? bn_comma_format($totals['p1'], 0) : '-' }}</td>
+                                        <td>{{ $totals['p2'] > 0 ? bn_comma_format($totals['p2'], 0) : '-' }}</td>
+                                        <td>{{ $totals['p3'] > 0 ? bn_comma_format($totals['p3'], 0) : '-' }}</td>
                                         <td>-</td>
                                     </tr>
                                 </tfoot>
