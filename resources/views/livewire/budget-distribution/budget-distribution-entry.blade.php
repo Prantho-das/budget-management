@@ -56,7 +56,7 @@ $numto = new Rakibhstu\Banglanumber\NumberToBangla();
                                                                         @php
     $fiscial_year_explode = explode("-",$fy->name);
                                                                         @endphp
-                                                                        {{ dd($fiscial_year_explode) }}
+                                                                      
                                                                         {{ $numto->bnNum($fiscial_year_explode[0]) }}-{{ $numto->bnNum($fiscial_year_explode[1]) }}
                                                                     </option>
                                 @endforeach
