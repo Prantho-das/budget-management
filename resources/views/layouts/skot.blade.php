@@ -236,10 +236,14 @@
                                     <span key="t-budget-distribution">{{ __('Budget Distribution') }}</span>
                                 </a>
                                 <ul class="sub-menu" aria-expanded="false">
-                                    <li><a href="{{ route('budget.distribution.entry') }}" wire:navigate
-                                            key="t-distribution-entry">{{ __('Adjustment') }}</a></li>
-                                    <li><a href="{{ route('budget.distribution.list') }}" wire:navigate
-                                            key="t-distribution-list">{{ __('Approval') }}</a></li>
+                                    @can('budget-distribution-single')
+                                    <li>
+                                            <a href="{{ route('budget.distribution.entry') }}" wire:navigate
+                                                key="t-distribution-entry">{{ __('Adjustment Create') }}</a></li>
+                                                                                       @endcan
+                                                    <li><a href="{{ route('budget.distribution.list') }}" wire:navigate
+                                                    key="t-distribution-list">{{ __('Adjustment') }}</a></li>
+                                      
                                 </ul>
                             </li>
                         @endcan
@@ -293,8 +297,13 @@
                             </li>
                         @endcan
 
-                        @canany(['view-fiscal-years', 'view-budget-types', 'view-offices',
-                            'view-economic-codes', 'view-system-settings'])
+                        @canany([
+        'view-fiscal-years',
+        'view-budget-types',
+        'view-offices',
+        'view-economic-codes',
+        'view-system-settings'
+    ])
                             <li>
                                 <a href="javascript: void(0);" class="has-arrow waves-effect">
                                     <i class="bx bx-cog"></i>
