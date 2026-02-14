@@ -15,7 +15,7 @@ return new class extends Migration
         \Illuminate\Support\Facades\DB::table('ministry_allocations')->truncate();
 
         Schema::table('ministry_allocations', function (Blueprint $table) {
-            $table->foreignId('ministry_budget_master_id')->after('id')->constrained('ministry_budget_masters')->onDelete('cascade');
+            $table->foreignId('ministry_budget_master_id');
             
             // Drop redundant columns
             $table->dropForeign(['fiscal_year_id']);
@@ -34,7 +34,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('ministry_allocations', function (Blueprint $table) {
-            $table->dropForeign(['ministry_budget_master_id']);
             $table->dropColumn('ministry_budget_master_id');
             
             $table->foreignId('fiscal_year_id')->nullable()->constrained('fiscal_years')->onDelete('cascade');
