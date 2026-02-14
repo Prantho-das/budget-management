@@ -43,6 +43,8 @@ class Expenses extends Component
 
     public $filter_month;
 
+    public $filter_rpo_unit_id;
+
     public $totalReleased = 0;
 
     public $availableBalance = 0;
@@ -51,11 +53,14 @@ class Expenses extends Component
 
     public function mount()
     {
-        $activeFyId = get_active_fiscal_year_id();
-        $this->filter_fiscal_year_id = $activeFyId;
-        $this->fiscal_year_id = $activeFyId;
-        $this->selectedMonth = date('m'); // Default to current month number
+        // Initial setup
+        $this->selectedMonth = date('m'); // Default input month to current month
         $this->rpo_unit_id = auth()->user()->rpo_unit_id; // Set default RPO unit for new entries
+
+        // If user cannot view all offices, lock the filter to their unit
+        if (! auth()->user()->can('view-all-offices-data')) {
+            $this->filter_rpo_unit_id = auth()->user()->rpo_unit_id;
+        }
 
         $defaultBudgetType = BudgetType::where('status', true)->orderBy('order_priority')->first();
         $this->budget_type_id = $defaultBudgetType ? $defaultBudgetType->id : '';
@@ -73,9 +78,34 @@ class Expenses extends Component
         $this->resetPage();
     }
 
+    public function updatedFilterRpoUnitId()
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
         abort_if(auth()->user()->cannot('view-expenses'), 403);
+
+        // Enforce defaults if not set (fixing "Not Selected" issue)
+        if (is_null($this->filter_fiscal_year_id)) {
+            $activeFyId = get_active_fiscal_year_id();
+            if ($activeFyId) {
+                $this->filter_fiscal_year_id = $activeFyId;
+            } else {
+                $latestFy = FiscalYear::orderBy('start_date', 'desc')->first();
+                if ($latestFy) {
+                    $this->filter_fiscal_year_id = $latestFy->id;
+                }
+            }
+        }
+
+        // Ensure month is set to previous month if not set
+        if (is_null($this->filter_month)) {
+            // Logic: Default to previous month
+            $this->filter_month = date('m', strtotime('last month'));
+        }
+
         // Fetch Hierarchical Economic Codes
         $allCodes = EconomicCode::with(['children', 'parent'])->get();
         $orderedCodes = [];
@@ -95,6 +125,9 @@ class Expenses extends Component
             ->when($this->filter_month, function ($query) {
                 $query->whereMonth('date', $this->filter_month);
             })
+            ->when($this->filter_rpo_unit_id, function ($query) {
+                $query->where('rpo_unit_id', $this->filter_rpo_unit_id);
+            })
             ->when(! auth()->user()->can('view-all-offices-data'), function ($query) {
                 $query->where('rpo_unit_id', auth()->user()->rpo_unit_id);
             })
@@ -108,6 +141,9 @@ class Expenses extends Component
         $monthlyTotals = Expense::selectRaw('DATE_FORMAT(date, "%M %Y") as month_year, SUM(amount) as total')
             ->when($this->filter_fiscal_year_id, function ($query) {
                 $query->where('fiscal_year_id', $this->filter_fiscal_year_id);
+            })
+            ->when($this->filter_rpo_unit_id, function ($query) {
+                $query->where('rpo_unit_id', $this->filter_rpo_unit_id);
             })
             ->when(! auth()->user()->can('view-all-offices-data'), function ($query) {
                 $query->where('rpo_unit_id', auth()->user()->rpo_unit_id);
@@ -145,7 +181,7 @@ class Expenses extends Component
                 ->whereMonth('date', $this->selectedMonth)
                 ->get()
                 ->groupBy('economic_code_id')
-                ->map(fn($group) => $group->sum('amount'))
+                ->map(fn ($group) => $group->sum('amount'))
                 ->toArray();
         } else {
             $this->existingEntries = [];
@@ -165,7 +201,7 @@ class Expenses extends Component
                 'economic_code_id' => $this->economic_code_id,
                 'rpo_unit_id' => $this->rpo_unit_id,
                 'fiscal_year_id' => $this->fiscal_year_id,
-            ])->when($this->expense_id, fn($q) => $q->where('id', '!=', $this->expense_id))
+            ])->when($this->expense_id, fn ($q) => $q->where('id', '!=', $this->expense_id))
                 ->sum('amount');
 
             $this->totalReleased = $released;
@@ -266,10 +302,10 @@ class Expenses extends Component
                 }
             }
 
-            $expenseDate = $year . '-' . $this->selectedMonth . '-01';
+            $expenseDate = $year.'-'.$this->selectedMonth.'-01';
 
             // Auto-generate Batch/Voucher Code
-            $autoCode = 'EXP-' . date('Ymd') . '-' . strtoupper(\Illuminate\Support\Str::random(6));
+            $autoCode = 'EXP-'.date('Ymd').'-'.strtoupper(\Illuminate\Support\Str::random(6));
 
             $hasApproverInOffice = User::where('rpo_unit_id', $this->rpo_unit_id)
                 ->permission('approve-expenses')
@@ -287,7 +323,7 @@ class Expenses extends Component
                     $hasEntry = true;
 
                     Expense::create([
-                        'code' => $autoCode . '-' . $codeId,
+                        'code' => $autoCode.'-'.$codeId,
                         'amount' => $amount,
                         'description' => $desc,
                         'date' => $expenseDate,

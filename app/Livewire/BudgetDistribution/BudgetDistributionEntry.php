@@ -17,6 +17,7 @@ class BudgetDistributionEntry extends Component
   public $budgetTypes = [];
 
   public $distributions = []; // [office_id][code_id] => amount
+  public $demands = []; // [office_id][code_id] => amount
   public $history = []; // [office_id][code_id][fy_id] => amount
   public $ministryAllocations = []; // [code_id] => amount
   public $prevFiscalYears = [];
@@ -26,12 +27,19 @@ class BudgetDistributionEntry extends Component
     $this->fiscalYears = \App\Models\FiscalYear::orderBy('name', 'desc')->get();
     $this->parentOffices = \App\Models\RpoUnit::whereNull('parent_id')->orderBy('name')->get();
     $this->fiscal_year_id = get_active_fiscal_year_id();
-    $this->economicCodes = \App\Models\EconomicCode::orderBy('code')->get();
+    
+    // Fetch only 3rd layer Economic Codes (those that have a grandparent)
+    $this->economicCodes = \App\Models\EconomicCode::whereHas('parent.parent')
+        ->orderBy('code')
+        ->get();
+
     $this->budgetTypes = \App\Models\BudgetType::where('status', true)->get();
 
     if ($this->budgetTypes->isNotEmpty()) {
       $this->budget_type_id = $this->budgetTypes->first()->id;
     }
+
+    $this->loadHistoricalYears();
 
     // Catch office_id from query string if not passed directly
     $officeId = $office_id ?? request()->query('office_id');
@@ -39,8 +47,6 @@ class BudgetDistributionEntry extends Component
       $this->parent_office_id = $officeId;
       $this->loadData();
     }
-
-    $this->loadHistoricalYears();
   }
 
   public function updatedFiscalYearId()
@@ -87,21 +93,26 @@ class BudgetDistributionEntry extends Component
     $codeIds = collect($this->economicCodes)->pluck('id')->toArray();
     $fyIds = collect($this->prevFiscalYears)->pluck('id')->toArray();
 
-    // Load History
-    $historyData = \App\Models\BudgetAllocation::whereIn('rpo_unit_id', $officeIds)
+    // Load History (Expenses from previous years)
+    $historyData = \App\Models\Expense::whereIn('rpo_unit_id', $officeIds)
       ->whereIn('economic_code_id', $codeIds)
       ->whereIn('fiscal_year_id', $fyIds)
       ->get();
 
     $this->history = [];
     foreach ($historyData as $item) {
-      $this->history[$item->rpo_unit_id][$item->economic_code_id][$item->fiscal_year_id] = $item->amount;
+      // Aggregate amounts if there are multiple expense entries for same code/office/year
+      if (!isset($this->history[$item->rpo_unit_id][$item->economic_code_id][$item->fiscal_year_id])) {
+          $this->history[$item->rpo_unit_id][$item->economic_code_id][$item->fiscal_year_id] = 0;
+      }
+      $this->history[$item->rpo_unit_id][$item->economic_code_id][$item->fiscal_year_id] += $item->amount;
     }
 
-    // Load Ministry Allocations (Suggestions)
-    $allocData = \App\Models\MinistryAllocation::whereHas('master', function ($q) {
-      $q->where('fiscal_year_id', $this->fiscal_year_id)
-        ->where('budget_type_id', $this->budget_type_id);
+    // Load Ministry Allocations (The limit available to distribute)
+    $allocData = \App\Models\MinistryAllocation::whereHas('master', function($query) {
+        $query->where('rpo_unit_id', $this->parent_office_id)
+              ->where('fiscal_year_id', $this->fiscal_year_id)
+              ->where('budget_type_id', $this->budget_type_id);
     })->get();
 
     $this->ministryAllocations = $allocData->pluck('amount', 'economic_code_id')->toArray();
@@ -113,9 +124,31 @@ class BudgetDistributionEntry extends Component
       ->where('budget_type_id', $this->budget_type_id)
       ->get();
 
+    // Load Child Office Demands (Budget Estimation) for pre-filling
+    $childDemands = \App\Models\BudgetEstimation::whereIn('rpo_unit_id', $officeIds)
+      ->whereIn('economic_code_id', $codeIds)
+      ->where('fiscal_year_id', $this->fiscal_year_id)
+      ->where('budget_type_id', $this->budget_type_id)
+      ->get();
+
+    $this->demands = [];
+    foreach ($childDemands as $demand) {
+        $this->demands[$demand->rpo_unit_id][$demand->economic_code_id] = $demand->amount_demand;
+    }
+      
     $this->distributions = [];
     foreach ($currentData as $item) {
       $this->distributions[$item->rpo_unit_id][$item->economic_code_id] = $item->amount;
+    }
+    
+    // Auto-fill Logic: Use demand if exists and distribution is not yet set or is 0
+    foreach ($this->childOffices as $child) {
+        foreach ($this->economicCodes as $code) {
+             $currentVal = $this->distributions[$child->id][$code->id] ?? 0;
+             if ($currentVal == 0) {
+                 $this->distributions[$child->id][$code->id] = $this->demands[$child->id][$code->id] ?? 0;
+             }
+        }
     }
   }
 
@@ -124,13 +157,7 @@ class BudgetDistributionEntry extends Component
     // This triggers re-render for totals and validation in blade
   }
 
-  public function applySuggestion($officeId, $codeId)
-  {
-    if (isset($this->ministryAllocations[$codeId])) {
-      $this->distributions[$officeId][$codeId] = $this->ministryAllocations[$codeId];
-      $this->updatedDistributions();
-    }
-  }
+
 
   public function save()
   {
@@ -140,17 +167,24 @@ class BudgetDistributionEntry extends Component
       'budget_type_id' => 'required',
     ]);
 
-    $errors = [];
-    // Optional: Validate if total distribution for a code exceeds ministry allocation
+    $errorItems = [];
     foreach ($this->economicCodes as $code) {
       $totalDistributed = collect($this->distributions)->map(fn($o) => $o[$code->id] ?? 0)->sum();
       $maxAllowed = $this->ministryAllocations[$code->id] ?? 0;
 
-      if ($totalDistributed > $maxAllowed && $maxAllowed > 0) {
-        // We keep it as a warning or strict error? 
-        // Let's do a warning but allow save, or strict if requested. 
-        // User said "workable", let's be descriptive.
+      if ($maxAllowed > 0 && $totalDistributed > $maxAllowed) {
+        $errorItems[] = $code->name . " (" . $code->code . ")";
       }
+    }
+
+    if (!empty($errorItems)) {
+        $errorMessage = "<strong>" . __('Ministry Allocation exceeded for the following items:') . "</strong>";
+        $errorMessage .= "<ul class='mt-2 mb-0 ps-3 text-start'>";
+        $errorMessage .= "<li>" . implode("</li><li>", $errorItems) . "</li>";
+        $errorMessage .= "</ul>";
+        
+        session()->flash('error', $errorMessage);
+        return;
     }
 
     try {

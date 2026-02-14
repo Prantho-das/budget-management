@@ -9,11 +9,17 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
 use Laravel\Fortify\Features;
 use App\Models\BudgetEstimation;
+use Illuminate\Http\Request;
 use Rakibhstu\Banglanumber\NumberToBangla;
+// use App\Http\Controllers\iclockController;
+
 
 Route::get('/', function () {
+    info("=============data get");
     return view('welcome');
 })->name('home');
+
+
 
 Route::get('lang/{locale}', function ($locale) {
     if (! in_array($locale, ['en', 'bn'])) {
@@ -23,42 +29,7 @@ Route::get('lang/{locale}', function ($locale) {
     Session::put('locale', $locale);
     return redirect()->back();
 })->name('lang.switch');
-Route::get('debug', function () {
-    \App\Models\User::whereIn('email', ['abo@budget.com', 'bo@budget.com'])->update(['rpo_unit_id' => 1]);
-    \App\Models\RpoUnit::where('id', 5)->update(['parent_id' => 1]);
-    echo 'Data realigned successfully.';
-});
-Route::get('/current-fiscal-year', function () {
-    $numto = new NumberToBangla();
 
-     dump($numto->bnNum(123456));
-    // 1. Current fiscal year only
-    dump(current_fiscal_year());
-    // → "2025-26"
-
-    // Or using the main function
-    // dump(fiscal_years());
-    // → ["2025-26"]
-
-    // 2. Last 3 fiscal years (including current)
-    dump(fiscal_years(3));
-    // → ["2023-24", "2024-25", "2025-26"]
-
-    // 3. Next 2 fiscal years (including current)
-    dump(fiscal_years(0, 2));
-    // → ["2025-26", "2026-27", "2027-28"]
-
-    // 4. 2 previous + current + 3 next
-    //     dump(fiscal_years(2,3));
-    //     // → ["2023-24", "2024-25", "2025-26", "2026-27", "2027-28", "2028-29"]
-
-    //     // 5. Based on a specific date
-    //    dump(fiscal_years(1, 1, '2026-06-30'));
-    //     // → ["2024-25", "2025-26", "2026-27"]
-
-    //    dump(fiscal_years( 1,  1, '2026-07-01'));
-    // → ["2025-26", "2026-27", "2027-28"]
-})->name('current-fiscal-year');
 Route::get('/dashboard', \App\Livewire\Dashboard::class)
     ->middleware(['auth', 'verified'])
     ->name('dashboard');

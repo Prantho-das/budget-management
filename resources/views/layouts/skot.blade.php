@@ -23,32 +23,7 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
     <style>
-        /* Global Loader */
-        #global-loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.7);
-            z-index: 9999;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(2px);
-        }
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+
 
         /* Global Table Font Resize */
         .table, .table th, .table td {
@@ -71,10 +46,7 @@
 </head>
 
 <body data-sidebar="dark">
-    <!-- Global Loader HTML -->
-    <div id="global-loader">
-        <div class="spinner"></div>
-    </div>
+    @include('partials.loader')
 
     <!-- Begin page -->
     <div id="layout-wrapper">
@@ -562,80 +534,7 @@
     </form>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            if (window.Livewire) {
-                initLoader();
-            } else {
-                document.addEventListener('livewire:initialized', () => {
-                   initLoader();
-                });
-            }
-        });
 
-        function initLoader() {
-            let loader = document.getElementById('global-loader');
-
-            // Livewire v3 Hooks
-            if (typeof Livewire.hook === 'function') {
-                Livewire.hook('commit', ({ component, commit, succeed, fail, respond }) => {
-                    // Show loader for any explicit METHOD call (clicks, submits)
-                    // This ignores simple property updates (typing) which usually don't have calls.
-                    if (commit.calls && commit.calls.length > 0) {
-                        loader.style.display = 'flex';
-                        
-                        succeed(({ snapshot, effect }) => {
-                            loader.style.display = 'none';
-                        });
-
-                        fail(() => {
-                            loader.style.display = 'none';
-                        });
-                    }
-                });
-            }
-            
-            // Livewire v2 Hooks (Fallback)
-             try {
-                if (window.livewire) {
-                    window.livewire.hook('message.sent', (message, component) => {
-                        // Check if there are any method calls in the queue
-                        let hasMethod = false;
-                        if (message.updateQueue) {
-                            message.updateQueue.forEach(update => {
-                                if (update.method) hasMethod = true; // Any method call
-                            });
-                        }
-                        // Also check for 'callMethod' type payload which V2 sometimes uses
-                        if (hasMethod) loader.style.display = 'flex';
-                    });
-                    
-                    window.livewire.hook('message.processed', (message, component) => {
-                        if (loader.style.display === 'flex') loader.style.display = 'none';
-                    });
-                     window.livewire.hook('message.failed', (message, component) => {
-                        if (loader.style.display === 'flex') loader.style.display = 'none';
-                    });
-                }
-            } catch (e) {}
-
-            // Handle Navigation (wire:navigate)
-            document.addEventListener('livewire:navigating', () => {
-                 loader.style.display = 'flex';
-            });
-
-            document.addEventListener('livewire:navigated', () => {
-                loader.style.display = 'none';
-            });
-        }
-        
-        // Listen for standard form POST submits only (Non-Livewire)
-        document.addEventListener('submit', function(e) {
-            let loader = document.getElementById('global-loader');
-            // Only show loader if it's NOT a Livewire form
-            if (loader && e.target.method && e.target.method.toUpperCase() !== 'GET' && !e.target.hasAttribute('wire:submit')) {
-                loader.style.display = 'flex';
-            }
-        });
 
         // Initialize Select2
         function initSelect2() {

@@ -1,3 +1,4 @@
+<div>
 <style>
     .expense-voucher-form {
         background: white;
@@ -396,6 +397,16 @@
                                             @endforeach
                                         </select>
                                     </div>
+                                    @if(auth()->user()->can('view-all-offices-data'))
+                                        <div>
+                                            <select wire:model.live="filter_rpo_unit_id" class="form-select form-select-sm" style="max-width: 200px;">
+                                                <option value="">{{ __('All Offices') }}</option>
+                                                @foreach($offices as $office)
+                                                    <option value="{{ $office->id }}">{{ $office->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    @endif
                                     @can('create-expenses')
                                         <a href="{{ route('setup.expenses.create') }}" wire:navigate class="btn btn-primary btn-sm waves-effect waves-light">
                                             <i class="bx bx-plus-circle me-1"></i>{{ __('Create New') }}
@@ -501,4 +512,5 @@
             </div>
         </div>
     </div>
+</div>
 </div>

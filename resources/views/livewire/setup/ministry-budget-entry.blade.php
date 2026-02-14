@@ -72,7 +72,7 @@
                              @endif
                              @error('rpo_unit_id') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
-                        <div class="col-md-6 d-flex align-items-end justify-content-between gap-2">
+                        <div class="col-md-3 d-flex align-items-end justify-content-between gap-2">
                             <div class="flex-grow-1">
                                 <label class="form-label">{{ __('Remarks') }}</label>
                                 <input type="text" class="form-control" wire:model="remarks" placeholder="{{ __('e.g. Initial Allocation') }}">

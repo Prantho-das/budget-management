@@ -30,9 +30,13 @@
 
                         @if (session()->has('error'))
                             <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4"
-                                role="alert">
-                                <i class="bx bxs-error-circle me-2"></i>
-                                {{ session('error') }}
+                                role="alert" style="max-height: 300px; overflow-y: auto;">
+                                <div class="d-flex">
+                                    <i class="bx bxs-error-circle me-2 mt-1"></i>
+                                    <div>
+                                        {!! session('error') !!}
+                                    </div>
+                                </div>
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         @endif
@@ -93,16 +97,22 @@ $numto = new Rakibhstu\Banglanumber\NumberToBangla();
                                             <div class="font-size-11 opacity-75 fw-normal text-truncate" style="max-width: 270px;">{{ $code->name }}</div>
                                         </th>
                                     @endforeach
-                                    <th rowspan="2" class="text-end bg-primary align-middle" style="min-width: 160px;">{{ __('Total Allocation') }}</th>
                                 </tr>
                                 <tr class="bg-primary text-white border-top border-light">
                                     @foreach($economicCodes as $code)
+
                                         <th class="p-1">
+
                                             <div class="d-flex justify-content-center gap-2 font-size-10">
-                                                @foreach($prevFiscalYears as $fy)
-                                                    <span class="opacity-75" style="min-width: 50px;">{{ bn_num($fy->name) }}</span>
-                                                @endforeach
-                                                <span class="fw-bold" style="min-width: 100px;">Current Allocation</span>
+                                                <div>
+                                                    <h6>প্রকৃত ব্যায়</h2>
+                                                    @foreach($prevFiscalYears as $fy)
+                                                        <span class="opacity-75" style="min-width: 50px;">{{ bn_num($fy->name) }}</span>
+                                                    @endforeach
+                                                </div>
+                                                <div class="d-flex flex-column align-self-end">
+                                                    <span class="fw-bold" style="min-width: 100px;">চাহিদা</span>
+                                                </div>
                                             </div>
                                         </th>
                                     @endforeach
@@ -114,7 +124,7 @@ $numto = new Rakibhstu\Banglanumber\NumberToBangla();
                                         <tr wire:key="office-{{ $child->id }}-{{ $fiscal_year_id }}-{{ $budget_type_id }}">
                                             <td class="fw-medium bg-light sticky-left" style="left: 0; z-index: 5;">
                                                 <div class="d-flex flex-column">
-                                                    <span class="text-primary fw-bold">{{ bn_num($child->code) }}</span>
+                                                    {{-- <span class="text-primary fw-bold">{{ bn_num($child->code) }}</span> --}}
                                                     <span class="font-size-12 text-muted">{{ $child->name }}</span>
                                                 </div>
                                             </td>
@@ -136,29 +146,14 @@ $numto = new Rakibhstu\Banglanumber\NumberToBangla();
                                                                     wire:model.live.debounce.300ms="distributions.{{ $child->id }}.{{ $code->id }}"
                                                                     style="min-height: 32px;">
                                                             </div>
-
-                                                            @if(isset($ministryAllocations[$code->id]))
-                                                                <button class="btn btn-soft-info btn-xs w-100 text-end mt-1 border-0" 
-                                                                    type="button" 
-                                                                    wire:click="applySuggestion({{ $child->id }}, {{ $code->id }})"
-                                                                    style="padding: 0 4px; border-radius: 3px;">
-                                                                    <small class="fw-bold" style="font-size: 8px;">{{ __('Bud: ') . bn_comma_format($ministryAllocations[$code->id]) }}</small>
-                                                                </button>
-                                                            @endif
                                                         </div>
                                                     </div>
                                                 </td>
                                             @endforeach
-                                            <td class="text-end fw-bold text-primary font-size-14 bg-light shadow-sm">
-                                                @php
-                                                    $total = collect($distributions[$child->id] ?? [])->sum();
-                                                @endphp
-                                                {{ bn_comma_format($total, 2) }}
-                                            </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="{{ count($economicCodes) + 2 }}" class="text-center py-5 text-muted">
+                                            <td colspan="{{ count($economicCodes) + 1 }}" class="text-center py-5 text-muted">
                                                 <i class="bx bx-info-circle font-size-24 d-block mb-2"></i>
                                                 {{ __('No sub-offices found for the selected parent office.') }}
                                             </td>
@@ -166,7 +161,7 @@ $numto = new Rakibhstu\Banglanumber\NumberToBangla();
                                     @endforelse
                                 @else
                                     <tr>
-                                        <td colspan="{{ count($economicCodes) + 2 }}" class="text-center py-5 text-muted">
+                                        <td colspan="{{ count($economicCodes) + 1 }}" class="text-center py-5 text-muted">
                                             <i class="bx bx-pointer font-size-24 d-block mb-2 animate-bounce"></i>
                                             {{ __('Please select a Parent Office to load the distribution matrix.') }}
                                         </td>
@@ -192,12 +187,6 @@ $numto = new Rakibhstu\Banglanumber\NumberToBangla();
                                                 </div>
                                             </td>
                                         @endforeach
-                                        <td class="text-end text-success font-size-15 bg-light">
-                                            @php
-                                                $grandTotal = collect($distributions)->map(fn($o) => collect($o)->sum())->sum();
-                                            @endphp
-                                            {{ bn_comma_format($grandTotal, 2) }}
-                                        </td>
                                     </tr>
                                 </tfoot>
                             @endif

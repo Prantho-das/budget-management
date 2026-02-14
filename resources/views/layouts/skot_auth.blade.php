@@ -40,6 +40,7 @@
     </head>
 
     <body>
+        @include('partials.loader')
          <main>
              @yield('content')
          </main>

@@ -2,34 +2,42 @@
 
 namespace App\Livewire\Setup;
 
+use App\Models\BudgetType;
 use App\Models\EconomicCode;
 use App\Models\FiscalYear;
 use App\Models\MinistryAllocation;
+use App\Models\MinistryBudgetMaster;
 use App\Models\RpoUnit;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Component;
-
-use App\Models\MinistryBudgetMaster;
-use App\Models\BudgetType;
 use Illuminate\Support\Facades\DB;
+use Livewire\Component;
 
 class MinistryBudgetEntry extends Component
 {
     public $fiscal_years;
+
     public $rpo_units; // Root units (Headquarters)
+
     public $child_units = []; // Dependent child units
 
     public $fiscal_year_id;
+
     public $head_unit_id; // Selected Headquarters
+
     public $rpo_unit_id; // Selected Target Unit (Child)
+
     public $budget_type_id;
+
     public $master_id;
 
     public $budget_data = []; // [economic_code_id => amount]
+
     public $original_budget_data = []; // [economic_code_id => amount] - only for comparison
+
     public $previous_revised_data = []; // [economic_code_id => amount] - aggregated previous revised
+
     public $remarks;
-    
+
     public $submitted_unit_ids = []; // IDs of units that already have a budget for this FY
 
     public function mount($master_id = null)
@@ -52,7 +60,7 @@ class MinistryBudgetEntry extends Component
         // Initialize budget_data with 0 for all economic codes
         $allCodes = EconomicCode::whereNotNull('parent_id')->get();
         foreach ($allCodes as $code) {
-            if (!isset($this->budget_data[$code->id])) {
+            if (! isset($this->budget_data[$code->id])) {
                 $this->budget_data[$code->id] = 0;
             }
         }
@@ -62,68 +70,59 @@ class MinistryBudgetEntry extends Component
     {
         $this->rpo_unit_id = null;
         $this->submitted_unit_ids = [];
-        
+
         if ($value) {
             $this->child_units = RpoUnit::where('parent_id', $value)->where('status', true)->get();
-            
+
             // Check for existing budgets for these children in the selected FY
             if ($this->fiscal_year_id) {
                 $existingUnits = MinistryBudgetMaster::where('fiscal_year_id', $this->fiscal_year_id)
                     ->whereIn('rpo_unit_id', $this->child_units->pluck('id'))
-                    ->whereHas('budgetType', function($q) {
-                         $q->where('code', 'original'); // Assuming we want to block if Original exists? Or any?
-                         // User said "total data given then it will be disabled". Usually implies checking if an Original entry exists.
-                         // If we are in 'Create' mode, we generally create 'Original'. 
-                         // Check if ANY master record exists for this unit+FY.
+                    ->whereHas('budgetType', function ($q) {
+                        $q->where('code', 'original'); // Assuming we want to block if Original exists? Or any?
+                        // User said "total data given then it will be disabled". Usually implies checking if an Original entry exists.
+                        // If we are in 'Create' mode, we generally create 'Original'.
+                        // Check if ANY master record exists for this unit+FY.
                     })
                     ->pluck('rpo_unit_id')
                     ->toArray();
-                
+
                 // If we are NOT editing an existing record, we disable these units.
                 // If we WERE editing, $this->master_id would be set, but this method is triggered by USER interaction change.
                 // Switching HQ means we are staring fresh context anyway for the child.
-                
+
                 $this->submitted_unit_ids = $existingUnits;
             }
         } else {
             $this->child_units = [];
         }
-        
+
         $this->loadComparisonData();
     }
 
     public function loadMasterData($id)
     {
-        $master = MinistryBudgetMaster::with(['allocations', 'rpo_unit'])->findOrFail($id);
+        $master = MinistryBudgetMaster::with(['allocations', 'rpoUnit'])->findOrFail($id);
         $this->master_id = $master->id;
         $this->fiscal_year_id = $master->fiscal_year_id;
         $this->budget_type_id = $master->budget_type_id;
         $this->remarks = $master->remarks;
 
         // Determine Head Unit and Child Unit
-        $unit = $master->rpo_unit;
+        $unit = $master->rpoUnit;
         if ($unit->parent_id) {
             // It's a Child Unit
-            $this->head_unit_id = $unit->parent_id; // Set Parent as Head
-            $this->rpo_unit_id = $unit->id; // Set Child as selected
-            
-            // Allow selecting this unit even if we have "submitted_unit_ids" logic (bypass check for self)
+            $this->head_unit_id = $unit->parent_id;
+            $this->rpo_unit_id = $unit->id;
         } else {
             // It's a Root Unit (HQ)
-            $this->head_unit_id = $unit->id; // Set HQ as Head
-            //$this->rpo_unit_id = $unit->id; // Do we still allow selecting HQ directly? 
-            // If the user wants to select HQ, the second dropdown might need to handle "Self" or be optional.
-            // For now, let's assume we maintain existing data integrity.
-            // If the design forces selecting a child, this might be tricky for old data.
-            // Let's set rpo_unit_id anyway.
-            $this->rpo_unit_id = null; // Or keep it null if we force child selection?
-            // Actually, if existing data IS on a root unit, we probably should let it be.
-            // But the dropdown logic implies filtering. 
+            $this->head_unit_id = $unit->id;
+            $this->rpo_unit_id = $unit->id; // Still set it so selection shows
         }
 
         // Initialize child units for the dropdown
         if ($this->head_unit_id) {
-             $this->child_units = RpoUnit::where('parent_id', $this->head_unit_id)->where('status', true)->get();
+            $this->child_units = RpoUnit::where('parent_id', $this->head_unit_id)->where('status', true)->get();
         }
 
         foreach ($master->allocations as $allocation) {
@@ -172,8 +171,8 @@ class MinistryBudgetEntry extends Component
             });
 
             if ($this->master_id) {
-                $query->where('id', '<', $this->master_id); // Only batches BEFORE this one if editing, or all if new? 
-                // user said "previous revised budget". 
+                $query->where('id', '<', $this->master_id); // Only batches BEFORE this one if editing, or all if new?
+                // user said "previous revised budget".
             }
 
             $revisedMasters = $query->with('allocations')->get();
@@ -208,15 +207,15 @@ class MinistryBudgetEntry extends Component
             $typeCode = $originalExists ? 'revised' : 'original';
             $budgetType = BudgetType::where('code', $typeCode)->first();
 
-            if (!$this->master_id) {
+            if (! $this->master_id) {
                 // Generate Batch No
                 $prefix = $typeCode === 'original' ? 'ORG' : 'REV';
                 $count = MinistryBudgetMaster::where([
                     'fiscal_year_id' => $this->fiscal_year_id,
                     'rpo_unit_id' => $this->rpo_unit_id,
-                    'budget_type_id' => $budgetType->id
+                    'budget_type_id' => $budgetType->id,
                 ])->count();
-                $batch_no = $prefix . '-' . ($count + 1);
+                $batch_no = $prefix.'-'.($count + 1);
 
                 $master = MinistryBudgetMaster::create([
                     'batch_no' => $batch_no,
@@ -238,7 +237,9 @@ class MinistryBudgetEntry extends Component
             }
 
             foreach ($this->budget_data as $codeId => $amount) {
-                if ($amount <= 0 && empty($amount)) continue;
+                if ($amount <= 0 && empty($amount)) {
+                    continue;
+                }
 
                 MinistryAllocation::create([
                     'ministry_budget_master_id' => $master->id,
@@ -250,6 +251,7 @@ class MinistryBudgetEntry extends Component
         });
 
         session()->flash('message', __('Ministry Budget saved successfully.'));
+
         return $this->redirect(route('setup.ministry-budget-list'), navigate: true);
     }
 
@@ -261,7 +263,7 @@ class MinistryBudgetEntry extends Component
             ->get();
 
         return view('livewire.setup.ministry-budget-entry', [
-            'economic_codes' => $economic_codes
+            'economic_codes' => $economic_codes,
         ])
             ->extends('layouts.skot')
             ->section('content');
