@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('budget_estimation_masters', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('fiscal_year_id')->constrained('fiscal_years')->onDelete('cascade');
-            $table->foreignId('rpo_unit_id')->constrained('rpo_units')->onDelete('cascade');
-            $table->foreignId('budget_type_id')->constrained('budget_types')->onDelete('cascade');
-            $table->foreignId('workflow_step_id')->nullable()->constrained('workflow_steps');
-            $table->foreignId('created_by')->nullable()->constrained('users');
+            $table->unsignedBigInteger('fiscal_year_id');
+            $table->unsignedBigInteger('rpo_unit_id');
+            $table->unsignedBigInteger('budget_type_id');
+            $table->unsignedBigInteger('workflow_step_id')->nullable();
+            $table->unsignedBigInteger('created_by')->nullable();
             $table->string('status')->default('draft'); // draft, submitted, approved, rejected
             $table->decimal('total_amount', 15, 2)->default(0);
             $table->string('batch_no')->unique()->nullable();
