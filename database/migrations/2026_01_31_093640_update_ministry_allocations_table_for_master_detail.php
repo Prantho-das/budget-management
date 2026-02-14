@@ -18,13 +18,9 @@ return new class extends Migration
             $table->foreignId('ministry_budget_master_id');
             
             // Drop redundant columns
-            $table->dropForeign(['fiscal_year_id']);
-            $table->dropColumn('fiscal_year_id');
-            
-            $table->dropForeign(['rpo_unit_id']);
-            $table->dropColumn('rpo_unit_id');
-            
-            $table->dropColumn('budget_type');
+            // $table->dropColumn('fiscal_year_id');
+            // $table->dropColumn('rpo_unit_id');
+            // $table->dropColumn('budget_type');
         });
     }
 
