@@ -136,12 +136,12 @@
                             <!-- item-->
                             <a class="dropdown-item" href="{{ route('profile.edit') }}" wire:navigate><i
                                     class="bx bx-user font-size-16 align-middle me-1"></i> <span
-                                    key="t-profile">Profile</span></a>
+                                    key="t-profile">{{ __('Profile') }}</span></a>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item text-danger" href="javascript:void(0);"
                                 onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i
                                     class="bx bx-power-off font-size-16 align-middle me-1 text-danger"></i> <span
-                                    key="t-logout">Logout</span></a>
+                                    key="t-logout">{{ __('Logout') }}</span></a>
 
                         </div>
                     </div>
@@ -348,21 +348,21 @@
                 <div class="modal-dialog modal-dialog-centered" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="transaction-detailModalLabel">Order Details</h5>
+                            <h5 class="modal-title" id="transaction-detailModalLabel">{{ __('Order Details') }}</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"
                                 aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <p class="mb-2">Product id: <span class="text-primary">#SK2540</span></p>
-                            <p class="mb-4">Billing Name: <span class="text-primary">Neal Matthews</span></p>
+                            <p class="mb-2">{{ __('Product id:') }} <span class="text-primary">#SK2540</span></p>
+                            <p class="mb-4">{{ __('Billing Name:') }} <span class="text-primary">Neal Matthews</span></p>
 
                             <div class="table-responsive">
                                 <table class="table align-middle table-nowrap">
                                     <thead>
                                         <tr>
-                                            <th scope="col">Product</th>
-                                            <th scope="col">Product Name</th>
-                                            <th scope="col">Price</th>
+                                            <th scope="col">{{ __('Product') }}</th>
+                                            <th scope="col">{{ __('Product Name') }}</th>
+                                            <th scope="col">{{ __('Price') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -399,7 +399,7 @@
                                         </tr>
                                         <tr>
                                             <td colspan="2">
-                                                <h6 class="m-0 text-right">Sub Total:</h6>
+                                                <h6 class="m-0 text-right">{{ __('Sub Total:') }}</h6>
                                             </td>
                                             <td>
                                                 $ 400
@@ -407,7 +407,7 @@
                                         </tr>
                                         <tr>
                                             <td colspan="2">
-                                                <h6 class="m-0 text-right">Shipping:</h6>
+                                                <h6 class="m-0 text-right">{{ __('Shipping:') }}</h6>
                                             </td>
                                             <td>
                                                 Free
@@ -415,7 +415,7 @@
                                         </tr>
                                         <tr>
                                             <td colspan="2">
-                                                <h6 class="m-0 text-right">Total:</h6>
+                                                <h6 class="m-0 text-right">{{ __('Total:') }}</h6>
                                             </td>
                                             <td>
                                                 $ 400
@@ -458,7 +458,7 @@
         <div data-simplebar class="h-100">
             <div class="rightbar-title d-flex align-items-center px-3 py-4">
 
-                <h5 class="m-0 me-2">Settings</h5>
+                <h5 class="m-0 me-2">{{ __('Settings') }}</h5>
 
                 <a href="javascript:void(0);" class="right-bar-toggle ms-auto">
                     <i class="mdi mdi-close noti-icon"></i>
@@ -477,7 +477,7 @@
 
                 <div class="form-check form-switch mb-3">
                     <input class="form-check-input theme-choice" type="checkbox" id="light-mode-switch" checked>
-                    <label class="form-check-label" for="light-mode-switch">Light Mode</label>
+                    <label class="form-check-label" for="light-mode-switch">{{ __('Light Mode') }}</label>
                 </div>
 
                 <div class="mb-2">
@@ -486,7 +486,7 @@
                 </div>
                 <div class="form-check form-switch mb-3">
                     <input class="form-check-input theme-choice" type="checkbox" id="dark-mode-switch">
-                    <label class="form-check-label" for="dark-mode-switch">Dark Mode</label>
+                    <label class="form-check-label" for="dark-mode-switch">{{ __('Dark Mode') }}</label>
                 </div>
 
                 <div class="mb-2">
@@ -495,7 +495,7 @@
                 </div>
                 <div class="form-check form-switch mb-3">
                     <input class="form-check-input theme-choice" type="checkbox" id="rtl-mode-switch">
-                    <label class="form-check-label" for="rtl-mode-switch">RTL Mode</label>
+                    <label class="form-check-label" for="rtl-mode-switch">{{ __('RTL Mode') }}</label>
                 </div>
 
                 <div class="mb-2">
@@ -504,7 +504,7 @@
                 </div>
                 <div class="form-check form-switch mb-5">
                     {{-- <input class="form-check-input theme-choice" type="checkbox" id="dark-rtl-mode-switch"> --}}
-                    <label class="form-check-label" for="dark-rtl-mode-switch">Dark RTL Mode</label>
+                    <label class="form-check-label" for="dark-rtl-mode-switch">{{ __('Dark RTL Mode') }}</label>
                 </div>
 
 

@@ -64,7 +64,7 @@
                                             @endphp
                                             <option value="{{ $child->id }}" {{ $disabled ? 'disabled' : '' }} class="{{ $disabled ? 'text-muted' : '' }}">
                                                 {{ $child->name }} 
-                                                {{ $disabled ? '(Submitted)' : '' }}
+                                                {{ $disabled ? '(' . __('Submitted') . ')' : '' }}
                                             </option>
                                         @endforeach
                                     @endif
