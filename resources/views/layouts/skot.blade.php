@@ -159,13 +159,15 @@
                     <!-- Left Menu Start -->
                     <ul class="metismenu list-unstyled" id="side-menu">
 
+                        @can('view-dashboard')
                         <li>
                             <a href="{{ route('dashboard') }}" wire:navigate class="waves-effect">
                                 <i class="bx bx-home-circle"></i>
                                 <span key="t-dashboards">{{ __('Dashboard') }}</span>
                             </a>
                         </li>
-                        @canany(['view-budget-estimations', 'approve-budget', 'release-budget'])
+                        @endcan
+                        @canany(['view-budget-estimations', 'approve-budget', 'release-budget', 'view-budget-status', 'view-budget-summary'])
                             <li>
                                 <a href="javascript: void(0);" class="has-arrow waves-effect">
                                     <i class="bx bx-file"></i>
@@ -194,9 +196,11 @@
                                             </ul>
                                         </li>
                                     @endcan --}}
-                                    @can('view-budget-estimations')
+                                    @can('view-budget-status')
                                         <li><a href="{{ route('budget.status') }}" wire:navigate
                                                 key="t-status">{{ __('Budget Status') }}</a></li>
+                                    @endcan
+                                    @can('view-budget-summary')
                                         <li><a href="{{ route('budget.summary') }}" wire:navigate
                                                 key="t-summary">{{ __('My Budget Summary') }}</a></li>
                                     @endcan
@@ -213,8 +217,10 @@
                                             <a href="{{ route('budget.distribution.entry') }}" wire:navigate
                                                 key="t-distribution-entry">{{ __('Adjustment Create') }}</a></li>
                                                                                        @endcan
+                                                    @can('view-budget-distribution')
                                                     <li><a href="{{ route('budget.distribution.list') }}" wire:navigate
                                                     key="t-distribution-list">{{ __('Adjustment') }}</a></li>
+                                                    @endcan
                                       
                                 </ul>
                             </li>
@@ -229,10 +235,14 @@
                             <ul class="sub-menu" aria-expanded="false">
                                 {{-- <li><a href="{{ route('budget.release') }}" wire:navigate
                                         key="t-release">{{ __('Budget Summary') }}</a></li> --}}
+                                @can('release-budget')
                                 <li><a href="{{ route('setup.ministry-budget-list') }}" wire:navigate
                                         key="t-ministry-entry">{{ __('Ministry Budget Entry List') }}</a></li>
+                                @endcan
+                                @can('release-budget')
                                 <li><a href="{{ route('budget.office-wise') }}" wire:navigate
                         key="t-office-wise">{{ __('Ministry Budget Preparation') }}</a></li>
+                                @endcan
 
                             </ul>
                         </li>

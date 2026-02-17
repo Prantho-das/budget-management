@@ -70,31 +70,35 @@ class MinistryBudgetEntry extends Component
     {
         $this->rpo_unit_id = null;
         $this->submitted_unit_ids = [];
+        $this->child_units = [];
 
         if ($value) {
-            $this->child_units = RpoUnit::where('parent_id', $value)->where('status', true)->get();
+            $unit = RpoUnit::find($value);
 
-            // Check for existing budgets for these children in the selected FY
+            // Special Case: Regional Passport Offices (1610503) don't need to select child offices
+            if ($unit && $unit->code == '1610503') {
+                $this->rpo_unit_id = $value;
+            } else {
+                $this->child_units = RpoUnit::where('parent_id', $value)->where('status', true)->get();
+            }
+
+            // Check for existing budgets for these units in the selected FY
             if ($this->fiscal_year_id) {
-                $existingUnits = MinistryBudgetMaster::where('fiscal_year_id', $this->fiscal_year_id)
-                    ->whereIn('rpo_unit_id', $this->child_units->pluck('id'))
+                $query = MinistryBudgetMaster::where('fiscal_year_id', $this->fiscal_year_id)
                     ->whereHas('budgetType', function ($q) {
-                        $q->where('code', 'original'); // Assuming we want to block if Original exists? Or any?
-                        // User said "total data given then it will be disabled". Usually implies checking if an Original entry exists.
-                        // If we are in 'Create' mode, we generally create 'Original'.
-                        // Check if ANY master record exists for this unit+FY.
-                    })
-                    ->pluck('rpo_unit_id')
-                    ->toArray();
+                        $q->where('code', 'original');
+                    });
 
-                // If we are NOT editing an existing record, we disable these units.
-                // If we WERE editing, $this->master_id would be set, but this method is triggered by USER interaction change.
-                // Switching HQ means we are staring fresh context anyway for the child.
+                if ($this->rpo_unit_id) {
+                    // Single unit case (like 1610503)
+                    $existingUnits = $query->where('rpo_unit_id', $this->rpo_unit_id)->pluck('rpo_unit_id')->toArray();
+                } else {
+                    // Multi child case
+                    $existingUnits = $query->whereIn('rpo_unit_id', $this->child_units->pluck('id'))->pluck('rpo_unit_id')->toArray();
+                }
 
                 $this->submitted_unit_ids = $existingUnits;
             }
-        } else {
-            $this->child_units = [];
         }
 
         $this->loadComparisonData();
@@ -122,7 +126,12 @@ class MinistryBudgetEntry extends Component
 
         // Initialize child units for the dropdown
         if ($this->head_unit_id) {
-            $this->child_units = RpoUnit::where('parent_id', $this->head_unit_id)->where('status', true)->get();
+            $headUnit = RpoUnit::find($this->head_unit_id);
+            if ($headUnit && $headUnit->code == '1610503') {
+                $this->child_units = [];
+            } else {
+                $this->child_units = RpoUnit::where('parent_id', $this->head_unit_id)->where('status', true)->get();
+            }
         }
 
         foreach ($master->allocations as $allocation) {

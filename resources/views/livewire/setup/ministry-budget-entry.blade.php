@@ -32,41 +32,45 @@
 
                     <div class="row mb-4">
                         <div class="col-md-3">
-                            <label class="form-label">{{ __('Fiscal Year') }}</label>
-                            <select class="form-select" wire:model.live="fiscal_year_id" {{ $master_id ? 'disabled' : '' }}>
+                            <label class="form-label font-weight-bold text-muted small text-uppercase">{{ __('Fiscal Year') }}</label>
+                            <select class="form-select shadow-sm border-primary" wire:model.live="fiscal_year_id" {{ $master_id ? 'disabled' : '' }}>
                                 <option value="">{{ __('Select Fiscal Year') }}</option>
                                 @foreach($fiscal_years as $fy)
-                                    <option value="{{ $fy->id }}">{{ $fy->bn_name }}</option>
+                                    <option value="{{ $fy->id }}">{{ bn_num($fy->name) }}</option>
                                 @endforeach
                             </select>
                             @error('fiscal_year_id') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">{{ __('Headquarters / Zone') }}</label>
-                            <select class="form-select" wire:model.live="head_unit_id" {{ $master_id ? 'disabled' : '' }}>
-                                <option value="">{{ __('Select Headquarters') }}</option>
+                            <label class="form-label font-weight-bold text-muted small text-uppercase">{{ __('Office Group') }}</label>
+                            <select class="form-select shadow-sm border-primary" wire:model.live="head_unit_id" {{ $master_id ? 'disabled' : '' }}>
+                                <option value="">{{ __('Select Office Group') }}</option>
                                 @foreach($rpo_units as $unit)
                                     <option value="{{ $unit->id }}">{{ $unit->name }} ({{ bn_num($unit->code) }})</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-3">
-                             <label class="form-label">{{ __('Office / Unit') }}</label>
+                             <label class="form-label font-weight-bold text-muted small text-uppercase">{{ __('Office ') }}</label>
                              @if($head_unit_id)
-                                <select class="form-select" wire:model.live="rpo_unit_id" {{ $master_id ? 'disabled' : '' }}>
-                                    <option value="">{{ __('Select Office') }}</option>
-                                    @foreach($child_units as $child)
-                                        @php
-                                            $disabled = in_array($child->id, $submitted_unit_ids) && !$master_id; 
-                                        @endphp
-                                        <option value="{{ $child->id }}" {{ $disabled ? 'disabled' : '' }} class="{{ $disabled ? 'text-muted' : '' }}">
-                                            {{ $child->name }} 
-                                            {{ $disabled ? '(Submitted)' : '' }}
-                                        </option>
-                                    @endforeach
+                                <select class="form-select shadow-sm border-primary" wire:model.live="rpo_unit_id" {{ $master_id || ($rpo_unit_id == $head_unit_id && count($child_units) == 0) ? 'disabled' : '' }}>
+                                    @if($rpo_unit_id == $head_unit_id && count($child_units) == 0)
+                                        <option value="{{ $rpo_unit_id }}">{{ __('All Offices / Not Applicable') }}</option>
+                                    @else
+                                        <option value="">{{ __('Select Office') }}</option>
+                                        @foreach($child_units as $child)
+                                            @php
+                                                $disabled = in_array($child->id, $submitted_unit_ids) && !$master_id; 
+                                            @endphp
+                                            <option value="{{ $child->id }}" {{ $disabled ? 'disabled' : '' }} class="{{ $disabled ? 'text-muted' : '' }}">
+                                                {{ $child->name }} 
+                                                {{ $disabled ? '(Submitted)' : '' }}
+                                            </option>
+                                        @endforeach
+                                    @endif
                                 </select>
                              @else
-                                <select class="form-select" disabled>
+                                <select class="form-select shadow-sm border-primary" disabled>
                                     <option value="">{{ __('Select Headquarters First') }}</option>
                                 </select>
                              @endif
@@ -74,11 +78,11 @@
                         </div>
                         <div class="col-md-3 d-flex align-items-end justify-content-between gap-2">
                             <div class="flex-grow-1">
-                                <label class="form-label">{{ __('Remarks') }}</label>
-                                <input type="text" class="form-control" wire:model="remarks" placeholder="{{ __('e.g. Initial Allocation') }}">
+                                <label class="form-label font-weight-bold text-muted small text-uppercase">{{ __('Remarks') }}</label>
+                                <input type="text" class="form-control shadow-sm border-primary" wire:model="remarks" placeholder="{{ __('e.g. Initial Allocation') }}">
                             </div>
-                            <button wire:click="save" class="btn btn-primary">
-                                <i class="mdi mdi-content-save me-1"></i> {{ __('Save Budget') }}
+                            <button wire:click="save" class="btn btn-primary px-4 shadow">
+                                <i class="bx bx-save me-1"></i> {{ __('Save Budget') }}
                             </button>
                         </div>
                     </div>
@@ -221,8 +225,8 @@
                     </div>
 
                     <div class="mt-4 text-end">
-                        <button wire:click="save" class="btn btn-primary btn-lg">
-                            <i class="mdi mdi-content-save me-1"></i> {{ __('Save Budget') }}
+                        <button wire:click="save" class="btn btn-primary btn-lg px-5 shadow">
+                            <i class="bx bx-save me-1"></i> {{ __('Save Budget') }}
                         </button>
                     </div>
 

@@ -124,7 +124,7 @@
                                             <h5 class="mb-2 text-primary fw-bold">মাসিক ব্যয় বিবরণী / Monthly Expense Statement</h5>
                                             <div class="row g-2 small">
                                                 <div class="col-md-4">
-                                                    <strong>Office:</strong> 
+                                                    <strong>{{ __('Office Group') }}:</strong> 
                                                     {{ $officeName ?? '-' }}
                                                 </div>
                                                 <div class="col-md-4">
@@ -157,20 +157,13 @@
                                             <label for="selectedMonth" class="form-label fw-semibold small mb-1">
                                                 Select Month <span class="text-danger">*</span>
                                             </label>
-                                            <select class="form-select form-select-sm" id="selectedMonth" wire:model.live="selectedMonth">
+                                            <select class="form-select form-select-sm shadow-sm border-primary" id="selectedMonth" wire:model.live="selectedMonth">
                                                 <option value="">Select Month</option>
-                                                <option value="01">January</option>
-                                                <option value="02">February</option>
-                                                <option value="03">March</option>
-                                                <option value="04">April</option>
-                                                <option value="05">May</option>
-                                                <option value="06">June</option>
-                                                <option value="07">July</option>
-                                                <option value="08">August</option>
-                                                <option value="09">September</option>
-                                                <option value="10">October</option>
-                                                <option value="11">November</option>
-                                                <option value="12">December</option>
+                                                @foreach(['01' => 'January', '02' => 'February', '03' => 'March', '04' => 'April', '05' => 'May', '06' => 'June', '07' => 'July', '08' => 'August', '09' => 'September', '10' => 'October', '11' => 'November', '12' => 'December'] as $val => $label)
+                                                    <option value="{{ $val }}" {{ $selectedMonth != $val ? 'disabled' : '' }} style="{{ $selectedMonth != $val ? 'color: #ccc;' : '' }}">
+                                                        {{ $label }}
+                                                    </option>
+                                                @endforeach
                                             </select>
                                             @error('selectedMonth') <span class="text-danger small">{{ $message }}</span>@enderror
                                         </div>
@@ -178,10 +171,12 @@
                                             <label for="fiscal_year_id" class="form-label fw-semibold small mb-1">
                                                 Fiscal Year <span class="text-danger">*</span>
                                             </label>
-                                            <select class="form-select form-select-sm" id="fiscal_year_id" wire:model.live="fiscal_year_id">
+                                            <select class="form-select form-select-sm shadow-sm border-primary" id="fiscal_year_id" wire:model.live="fiscal_year_id">
                                                 <option value="">Select Year</option>
                                                 @foreach($fiscalYears as $year)
-                                                    <option value="{{ $year->id }}">{{ $year->bn_name }}</option>
+                                                    <option value="{{ $year->id }}" {{ $fiscal_year_id != $year->id ? 'disabled' : '' }} style="{{ $fiscal_year_id != $year->id ? 'color: #ccc;' : '' }}">
+                                                        {{ $year->bn_name }}
+                                                    </option>
                                                 @endforeach
                                             </select>
                                             @error('fiscal_year_id') <span class="text-danger small">{{ $message }}</span>@enderror
@@ -189,17 +184,17 @@
                                         <div class="col-md-4">
                                             @if($isHq || auth()->user()->hasRole('Admin'))
                                                 <label for="rpo_unit_id" class="form-label fw-semibold small mb-1">
-                                                    Select Office <span class="text-danger">*</span>
+                                                    {{ __('Select Office Group') }} <span class="text-danger">*</span>
                                                 </label>
                                                 <select class="form-select form-select-sm" id="rpo_unit_id" wire:model.live="rpo_unit_id">
-                                                    <option value="">Select Office</option>
+                                                    <option value="">{{ __('Select Office Group') }}</option>
                                                     @foreach($offices as $office)
                                                         <option value="{{ $office->id }}">{{ $office->name }}</option>
                                                     @endforeach
                                                 </select>
                                                 @error('rpo_unit_id') <span class="text-danger small">{{ $message }}</span>@enderror
                                             @else
-                                                <label class="form-label fw-semibold small mb-1">Office</label>
+                                                <label class="form-label fw-semibold small mb-1">{{ __('Office Group') }}</label>
                                                 <div class="form-control form-control-sm bg-light">
                                                     {{ auth()->user()->office->name ?? 'N/A' }}
                                                 </div>

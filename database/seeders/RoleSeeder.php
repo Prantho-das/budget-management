@@ -18,6 +18,7 @@ class RoleSeeder extends Seeder
 
         $hqManager = Role::firstOrCreate(['name' => 'HQ Manager', 'guard_name' => 'web']);
         $hqManager->syncPermissions([
+            'view-dashboard',
             'view-budget-estimations',
             'approve-budget',
             'release-budget',
@@ -30,6 +31,7 @@ class RoleSeeder extends Seeder
 
         $regionalManager = Role::firstOrCreate(['name' => 'Regional Manager', 'guard_name' => 'web']);
         $regionalManager->syncPermissions([
+            'view-dashboard',
             'view-budget-estimations',
             'approve-budget',
             'reject-budget',
@@ -38,6 +40,7 @@ class RoleSeeder extends Seeder
 
         $districtManager = Role::firstOrCreate(['name' => 'District Manager', 'guard_name' => 'web']);
         $districtManager->syncPermissions([
+            'view-dashboard',
             'view-budget-estimations',
             'approve-budget',
             'reject-budget',
@@ -47,6 +50,7 @@ class RoleSeeder extends Seeder
 
         $userRole = Role::firstOrCreate(['name' => 'Office User', 'guard_name' => 'web']);
         $userRole->syncPermissions([
+            'view-dashboard',
             'view-budget-estimations',
             'create-budget-estimations',
             'edit-budget-estimations',
@@ -57,6 +61,7 @@ class RoleSeeder extends Seeder
 
         // Additional Roles from User discussion
         Role::firstOrCreate(['name' => 'Assistant Budget Officer (HQ)', 'guard_name' => 'web'])->syncPermissions([
+            'view-dashboard',
             'view-budget-estimations',
             'release-budget',
             'reject-budget',
@@ -64,6 +69,7 @@ class RoleSeeder extends Seeder
         ]);
 
         Role::firstOrCreate(['name' => 'Budget Officer (HQ)', 'guard_name' => 'web'])->syncPermissions([
+            'view-dashboard',
             'view-budget-estimations',
             'release-budget',
             'reject-budget',
@@ -71,6 +77,7 @@ class RoleSeeder extends Seeder
         ]);
 
         Role::firstOrCreate(['name' => 'Budget Approval (Unit Office)', 'guard_name' => 'web'])->syncPermissions([
+            'view-dashboard',
             'view-budget-estimations',
             'approve-budget',
             'reject-budget',
@@ -78,6 +85,7 @@ class RoleSeeder extends Seeder
         ]);
 
         Role::firstOrCreate(['name' => 'Budget Entry (Unit Office)', 'guard_name' => 'web'])->syncPermissions([
+            'view-dashboard',
             'view-budget-estimations',
             'create-budget-estimations',
             'edit-budget-estimations',

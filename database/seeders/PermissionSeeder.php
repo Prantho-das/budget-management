@@ -13,6 +13,9 @@ class PermissionSeeder extends Seeder
     public function run(): void
     {
         $permissions = [
+            // Dashboard
+            'view-dashboard' => 'Dashboard',
+
             // User Management
             'view-users' => 'Users',
             'create-users' => 'Users',
@@ -56,6 +59,8 @@ class PermissionSeeder extends Seeder
             'edit-budget-estimations' => 'Budget Estimation',
             'delete-budget-estimations' => 'Budget Estimation',
             'submit-budget-estimations' => 'Budget Estimation',
+            'view-budget-status' => 'Budget Estimation',
+            'view-budget-summary' => 'Budget Estimation',
 
             // Approval Workflow
             'approve-budget' => 'Budget Approval',
