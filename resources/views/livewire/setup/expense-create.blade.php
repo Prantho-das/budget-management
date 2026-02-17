@@ -96,12 +96,12 @@
     <div class="row">
         <div class="col-12">
             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                <h4 class="mb-sm-0 font-size-18">Create New Expense</h4>
+                <h4 class="mb-sm-0 font-size-18">{{ __('Create New Expense') }}</h4>
 
                 <div class="page-title-right">
                     <ol class="breadcrumb m-0">
-                        <li class="breadcrumb-item"><a href="{{ route('setup.expenses') }}" wire:navigate>Expenses</a></li>
-                        <li class="breadcrumb-item active">Create New</li>
+                        <li class="breadcrumb-item"><a href="{{ route('setup.expenses') }}" wire:navigate>{{ __('Expenses') }}</a></li>
+                        <li class="breadcrumb-item active">{{ __('Create New') }}</li>
                     </ol>
                 </div>
             </div>
@@ -121,7 +121,7 @@
                                 <div class="voucher-header bg-light border-bottom p-3">
                                     <div class="row align-items-center">
                                         <div class="col-md-8">
-                                            <h5 class="mb-2 text-primary fw-bold">মাসিক ব্যয় বিবরণী / Monthly Expense Statement</h5>
+                                            <h5 class="mb-2 text-primary fw-bold">{{ __('মাসিক ব্যয় বিবরণী / Monthly Expense Statement') }}</h5>
                                             <div class="row g-2 small">
                                                 <div class="col-md-4">
                                                     <strong>{{ __('Office Group') }}:</strong> 
@@ -158,10 +158,10 @@
                                                 Select Month <span class="text-danger">*</span>
                                             </label>
                                             <select class="form-select form-select-sm shadow-sm border-primary" id="selectedMonth" wire:model.live="selectedMonth">
-                                                <option value="">Select Month</option>
+                                                <option value="">{{ __('Select Month') }}</option>
                                                 @foreach(['01' => 'January', '02' => 'February', '03' => 'March', '04' => 'April', '05' => 'May', '06' => 'June', '07' => 'July', '08' => 'August', '09' => 'September', '10' => 'October', '11' => 'November', '12' => 'December'] as $val => $label)
                                                     <option value="{{ $val }}" {{ $selectedMonth != $val ? 'disabled' : '' }} style="{{ $selectedMonth != $val ? 'color: #ccc;' : '' }}">
-                                                        {{ $label }}
+                                                        {{ __($label) }}
                                                     </option>
                                                 @endforeach
                                             </select>
@@ -172,7 +172,7 @@
                                                 Fiscal Year <span class="text-danger">*</span>
                                             </label>
                                             <select class="form-select form-select-sm shadow-sm border-primary" id="fiscal_year_id" wire:model.live="fiscal_year_id">
-                                                <option value="">Select Year</option>
+                                                <option value="">{{ __('Select Year') }}</option>
                                                 @foreach($fiscalYears as $year)
                                                     <option value="{{ $year->id }}" {{ $fiscal_year_id != $year->id ? 'disabled' : '' }} style="{{ $fiscal_year_id != $year->id ? 'color: #ccc;' : '' }}">
                                                         {{ $year->bn_name }}
@@ -209,15 +209,15 @@
                                         <table class="table table-bordered table-hover mb-0 expense-entry-table">
                                             <thead class="table-primary">
                                                 <tr class="text-center align-middle">
-                                                    <th style="width: 40px;" class="small d-none">ক্রমিক নং<br>#</th>
-                                                    <th style="width: 80px;" class="small">অর্থনৈতিক কোড<br>Code</th>
-                                                    <th class="small">বিবরণ / অর্থনৈতিক খাতের নাম<br>Economic Head</th>
-                                                    <th style="width: 110px;" class="small">বাজেট<br>Budget</th>
-                                                    <th style="width: 110px;" class="small">গত মাস পর্যন্ত ব্যয়<br>Prev. Total</th>
-                                                    <th style="width: 110px;" class="small">বর্তমান মাসের ব্যয়<br>This Month</th>
-                                                    <th style="width: 110px;" class="small">সর্বমোট ব্যয়<br>Total Expense</th>
-                                                    <th style="width: 110px;" class="small">উদ্বৃত্ত<br>Balance</th>
-                                                    <th style="width: 180px;" class="small">মন্তব্য<br>Remarks</th>
+                                                    <th style="width: 40px;" class="small d-none">{{ __('SL') }}</th>
+                                                    <th style="width: 80px;" class="small">{{ __('Economic Code') }}</th>
+                                                    <th class="small">{{ __('Economic Head') }}</th>
+                                                    <th style="width: 110px;" class="small">{{ __('Budget') }}</th>
+                                                    <th style="width: 110px;" class="small">{{ __('Prev. Total') }}</th>
+                                                    <th style="width: 110px;" class="small">{{ __('This Month') }}</th>
+                                                    <th style="width: 110px;" class="small">{{ __('Total Expense') }}</th>
+                                                    <th style="width: 110px;" class="small">{{ __('Balance') }}</th>
+                                                    <th style="width: 180px;" class="small">{{ __('Remarks') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -325,8 +325,8 @@
                                                                        placeholder="Notes...">
                                                             </td>
                                                         @else
-                                                            <td colspan="7" class="text-center fst-italic text-muted small bg-light">
-                                                                {{ $code->parent_id == null ? 'Parent Head - No Direct Entry' : 'Sub-Head - No Direct Entry' }}
+                                                                 <td colspan="7" class="text-center fst-italic text-muted small bg-light">
+                                                                {{ $code->parent_id == null ? __('Parent Head - No Direct Entry') : __('Sub-Head - No Direct Entry') }}
                                                             </td>
                                                         @endif
                                                     </tr>
@@ -334,7 +334,7 @@
                                             </tbody>
                                             <tfoot class="table-light border-top-2">
                                                 <tr class="fw-bold">
-                                                    <td colspan="3" class="text-end">সর্বমোট / Total:</td>
+                                                    <td colspan="3" class="text-end">{{ __('Total') }}:</td>
                                                     
                                                     {{-- Total Budget --}}
                                                     <td class="text-end font-monospace text-info">
@@ -385,7 +385,7 @@
                                         <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center justify-content-center">
                                             <i class="bx bx-error-circle font-size-24 me-2"></i>
                                             <div>
-                                                <strong>Action Required</strong>: Please select Month and Fiscal Year to start entering expenses.
+                                                <strong>{{ __('Action Required') }}</strong>: {{ __('Please select Month and Fiscal Year to start entering expenses.') }}
                                             </div>
                                         </div>
                                     </div>
@@ -406,7 +406,7 @@
                                         wire:loading.attr="disabled">
                                             <i class="bx bx-save me-1" wire:loading.remove></i>
                                             <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading></span>
-                                            Save Expenses
+                                            {{ __('Save Expenses') }}
                                         </button>
                                     </div>
                                 </div>

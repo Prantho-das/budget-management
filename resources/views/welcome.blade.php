@@ -2,9 +2,9 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8" />
-    <title>Budget Management System | Precise Planning</title>
+    <title>{{ __('Budget Management System | Precise Planning') }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta content="Professional Budget Management System" name="description" />
+    <meta content="{{ __('Professional Budget Management System') }}" name="description" />
     
     <!-- App favicon -->
     <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
@@ -86,7 +86,7 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm px-lg-5">
         <div class="container-fluid">
             <a class="navbar-brand" href="/">
-                <i class="bx bx-pie-chart-alt-2 align-middle me-1"></i> BudgetSystem
+                <i class="bx bx-pie-chart-alt-2 align-middle me-1"></i> {{ __('BudgetSystem') }}
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topnav-menu-content">
                 <span class="navbar-toggler-icon"></span>
@@ -99,12 +99,12 @@
                     @if (Route::has('login'))
                         @auth
                             <a href="{{ url('/dashboard') }}" wire:navigate class="btn btn-primary btn-rounded waves-effect waves-light">
-                                <i class="bx bx-home-circle me-1"></i> Dashboard
+                                <i class="bx bx-home-circle me-1"></i> {{ __('Dashboard') }}
                             </a>
                         @else
-                            <a href="{{ route('login') }}" wire:navigate class="btn btn-link text-muted me-3 fw-medium">Log in</a>
+                            <a href="{{ route('login') }}" wire:navigate class="btn btn-link text-muted me-3 fw-medium">{{ __('Log in') }}</a>
                             @if (Route::has('register'))
-                                <a href="{{ route('register') }}" wire:navigate class="btn btn-primary btn-rounded waves-effect waves-light">Get Started</a>
+                                <a href="{{ route('register') }}" wire:navigate class="btn btn-primary btn-rounded waves-effect waves-light">{{ __('Get Started') }}</a>
                             @endif
                         @endauth
                     @endif
@@ -119,17 +119,17 @@
             <div class="row align-items-center">
                 <div class="col-lg-6">
                     <div class="hero-content">
-                        <h1 class="hero-title">Smart <span>Budgeting</span> Solutions for Offices</h1>
-                        <p class="hero-desc">Streamline your financial planning, hierarchical approvals, and user management with our enterprise-grade budget system. Built for precision and scale.</p>
+                        <h1 class="hero-title">{{ __('Smart') }} <span>{{ __('Budgeting') }}</span> {{ __('Solutions for Offices') }}</h1>
+                        <p class="hero-desc">{{ __('Streamline your financial planning, hierarchical approvals, and user management with our enterprise-grade budget system. Built for precision and scale.') }}</p>
                         <div class="d-flex gap-3 mt-4">
-                            <a href="{{ route('login') }}" wire:navigate class="btn btn-primary btn-lg p-3 px-5 btn-rounded shadow-lg">Login to System</a>
-                            <a href="#features" class="btn btn-light btn-lg p-3 px-5 btn-rounded">Learn More</a>
+                            <a href="{{ route('login') }}" wire:navigate class="btn btn-primary btn-lg p-3 px-5 btn-rounded shadow-lg">{{ __('Login to System') }}</a>
+                            <a href="#features" class="btn btn-light btn-lg p-3 px-5 btn-rounded">{{ __('Learn More') }}</a>
                         </div>
                     </div>
                 </div>
                 <div class="col-lg-6 d-none d-lg-block">
                     <div class="hero-img ps-lg-5">
-                        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Budget Analytics" class="img-fluid rounded-3 shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="{{ __('Budget Analytics') }}" class="img-fluid rounded-3 shadow-lg">
                     </div>
                 </div>
             </div>
@@ -142,9 +142,9 @@
             <div class="row justify-content-center">
                 <div class="col-lg-6">
                     <div class="text-center mb-5">
-                        <h5 class="text-primary text-uppercase fw-bold mb-3">Features</h5>
-                        <h2 class="fw-bold">Everything You Need to Manage Budgets</h2>
-                        <p class="text-muted">Powerful tools designed specifically for government and administrative office hierarchies.</p>
+                        <h5 class="text-primary text-uppercase fw-bold mb-3">{{ __('Features') }}</h5>
+                        <h2 class="fw-bold">{{ __('Everything You Need to Manage Budgets') }}</h2>
+                        <p class="text-muted">{{ __('Powerful tools designed specifically for government and administrative office hierarchies.') }}</p>
                     </div>
                 </div>
             </div>
@@ -155,8 +155,8 @@
                         <div class="feature-icon mx-auto">
                             <i class="bx bx-copy-alt"></i>
                         </div>
-                        <h4 class="fw-bold mb-3">Budget Demand</h4>
-                        <p class="text-muted">Submit precise budget demands for economic codes with historical comparison data for smarter decisions.</p>
+                        <h4 class="fw-bold mb-3">{{ __('Budget Demand') }}</h4>
+                        <p class="text-muted">{{ __('Submit precise budget demands for economic codes with historical comparison data for smarter decisions.') }}</p>
                     </div>
                 </div>
                 <div class="col-lg-4 mb-4">
@@ -164,8 +164,8 @@
                         <div class="feature-icon mx-auto">
                             <i class="bx bx-check-shield"></i>
                         </div>
-                        <h4 class="fw-bold mb-3">Workflow Approval</h4>
-                        <p class="text-muted">Built-in hierarchical approval engine. Route requests from sub-offices to HQ with status tracking.</p>
+                        <h4 class="fw-bold mb-3">{{ __('Workflow Approval') }}</h4>
+                        <p class="text-muted">{{ __('Built-in hierarchical approval engine. Route requests from sub-offices to HQ with status tracking.') }}</p>
                     </div>
                 </div>
                 <div class="col-lg-4 mb-4">
@@ -173,8 +173,8 @@
                         <div class="feature-icon mx-auto">
                             <i class="bx bx-user-circle"></i>
                         </div>
-                        <h4 class="fw-bold mb-3">User Transfers</h4>
-                        <p class="text-muted">Effortlessly manage office staff. Transfer users between RPO units while maintaining their roles and access levels.</p>
+                        <h4 class="fw-bold mb-3">{{ __('User Transfers') }}</h4>
+                        <p class="text-muted">{{ __('Effortlessly manage office staff. Transfer users between RPO units while maintaining their roles and access levels.') }}</p>
                     </div>
                 </div>
             </div>
@@ -187,20 +187,20 @@
             <div class="row">
                 <div class="col-md-4 mb-4 mb-md-0">
                     <div class="stat-item">
-                        <h2 class="display-4 fw-bold">50+</h2>
-                        <p class="text-muted mb-0">Active Offices</p>
+                        <h2 class="display-4 fw-bold">{{ __('50+') }}</h2>
+                        <p class="text-muted mb-0">{{ __('Active Offices') }}</p>
                     </div>
                 </div>
                 <div class="col-md-4 mb-4 mb-md-0">
                     <div class="stat-item">
-                        <h2 class="display-4 fw-bold">100%</h2>
-                        <p class="text-muted mb-0">Transparency</p>
+                        <h2 class="display-4 fw-bold">{{ __('100%') }}</h2>
+                        <p class="text-muted mb-0">{{ __('Transparency') }}</p>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="stat-item">
-                        <h2 class="display-4 fw-bold">24/7</h2>
-                        <p class="text-muted mb-0">System Uptime</p>
+                        <h2 class="display-4 fw-bold">{{ __('24/7') }}</h2>
+                        <p class="text-muted mb-0">{{ __('System Uptime') }}</p>
                     </div>
                 </div>
             </div>
@@ -210,7 +210,7 @@
     <!-- Footer -->
     <footer class="py-5 bg-white border-top">
         <div class="container text-center">
-            <p class="text-muted mb-0">&copy; {{ date('Y') }} Budget Management System. Designed for Administrative Excellence.</p>
+            <p class="text-muted mb-0">&copy; {{ date('Y') }} {{ __('Budget Management System. Designed for Administrative Excellence.') }}</p>
         </div>
     </footer>
 

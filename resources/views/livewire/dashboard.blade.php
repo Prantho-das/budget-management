@@ -189,7 +189,7 @@
                                     <td>{{ $activity->budgetType->name ?? 'N/A' }}</td>
                                     <td>
                                         <span class="badge badge-pill badge-soft-{{ $activity->current_stage == 'Released' ? 'success' : 'primary' }} font-size-11">
-                                            {{ ucfirst($activity->current_stage) }}
+                                            {{ __(ucfirst($activity->current_stage)) }}
                                         </span>
                                     </td>
                                     <td>

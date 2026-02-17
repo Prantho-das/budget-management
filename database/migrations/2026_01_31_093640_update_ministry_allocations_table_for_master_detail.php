@@ -32,8 +32,8 @@ return new class extends Migration
         Schema::table('ministry_allocations', function (Blueprint $table) {
             $table->dropColumn('ministry_budget_master_id');
             
-            $table->foreignId('fiscal_year_id')->nullable()->constrained('fiscal_years')->onDelete('cascade');
-            $table->foreignId('rpo_unit_id')->nullable()->constrained('rpo_units')->onDelete('cascade');
+            $table->foreignId('fiscal_year_id')->nullable()/* /* /* ->constrained('fiscal_years') */ */ *//* /* /* ->onDelete('cascade') */ */ */;
+            $table->foreignId('rpo_unit_id')->nullable()/* /* /* ->constrained('rpo_units') */ */ *//* /* /* ->onDelete('cascade') */ */ */;
             $table->string('budget_type')->default('original');
         });
     }

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('expenses', function (Blueprint $table) {
             $table->unsignedBigInteger('created_by')->nullable()->after('budget_type_id');
-            $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
+            // // // $table->foreign('created_by')->references('id')->on('users')/* /* /* ->onDelete('set null') */ */ */;
         });
     }
 
@@ -23,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('expenses', function (Blueprint $table) {
-            $table->dropForeign(['created_by']);
+            // // // $table->dropForeign(['created_by']);
             $table->dropColumn('created_by');
         });
     }

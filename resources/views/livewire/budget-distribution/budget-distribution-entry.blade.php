@@ -105,13 +105,13 @@ $numto = new Rakibhstu\Banglanumber\NumberToBangla();
 
                                             <div class="d-flex justify-content-center gap-2 font-size-10">
                                                 <div>
-                                                    <h6>প্রকৃত ব্যায়</h2>
+                                                    <h6>{{ __('Actual Expenditure') }}</h6>
                                                     @foreach($prevFiscalYears as $fy)
                                                         <span class="opacity-75" style="min-width: 50px;">{{ bn_num($fy->name) }}</span>
                                                     @endforeach
                                                 </div>
                                                 <div class="d-flex flex-column align-self-end">
-                                                    <span class="fw-bold" style="min-width: 100px;">চাহিদা</span>
+                                                    <span class="fw-bold" style="min-width: 100px;">{{ __('Demand') }}</span>
                                                 </div>
                                             </div>
                                         </th>

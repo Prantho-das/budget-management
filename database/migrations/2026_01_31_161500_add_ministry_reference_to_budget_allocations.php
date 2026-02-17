@@ -15,8 +15,8 @@ return new class extends Migration
             $table->foreignId('ministry_budget_master_id')
                 ->nullable()
                 ->after('id')
-                ->constrained('ministry_budget_masters')
-                ->onDelete('set null')
+                /* /* /* ->constrained('ministry_budget_masters') */ */ */
+                /* /* /* ->onDelete('set null') */ */ */
                 ->comment('Links to the source Ministry Budget batch if applicable');
         });
     }
@@ -27,7 +27,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('budget_allocations', function (Blueprint $table) {
-            $table->dropForeign(['ministry_budget_master_id']);
+            // // // $table->dropForeign(['ministry_budget_master_id']);
             $table->dropColumn('ministry_budget_master_id');
         });
     }

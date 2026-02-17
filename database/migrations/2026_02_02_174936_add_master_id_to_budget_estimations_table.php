@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('budget_estimations', function (Blueprint $table) {
-            $table->foreignId('budget_estimation_master_id')->after('id')->nullable()->constrained('budget_estimation_masters')->onDelete('cascade');
+            $table->foreignId('budget_estimation_master_id')->after('id')->nullable()/* /* /* ->constrained('budget_estimation_masters') */ */ *//* /* /* ->onDelete('cascade') */ */ */;
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('budget_estimations', function (Blueprint $table) {
-            $table->dropForeign(['budget_estimation_master_id']);
+            // // // $table->dropForeign(['budget_estimation_master_id']);
             $table->dropColumn('budget_estimation_master_id');
         });
     }

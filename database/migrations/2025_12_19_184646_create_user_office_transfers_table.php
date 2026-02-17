@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('user_office_transfers', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('from_office_id')->nullable()->constrained('rpo_units')->onDelete('cascade');
-            $table->foreignId('to_office_id')->constrained('rpo_units')->onDelete('cascade');
+            $table->foreignId('user_id')/* /* /* ->constrained() */ */ *//* /* /* ->onDelete('cascade') */ */ */;
+            $table->foreignId('from_office_id')->nullable()/* /* /* ->constrained('rpo_units') */ */ *//* /* /* ->onDelete('cascade') */ */ */;
+            $table->foreignId('to_office_id')/* /* /* ->constrained('rpo_units') */ */ *//* /* /* ->onDelete('cascade') */ */ */;
             $table->date('transfer_date');
             $table->text('remarks')->nullable();
-            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('created_by')->nullable()/* /* /* ->constrained('users') */ */ *//* /* /* ->onDelete('set null') */ */ */;
             $table->timestamps();
         });
     }

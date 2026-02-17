@@ -17,10 +17,10 @@ return new class extends Migration
             $table->decimal('amount', 15, 2);
             $table->text('description')->nullable();
             $table->date('date');
-            $table->foreignId('expense_category_id')->constrained()->onDelete('cascade');
+            $table->foreignId('expense_category_id')/* /* /* ->constrained() */ */ *//* /* /* ->onDelete('cascade') */ */ */;
             // Assuming we need to link it to an office and fiscal year
-            $table->foreignId('rpo_unit_id')->constrained('rpo_units')->onDelete('cascade');
-            $table->foreignId('fiscal_year_id')->nullable()->constrained('fiscal_years')->onDelete('set null');
+            $table->foreignId('rpo_unit_id')/* /* /* ->constrained('rpo_units') */ */ *//* /* /* ->onDelete('cascade') */ */ */;
+            $table->foreignId('fiscal_year_id')->nullable()/* /* /* ->constrained('fiscal_years') */ */ *//* /* /* ->onDelete('set null') */ */ */;
             $table->timestamps();
         });
     }

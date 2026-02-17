@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('code')->unique();
             $table->enum('type', ['ministry', 'headquarters', 'regional', 'divisional']);
-            $table->foreignId('parent_id')->nullable()->constrained('rpo_units')->onDelete('cascade');
+            $table->foreignId('parent_id')->nullable()/* /* /* ->constrained('rpo_units') */ */ *//* /* /* ->onDelete('cascade') */ */ */;
             $table->string('district')->nullable();
             $table->boolean('status')->default(true);
             $table->timestamps();

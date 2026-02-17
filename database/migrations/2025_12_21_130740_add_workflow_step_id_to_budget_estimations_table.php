@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('budget_estimations', function (Blueprint $table) {
-            $table->foreignId('workflow_step_id')->nullable()->constrained('workflow_steps')->nullOnDelete()->after('economic_code_id');
+            $table->foreignId('workflow_step_id')->nullable()/* /* /* ->constrained('workflow_steps') */ */ *//* /* /* ->nullOnDelete() */ */ */->after('economic_code_id');
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('budget_estimations', function (Blueprint $table) {
-            $table->dropForeign(['workflow_step_id']);
+            // // // $table->dropForeign(['workflow_step_id']);
             $table->dropColumn('workflow_step_id');
         });
     }
