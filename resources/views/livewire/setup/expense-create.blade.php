@@ -209,7 +209,7 @@
                                         <table class="table table-bordered table-hover mb-0 expense-entry-table">
                                             <thead class="table-primary">
                                                 <tr class="text-center align-middle">
-                                                    <th style="width: 40px;" class="small">ক্রমিক নং<br>#</th>
+                                                    <th style="width: 40px;" class="small d-none">ক্রমিক নং<br>#</th>
                                                     <th style="width: 80px;" class="small">অর্থনৈতিক কোড<br>Code</th>
                                                     <th class="small">বিবরণ / অর্থনৈতিক খাতের নাম<br>Economic Head</th>
                                                     <th style="width: 110px;" class="small">বাজেট<br>Budget</th>
@@ -225,7 +225,7 @@
                                                 @foreach($economicCodes as $code)
                                                     <tr wire:key="economic-code-{{ $code->id }}" class="{{ $code->parent_id == null ? 'table-secondary fw-bold' : '' }}">
                                                         {{-- Serial Number --}}
-                                                        <td class="text-center small">
+                                                        <td class="text-center small d-none">
                                                             @php
                                                                 $hasChildren = collect($economicCodes)->where('parent_id', $code->id)->count() > 0;
                                                             @endphp
