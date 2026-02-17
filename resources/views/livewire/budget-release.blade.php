@@ -143,41 +143,41 @@
                       <div class="card-body">
                           <div class="table-title-box">
                               <div class="title-box-inner">
-                                  <div class="title">পরিচালন ব্যায়ের প্রাথমিক প্রাক্কলন ও প্রক্ষেপন </div>
+                                  <div class="title">{{ __('Expenditure Initial Estimation and Projection Summary') }}</div>
                                   <div class="ministry">
-                                      <span>মন্ত্রণালয় / বিভাগ</span> : ১৬১ সুরক্ষা সেনা বিভাগ,স্বরাষ্ট্র মন্ত্রণালয়
+                                      <span>{{ __('Ministry / Division') }}</span> : {{ __('১৬১ সুরক্ষা সেনা বিভাগ,স্বরাষ্ট্র মন্ত্রণালয়') }}
                                   </div>
                                   <div class="ministry">
-                                      <span>অধিদপ্তর</span> : ১৬১০৫ ইমিগ্রেশন ও পাসপোর্ট অধিদপ্তর
+                                      <span>{{ __('Department') }}</span> : {{ __('১৬১০৫ ইমিগ্রেশন ও পাসপোর্ট অধিদপ্তর') }}
                                   </div>
                                   <div class="ministry">
-                                      <span>প্রাতিষ্ঠানিক ইউনিট</span> : ১৬১০৫০৩ ইমিগ্রেশন ও পাসপোর্ট অধিদপ্তর
+                                      <span>{{ __('Institutional Unit') }}</span> : {{ __('১৬১০৫০৩ ইমিগ্রেশন ও পাসপোর্ট অধিদপ্তর') }}
                                   </div>
                               </div>
                           </div>
                           <div class="amt-flex">
-                              <div class="left-text">সাধারণ কার্যক্রম</div>
-                              <div class="left-text">(অংকসমূহ হাজার টাকায়)</div>
+                              <div class="left-text">{{ __('General Activities') }}</div>
+                              <div class="left-text">{{ __('(Amounts in thousand BDT)') }}</div>
                           </div>
                           <div class="table-responsive">
                               <table class="table table-bordered align-middle custom-budget-table">
                                   <thead>
                                       <tr class="table-primary text-center">
-                                          <th rowspan="2">অর্থনৈতিক গ্রুপ / কোড</th>
-                                          <th rowspan="2">বিবরণ</th>
-                                          <th colspan="3">প্রকৃত ব্যায়</th>
-                                          <th>বাজেট</th>
-                                          <th>প্রস্তাবিত <br> সংশোধিত</th>
-                                          <th>প্রাক্কলন</th>
-                                          <th colspan="2">প্রক্ষেপন</th>
+                                          <th rowspan="2">{{ __('Economic Group / Code') }}</th>
+                                          <th rowspan="2">{{ __('Description') }}</th>
+                                          <th colspan="3">{{ __('Actual Expenditure') }}</th>
+                                          <th>{{ __('Budget') }}</th>
+                                          <th>{{ __('Proposed Revised') }}</th>
+                                          <th>{{ __('Estimation') }}</th>
+                                          <th colspan="2">{{ __('Projection') }}</th>
 
-                                          <th rowspan="2">ব্যাখ্যামূলক <br> মন্তব্য</th>
+                                          <th rowspan="2">{{ __('Explanatory Remarks') }}</th>
                                       </tr>
                                       <tr>
                                           <th>{{ bn_num('2022-2023') }}</th>
                                           <th>{{ bn_num('2023-24') }}</th>
 
-                                          <th>প্রথম ৬ মাস <br> {{ bn_num('2024-25') }}</th>
+                                          <th>{{ __('First 6 Months') }} <br> {{ bn_num('2024-25') }}</th>
                                           <th>{{ bn_num('2024-25') }}</th>
                                           <th>{{ bn_num('2024-25') }}</th>
                                           <th>{{ bn_num('2025-26') }}</th>

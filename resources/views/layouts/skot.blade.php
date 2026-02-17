@@ -426,7 +426,7 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Close') }}</button>
                         </div>
                     </div>
                 </div>
@@ -467,7 +467,7 @@
 
             <!-- Settings -->
             <hr class="mt-0" />
-            <h6 class="text-center mb-0">Choose Layouts</h6>
+            <h6 class="text-center mb-0">{{ __('Choose Layouts') }}</h6>
 
             <div class="p-4">
                 <div class="mb-2">

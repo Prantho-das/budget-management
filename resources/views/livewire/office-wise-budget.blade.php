@@ -239,20 +239,20 @@
                                         $proj2_fy = bn_num($startYearNum + 3) . '-' . bn_num(substr($startYearNum + 4, -2));
                                     @endphp
                                     <tr class="table-primary text-center">
-                                        <th rowspan="2">অফিসের নাম</th>
-                                        <th rowspan="2">অফিস কোড</th>
-                                        <th colspan="4">প্রকৃত ব্যায়</th>
-                                        <th>বাজেট</th>
-                                        <th>প্রস্তাবিত <br> সংশোধিত</th>
-                                        <th>প্রাক্কলন</th>
-                                        <th colspan="2">প্রক্ষেপন</th>
-                                        <th rowspan="2">অতিরিক্ত <br> দাবি</th>
+                                        <th rowspan="2">{{ __('Office Name') }}</th>
+                                        <th rowspan="2">{{ __('Office Code') }}</th>
+                                        <th colspan="4">{{ __('Actual Expenditure') }}</th>
+                                        <th>{{ __('Budget') }}</th>
+                                        <th>{{ __('Proposed Revised') }}</th>
+                                        <th>{{ __('Estimation') }}</th>
+                                        <th colspan="2">{{ __('Projection') }}</th>
+                                        <th rowspan="2">{{ __('Extra Demand') }}</th>
                                     </tr>
                                     <tr>
                                         <th>{{ $h1 }}</th>
                                         <th>{{ $h2 }}</th>
-                                        <th>প্রথম ৬ মাস <br> {{ $h3_part }}</th>
-                                        <th>প্রথম ৬ মাস <br> {{ $h4_part }}</th>
+                                        <th>{{ __('First 6 Months') }} <br> {{ $h3_part }}</th>
+                                        <th>{{ __('First 6 Months') }} <br> {{ $h4_part }}</th>
                                         <th>{{ $budget_fy }}</th>
                                         <th>{{ $budget_fy }}</th>
                                         <th>{{ $est_fy }}</th>
