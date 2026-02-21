@@ -157,14 +157,14 @@
                                             <label for="selectedMonth" class="form-label fw-semibold small mb-1">
                                                 Select Month <span class="text-danger">*</span>
                                             </label>
-                                            <select class="form-select form-select-sm shadow-sm border-primary" id="selectedMonth" wire:model.live="selectedMonth">
-                                                <option value="">{{ __('Select Month') }}</option>
-                                                @foreach(['01' => 'January', '02' => 'February', '03' => 'March', '04' => 'April', '05' => 'May', '06' => 'June', '07' => 'July', '08' => 'August', '09' => 'September', '10' => 'October', '11' => 'November', '12' => 'December'] as $val => $label)
-                                                    <option value="{{ $val }}" {{ $selectedMonth != $val ? 'disabled' : '' }} style="{{ $selectedMonth != $val ? 'color: #ccc;' : '' }}">
-                                                        {{ __($label) }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
+                                                <select class="form-select form-select-sm shadow-sm border-primary" id="selectedMonth" wire:model.live="selectedMonth">
+                                                    <option value="">{{ __('Select Month') }}</option>
+                                                    @foreach(['01' => 'January', '02' => 'February', '03' => 'March', '04' => 'April', '05' => 'May', '06' => 'June', '07' => 'July', '08' => 'August', '09' => 'September', '10' => 'October', '11' => 'November', '12' => 'December'] as $val => $label)
+                                                        <option value="{{ $val }}" {{ $selectedMonth != $val && !$isDraftSaved ? 'disabled' : '' }} style="{{ $selectedMonth != $val && !$isDraftSaved ? 'color: #ccc;' : '' }}">
+                                                            {{ __($label) }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
                                             @error('selectedMonth') <span class="text-danger small">{{ $message }}</span>@enderror
                                         </div>
                                         <div class="col-md-4">
@@ -174,7 +174,7 @@
                                             <select class="form-select form-select-sm shadow-sm border-primary" id="fiscal_year_id" wire:model.live="fiscal_year_id">
                                                 <option value="">{{ __('Select Year') }}</option>
                                                 @foreach($fiscalYears as $year)
-                                                    <option value="{{ $year->id }}" {{ $fiscal_year_id != $year->id ? 'disabled' : '' }} style="{{ $fiscal_year_id != $year->id ? 'color: #ccc;' : '' }}">
+                                                    <option value="{{ $year->id }}" {{ $fiscal_year_id != $year->id && !$isDraftSaved ? 'disabled' : '' }} style="{{ $fiscal_year_id != $year->id && !$isDraftSaved ? 'color: #ccc;' : '' }}">
                                                         {{ $year->bn_name }}
                                                     </option>
                                                 @endforeach
@@ -214,7 +214,7 @@
                                                     <th class="small">{{ __('Economic Head') }}</th>
                                                     <th style="width: 110px;" class="small">{{ __('Budget') }}</th>
                                                     <th style="width: 110px;" class="small">{{ __('Prev. Total') }}</th>
-                                                    <th style="width: 110px;" class="small">{{ __('This Month') }}</th>
+                                                    <th style="width: 110px;" class="small">{{ __('Current Month') }}</th>
                                                     <th style="width: 110px;" class="small">{{ __('Total Expense') }}</th>
                                                     <th style="width: 110px;" class="small">{{ __('Balance') }}</th>
                                                     <th style="width: 180px;" class="small">{{ __('Remarks') }}</th>
@@ -289,11 +289,11 @@
                                                             
                                                             {{-- This Month (Current Input/Spent) --}}
                                                             <td>
-                                                                <input type="number" 
-                                                                       step="0.01" 
-                                                                       class="form-control form-control-sm text-end font-monospace" 
-                                                                       wire:model="expenseEntries.{{ $code->id }}.amount" 
-                                                                       placeholder="0.00">
+                                                                    <input type="number" 
+                                                                           step="0.01" 
+                                                                           class="form-control form-control-sm text-end font-monospace" 
+                                                                           wire:model="expenseEntries.{{ $code->id }}.amount" 
+                                                                           placeholder="0.00">
                                                             </td>
                                                             
                                                             {{-- Total Expenditure (Previous + This Month) --}}
@@ -319,10 +319,10 @@
                                                             
                                                             {{-- Remarks --}}
                                                             <td>
-                                                                <input type="text" 
-                                                                       class="form-control form-control-sm" 
-                                                                       wire:model="expenseEntries.{{ $code->id }}.description" 
-                                                                       placeholder="Notes...">
+                                                                    <input type="text" 
+                                                                           class="form-control form-control-sm" 
+                                                                           wire:model="expenseEntries.{{ $code->id }}.description" 
+                                                                           placeholder="Notes...">
                                                             </td>
                                                         @else
                                                                  <td colspan="7" class="text-center fst-italic text-muted small bg-light">
@@ -334,7 +334,7 @@
                                             </tbody>
                                             <tfoot class="table-light border-top-2">
                                                 <tr class="fw-bold">
-                                                    <td colspan="3" class="text-end">{{ __('Total') }}:</td>
+                                                    <td colspan="2" class="text-end">{{ __('Total') }}:</td>
                                                     
                                                     {{-- Total Budget --}}
                                                     <td class="text-end font-monospace text-info">
@@ -398,16 +398,23 @@
                                         All amounts should be entered in BDT (৳)
                                     </div>
                                     <div class="d-flex gap-2">
-                                        <button type="button" wire:click="cancel" class="btn btn-secondary btn-sm px-4">
-                                            <i class="bx bx-x me-1"></i>Cancel
-                                        </button>
-                                        <button type="submit"
-                                        class="btn btn-primary btn-sm px-4"
-                                        wire:loading.attr="disabled">
-                                            <i class="bx bx-save me-1" wire:loading.remove></i>
-                                            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading></span>
-                                            {{ __('Save Expenses') }}
-                                        </button>
+                                            <button type="submit"
+                                            class="btn btn-primary btn-sm px-4"
+                                            wire:loading.attr="disabled">
+                                                <i class="bx bx-save me-1" wire:loading.remove></i>
+                                                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading></span>
+                                                {{ $isDraftSaved ? __('Update Draft') : __('Save Expenses') }}
+                                            </button>
+                                        @if($isDraftSaved)
+                                            <button type="button" 
+                                            onclick="confirmSubmission()"
+                                            class="btn btn-success btn-sm px-4"
+                                            wire:loading.attr="disabled">
+                                                <i class="bx bx-check-circle me-1" wire:loading.remove></i>
+                                                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading></span>
+                                                {{ __('Submit Expenses') }}
+                                            </button>
+                                        @endif
                                     </div>
                                 </div>
                             </form>
@@ -417,6 +424,27 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+    <script>
+        function confirmSubmission() {
+            Swal.fire({
+                title: "{{ __('Are you sure?') }}",
+                text: "{{ __('Once submitted, you will not be able to edit this draft!') }}",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#34c38f',
+                cancelButtonColor: '#f46a6a',
+                confirmButtonText: "{{ __('Yes, Submit it!') }}",
+                cancelButtonText: "{{ __('Cancel') }}"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.submitFinal();
+                }
+            })
+        }
+    </script>
+    @endpush
 </div>
 
     

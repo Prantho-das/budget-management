@@ -25,6 +25,8 @@ class ExpenseCreate extends Component
     public $fiscalYearName;
     public $totalBudget = 0;
     public $totalPrevious = 0;
+    public $isDraftSaved = false;
+    public $batchCode;
 
     protected function rules()
     {
@@ -54,11 +56,11 @@ class ExpenseCreate extends Component
         }
 
         $user = auth()->user();
-        $this->rpo_unit_id = $user->rpo_unit_id;
-
         // Determine if user is from Headquarters
         $userOffice = $user->office;
         $this->isHq = $userOffice && $userOffice->parent_id === null;
+
+        $this->rpo_unit_id = $this->isHq ? null : $user->rpo_unit_id;
 
         $this->loadExistingEntries();
     }
@@ -79,7 +81,37 @@ class ExpenseCreate extends Component
             $this->officeName = RpoUnit::find($this->rpo_unit_id)?->name;
             $this->fiscalYearName = FiscalYear::find($this->fiscal_year_id)?->name;
 
-            // Load Existing Entries for the current month
+            // Load Draft Entries to populate input boxes
+            $draftExpenses = Expense::where('fiscal_year_id', $this->fiscal_year_id)
+                ->where('rpo_unit_id', $this->rpo_unit_id)
+                ->whereMonth('date', $this->selectedMonth)
+                ->where('status', Expense::STATUS_DRAFT)
+                ->get();
+
+            if ($draftExpenses->count() > 0) {
+                $this->isDraftSaved = true;
+                
+                // Reconstruct batchCode from the first entry's code
+                // Code format: EXP-YYYYMMDD-RANDOM-CODEID
+                $firstCode = $draftExpenses->first()->code;
+                $parts = explode('-', $firstCode);
+                if (count($parts) >= 3) {
+                    $this->batchCode = $parts[0] . '-' . $parts[1] . '-' . $parts[2];
+                }
+
+                foreach ($draftExpenses as $exp) {
+                    $this->expenseEntries[$exp->economic_code_id] = [
+                        'amount' => $exp->amount,
+                        'description' => $exp->description
+                    ];
+                }
+            } else {
+                $this->isDraftSaved = false;
+                $this->batchCode = null;
+                $this->expenseEntries = [];
+            }
+
+            // Load sum of all expenses for summary/context
             $this->existingEntries = Expense::where('fiscal_year_id', $this->fiscal_year_id)
                 ->where('rpo_unit_id', $this->rpo_unit_id)
                 ->whereMonth('date', $this->selectedMonth)
@@ -157,15 +189,14 @@ class ExpenseCreate extends Component
         }
 
         $expenseDate = $year . '-' . $this->selectedMonth . '-01';
-        $autoCode = 'EXP-' . date('Ymd') . '-' . strtoupper(\Illuminate\Support\Str::random(6));
 
-        $hasApproverInOffice = User::where('rpo_unit_id', $this->rpo_unit_id)
-            ->permission('approve-expenses')
-            ->exists();
+        if (!$this->batchCode) {
+            $this->batchCode = 'EXP-' . date('Ymd') . '-' . strtoupper(\Illuminate\Support\Str::random(6));
+        }
 
-        $targetStatus = $hasApproverInOffice ? Expense::STATUS_DRAFT : Expense::STATUS_APPROVED;
-        $approvedBy = $hasApproverInOffice ? null : auth()->id();
-        $approvedAt = $hasApproverInOffice ? null : now();
+        $targetStatus = Expense::STATUS_DRAFT; 
+        $approvedBy = null;
+        $approvedAt = null;
 
         $hasEntry = false;
         foreach ($this->expenseEntries as $codeId => $entry) {
@@ -173,6 +204,12 @@ class ExpenseCreate extends Component
             $desc = $entry['description'] ?? null;
 
             if ($amount > 0) {
+                // Safety check: ensure only leaf nodes get entries
+                $code = EconomicCode::find($codeId);
+                if (!$code || $code->children()->count() > 0) {
+                    continue;
+                }
+                
                 $hasEntry = true;
 
                 // Find Budget Type dynamically from allocation
@@ -189,29 +226,60 @@ class ExpenseCreate extends Component
                     $entryBudgetTypeId = $defaultType ? $defaultType->id : null;
                 }
 
-                Expense::create([
-                    'code' => $autoCode . '-' . $codeId,
-                    'amount' => $amount,
-                    'description' => $desc,
-                    'date' => $expenseDate,
-                    'rpo_unit_id' => $this->rpo_unit_id,
-                    'fiscal_year_id' => $this->fiscal_year_id,
-                    'economic_code_id' => $codeId,
-                    'budget_type_id' => $entryBudgetTypeId,
-                    'status' => $targetStatus,
-                    'created_by' => auth()->id(),
-                    'approved_by' => $approvedBy,
-                    'approved_at' => $approvedAt,
-                ]);
+                Expense::updateOrCreate(
+                    ['code' => $this->batchCode . '-' . $codeId],
+                    [
+                        'amount' => $amount,
+                        'description' => $desc,
+                        'date' => $expenseDate,
+                        'rpo_unit_id' => $this->rpo_unit_id,
+                        'fiscal_year_id' => $this->fiscal_year_id,
+                        'economic_code_id' => $codeId,
+                        'budget_type_id' => $entryBudgetTypeId,
+                        'status' => $targetStatus,
+                        'created_by' => auth()->id(),
+                        'approved_by' => $approvedBy,
+                        'approved_at' => $approvedAt,
+                    ]
+                );
+            } else {
+                // If amount is set to 0, remove this specific entry from the draft batch
+                Expense::where('code', $this->batchCode . '-' . $codeId)->delete();
             }
         }
 
         if ($hasEntry) {
-            session()->flash('message', 'Expenses Created Successfully.');
-            // return $this->redirect(route('setup.expenses'), navigate: true);
+            $this->isDraftSaved = true;
+            session()->flash('message', __('Expenses saved as draft. Please click Submit to finalize.'));
         } else {
             session()->flash('error', __('No valid amounts entered.'));
         }
+    }
+
+    public function submitFinal()
+    {
+        abort_if(!$this->isDraftSaved, 403);
+
+        $expenses = Expense::where('code', 'like', $this->batchCode . '-%')->get();
+
+        foreach ($expenses as $expense) {
+            $hasApproverInOffice = User::where('rpo_unit_id', $this->rpo_unit_id)
+                ->permission('approve-expenses')
+                ->exists();
+
+            $targetStatus = $hasApproverInOffice ? Expense::STATUS_DRAFT : Expense::STATUS_APPROVED;
+            $approvedBy = $hasApproverInOffice ? null : auth()->id();
+            $approvedAt = $hasApproverInOffice ? null : now();
+
+            $expense->update([
+                'status' => $targetStatus,
+                'approved_by' => $approvedBy,
+                'approved_at' => $approvedAt,
+            ]);
+        }
+
+        session()->flash('message', __('Expenses Submitted Successfully.'));
+        return $this->redirect(route('setup.expenses'), navigate: true);
     }
 
     public function cancel()
@@ -244,7 +312,7 @@ class ExpenseCreate extends Component
 
         $offices = [];
         if ($this->isHq || auth()->user()->hasRole('Admin')) {
-            $offices = RpoUnit::all();
+            $offices = RpoUnit::whereNotNull('parent_id')->get();
         }
 
         return view('livewire.setup.expense-create', [

@@ -115,6 +115,10 @@ class Expenses extends Component
             $children = $allCodes->where('parent_id', $root->id)->sortBy('code');
             foreach ($children as $child) {
                 $orderedCodes[] = $child;
+                $grandchildren = $allCodes->where('parent_id', $child->id)->sortBy('code');
+                foreach ($grandchildren as $grandchild) {
+                    $orderedCodes[] = $grandchild;
+                }
             }
         }
 
@@ -134,13 +138,14 @@ class Expenses extends Component
             ->orderBy('date', 'desc')
             ->paginate(50); // Increased for better grouping view
 
-        $groupedExpenses = $expenses->getCollection()->groupBy(function ($item) {
-            return \Carbon\Carbon::parse($item->date)->format('F Y');
-        });
+        $groupedExpenses = $expenses->getCollection()->groupBy('rpo_unit_id');
 
-        $monthlyTotals = Expense::selectRaw('DATE_FORMAT(date, "%M %Y") as month_year, SUM(amount) as total')
+        $officeTotals = Expense::selectRaw('rpo_unit_id, SUM(amount) as total')
             ->when($this->filter_fiscal_year_id, function ($query) {
                 $query->where('fiscal_year_id', $this->filter_fiscal_year_id);
+            })
+            ->when($this->filter_month, function ($query) {
+                $query->whereMonth('date', $this->filter_month);
             })
             ->when($this->filter_rpo_unit_id, function ($query) {
                 $query->where('rpo_unit_id', $this->filter_rpo_unit_id);
@@ -148,8 +153,9 @@ class Expenses extends Component
             ->when(! auth()->user()->can('view-all-offices-data'), function ($query) {
                 $query->where('rpo_unit_id', auth()->user()->rpo_unit_id);
             })
-            ->groupBy('month_year')
-            ->pluck('total', 'month_year');
+            ->groupBy('rpo_unit_id')
+            ->pluck('total', 'rpo_unit_id')
+            ->toArray();
 
         $offices = RpoUnit::all();
         $fiscalYears = FiscalYear::orderBy('name', 'desc')->get();
@@ -158,7 +164,7 @@ class Expenses extends Component
         return view('livewire.setup.expenses', [
             'expenses' => $expenses,
             'groupedExpenses' => $groupedExpenses,
-            'monthlyTotals' => $monthlyTotals,
+            'officeTotals' => $officeTotals,
             'offices' => $offices,
             'fiscalYears' => $fiscalYears,
             'economicCodes' => $orderedCodes, // Hierarchical list
@@ -320,6 +326,12 @@ class Expenses extends Component
                 $desc = $entry['description'] ?? null;
 
                 if ($amount > 0) {
+                    // Safety check: ensure only leaf nodes get entries
+                    $code = EconomicCode::find($codeId);
+                    if (!$code || $code->children()->count() > 0) {
+                        continue;
+                    }
+                    
                     $hasEntry = true;
 
                     Expense::create([
@@ -407,6 +419,34 @@ class Expenses extends Component
         }
 
         $this->dispatch('delete-confirmation', $id);
+    }
+
+    public function batchApprove($officeId)
+    {
+        abort_if(!auth()->user()->can('approve-expenses'), 403);
+
+        $expenses = Expense::where([
+            'rpo_unit_id' => $officeId,
+            'fiscal_year_id' => $this->filter_fiscal_year_id,
+            'status' => Expense::STATUS_DRAFT,
+        ])
+        ->whereMonth('date', $this->filter_month)
+        ->get();
+
+        if ($expenses->isEmpty()) {
+            session()->flash('warning', __('No draft expenses found for this office in the selected period.'));
+            return;
+        }
+
+        foreach ($expenses as $expense) {
+            $expense->update([
+                'status' => Expense::STATUS_APPROVED,
+                'approved_by' => auth()->id(),
+                'approved_at' => now(),
+            ]);
+        }
+
+        session()->flash('message', __('Batch Approved Successfully.'));
     }
 
     public function approve($id)

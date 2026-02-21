@@ -239,7 +239,10 @@
                                                         <tr class="{{ $code->parent_id == null ? 'table-secondary fw-bold' : '' }}">
                                                             {{-- Serial Number --}}
                                                             <td class="text-center small">
-                                                                @if($code->parent_id != null)
+                                                                @php
+                                                                    $hasChildren = $code->children->count() > 0;
+                                                                @endphp
+                                                                @if(!$hasChildren)
                                                                     {{ bn_num($serialNo++) }}
                                                                 @else
                                                                     -
@@ -248,7 +251,7 @@
                                                             
                                                             {{-- Economic Code --}}
                                                             <td class="text-center">
-                                                                <span class="badge {{ $code->parent_id ? 'bg-info text-white' : 'bg-dark' }} font-monospace">
+                                                                <span class="badge {{ $code->children->count() == 0 ? 'bg-info text-white' : 'bg-dark' }} font-monospace">
                                                                     {{ bn_num($code->code) }}
                                                                 </span>
                                                             </td>
@@ -256,21 +259,21 @@
                                                             {{-- Economic Head Name --}}
                                                             <td>
                                                                 <div class="d-flex align-items-center">
-                                                                    @if($code->parent_id == null)
-                                                                        <i class="bx bx-folder text-primary me-2"></i>
+                                                                    @if($code->children->count() > 0)
+                                                                        <i class="bx bx-folder {{ $code->parent_id == null ? 'text-primary' : 'text-warning' }} me-2"></i>
                                                                     @else
                                                                         <i class="bx bx-file text-muted me-2"></i>
                                                                     @endif
-                                                                    <span class="{{ $code->parent_id == null ? 'fw-bold text-uppercase' : '' }}">
+                                                                    <span class="{{ $code->children->count() > 0 ? 'fw-bold text-uppercase' : '' }}" style="{{ $code->parent_id != null && $code->children->count() > 0 ? 'padding-left: 10px;' : ($code->parent_id != null ? 'padding-left: 20px;' : '') }}">
                                                                         {{ $code->name }}
                                                                     </span>
-                                                                    @if($code->description && $code->parent_id)
+                                                                    @if($code->description && $code->children->count() == 0)
                                                                         <i class="bx bx-info-circle text-muted ms-1" title="{{ $code->description }}"></i>
                                                                     @endif
                                                                 </div>
                                                             </td>
                                                             
-                                                            @if($code->parent_id != null)
+                                                            @if($code->children->count() == 0)
                                                                 {{-- This Month (Already Spent) --}}
                                                                 <td class="text-end">
                                                                     @php $existing = $existingEntries[$code->id] ?? 0; @endphp
@@ -313,7 +316,7 @@
                                                                 </td>
                                                             @else
                                                                 <td colspan="4" class="text-center fst-italic text-muted small bg-light">
-                                                                    {{ __('Parent Head - No Direct Entry') }}
+                                                                    {{ $code->parent_id == null ? __('Parent Head - No Direct Entry') : __('Sub-Head - No Direct Entry') }}
                                                                 </td>
                                                             @endif
                                                         </tr>
@@ -400,7 +403,7 @@
                                     @if(auth()->user()->can('view-all-offices-data'))
                                         <div>
                                             <select wire:model.live="filter_rpo_unit_id" class="form-select form-select-sm" style="max-width: 200px;">
-                                                <option value="">{{ __('All Offices') }}</option>
+                                                <option value="">{{ __('Office Group') }}</option>
                                                 @foreach($offices as $office)
                                                     <option value="{{ $office->id }}">{{ $office->name }}</option>
                                                 @endforeach
@@ -423,24 +426,33 @@
                                         <th>{{ __('Date') }}</th>
                                         <th>{{ __('Code') }}</th>
                                         <th>{{ __('Economic Code') }}</th>
-                                        <th>{{ __('Office') }}</th>
                                         <th class="text-end">{{ __('Amount') }}</th>
                                         <th class="text-center">{{ __('Status') }}</th>
                                         <th class="text-center">{{ __('Action') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($groupedExpenses as $monthYear => $monthExpenses)
+                                    @forelse($groupedExpenses as $officeId => $officeExpenses)
+                                        @php $office = App\Models\RpoUnit::find($officeId); @endphp
                                         <tr class="bg-light-subtle">
-                                            <td colspan="4" class="fw-bold text-primary">
-                                                <i class="bx bx-calendar me-1"></i> {{ bn_num($monthYear) }}
+                                            <td colspan="3" class="fw-bold text-primary">
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <span><i class="bx bx-buildings me-1"></i> {{ $office->name ?? __('Unknown Office') }}</span>
+                                                    @can('approve-expenses')
+                                                        @if($officeExpenses->where('status', App\Models\Expense::STATUS_DRAFT)->count() > 0)
+                                                            <button onclick="confirmBatchApproval({{ $officeId }})" class="btn btn-success btn-sm waves-effect waves-light py-0">
+                                                                <i class="bx bx-check-double me-1"></i>{{ __('Approve All') }}
+                                                            </button>
+                                                        @endif
+                                                    @endcan
+                                                </div>
                                             </td>
                                             <td class="text-end fw-bold text-primary">
-                                                {{ __('Total') }}: {{ bn_comma_format($monthlyTotals[$monthYear] ?? 0, 2) }}
+                                                {{ __('Total') }}: {{ bn_comma_format($officeTotals[$officeId] ?? 0, 2) }}
                                             </td>
-                                            <td></td>
+                                            <td colspan="2"></td>
                                         </tr>
-                                        @foreach($monthExpenses as $expense)
+                                        @foreach($officeExpenses as $expense)
                                             <tr>
                                                 <td class="ps-4">
                                                     @php $expDate = Carbon\Carbon::make($expense->date); @endphp
@@ -448,7 +460,6 @@
                                                 </td>
                                                 <td>{{ bn_num($expense->code) }}</td>
                                                 <td>{{ bn_num($expense->economicCode->code ?? '-') }} - {{ $expense->economicCode->name ?? '' }}</td>
-                                                <td>{{ $expense->office->name ?? '-' }}</td>
                                                 <td class="text-end">{{ bn_comma_format($expense->amount, 2) }}</td>
                                                 <td class="text-center">
                                                     @if($expense->status === App\Models\Expense::STATUS_APPROVED)
@@ -462,13 +473,6 @@
                                                 <td class="text-center">
                                                     <div class="btn-group btn-group-sm">
                                                         @if($expense->status === App\Models\Expense::STATUS_DRAFT)
-                                                            {{-- Approval button: visible to those with permission --}}
-                                                            @can('approve-expenses')
-                                                                <button wire:click="approve({{ $expense->id }})" class="btn btn-soft-success" title="{{ __('Approve') }}">
-                                                                    <i class="bx bx-check-double"></i>
-                                                                </button>
-                                                            @endcan
-                                                            
                                                             {{-- Edit/Delete: only for creator --}}
                                                             @if($expense->created_by === auth()->id() || auth()->user()->hasRole('Admin'))
                                                                 @can('edit-expenses')
@@ -511,6 +515,25 @@
                 </div>
             </div>
         </div>
-    </div>
+    @push('scripts')
+    <script>
+        function confirmBatchApproval(officeId) {
+            Swal.fire({
+                title: "{{ __('Are you sure?') }}",
+                text: "{{ __('You are about to approve all draft expenses for this office!') }}",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#34c38f',
+                cancelButtonColor: '#f46a6a',
+                confirmButtonText: "{{ __('Yes, Approve All!') }}",
+                cancelButtonText: "{{ __('Cancel') }}"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.batchApprove(officeId);
+                }
+            })
+        }
+    </script>
+    @endpush
 </div>
 </div>
