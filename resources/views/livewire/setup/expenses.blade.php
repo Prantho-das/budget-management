@@ -436,16 +436,7 @@
                                         @php $office = App\Models\RpoUnit::find($officeId); @endphp
                                         <tr class="bg-light-subtle">
                                             <td colspan="3" class="fw-bold text-primary">
-                                                <div class="d-flex align-items-center justify-content-between">
-                                                    <span><i class="bx bx-buildings me-1"></i> {{ $office->name ?? __('Unknown Office') }}</span>
-                                                    @can('approve-expenses')
-                                                        @if($officeExpenses->where('status', App\Models\Expense::STATUS_DRAFT)->count() > 0)
-                                                            <button onclick="confirmBatchApproval({{ $officeId }})" class="btn btn-success btn-sm waves-effect waves-light py-0">
-                                                                <i class="bx bx-check-double me-1"></i>{{ __('Approve All') }}
-                                                            </button>
-                                                        @endif
-                                                    @endcan
-                                                </div>
+                                                <i class="bx bx-buildings me-1"></i> {{ $office->name ?? __('Unknown Office') }}
                                             </td>
                                             <td class="text-end fw-bold text-primary">
                                                 {{ __('Total') }}: {{ bn_comma_format($officeTotals[$officeId] ?? 0, 2) }}
@@ -515,25 +506,6 @@
                 </div>
             </div>
         </div>
-    @push('scripts')
-    <script>
-        function confirmBatchApproval(officeId) {
-            Swal.fire({
-                title: "{{ __('Are you sure?') }}",
-                text: "{{ __('You are about to approve all draft expenses for this office!') }}",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#34c38f',
-                cancelButtonColor: '#f46a6a',
-                confirmButtonText: "{{ __('Yes, Approve All!') }}",
-                cancelButtonText: "{{ __('Cancel') }}"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    @this.batchApprove(officeId);
-                }
-            })
-        }
-    </script>
-    @endpush
+
 </div>
 </div>

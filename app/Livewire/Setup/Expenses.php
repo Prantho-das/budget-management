@@ -421,33 +421,6 @@ class Expenses extends Component
         $this->dispatch('delete-confirmation', $id);
     }
 
-    public function batchApprove($officeId)
-    {
-        abort_if(!auth()->user()->can('approve-expenses'), 403);
-
-        $expenses = Expense::where([
-            'rpo_unit_id' => $officeId,
-            'fiscal_year_id' => $this->filter_fiscal_year_id,
-            'status' => Expense::STATUS_DRAFT,
-        ])
-        ->whereMonth('date', $this->filter_month)
-        ->get();
-
-        if ($expenses->isEmpty()) {
-            session()->flash('warning', __('No draft expenses found for this office in the selected period.'));
-            return;
-        }
-
-        foreach ($expenses as $expense) {
-            $expense->update([
-                'status' => Expense::STATUS_APPROVED,
-                'approved_by' => auth()->id(),
-                'approved_at' => now(),
-            ]);
-        }
-
-        session()->flash('message', __('Batch Approved Successfully.'));
-    }
 
     public function approve($id)
     {
