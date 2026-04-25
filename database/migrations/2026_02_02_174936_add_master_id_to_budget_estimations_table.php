@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('budget_estimations', function (Blueprint $table) {
-            $table->foreignId('budget_estimation_master_id')->after('id')->nullable()/* /* /* ->constrained('budget_estimation_masters') */ */ *//* /* /* ->onDelete('cascade') */ */ */;
+            $table->foreignId('budget_estimation_master_id')->after('id')->nullable();
         });
     }
 

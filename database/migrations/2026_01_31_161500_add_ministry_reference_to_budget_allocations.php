@@ -15,8 +15,8 @@ return new class extends Migration
             $table->foreignId('ministry_budget_master_id')
                 ->nullable()
                 ->after('id')
-                /* /* /* ->constrained('ministry_budget_masters') */ */ */
-                /* /* /* ->onDelete('set null') */ */ */
+                
+                
                 ->comment('Links to the source Ministry Budget batch if applicable');
         });
     }

@@ -12,7 +12,7 @@ class EconomicCode extends Model
 {
     use HasFactory, LogsActivity;
 
-    protected $fillable = ['code', 'name', 'description', 'parent_id'];
+    protected $fillable = ['code', 'name', 'name_bn', 'description', 'parent_id'];
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -25,6 +25,14 @@ class EconomicCode extends Model
     public function parent()
     {
         return $this->belongsTo(EconomicCode::class, 'parent_id');
+    }
+
+    public function getNameAttribute($value)
+    {
+        if (app()->getLocale() === 'bn' && !empty($this->name_bn)) {
+            return $this->name_bn;
+        }
+        return $value;
     }
 
     public function children()

@@ -7,7 +7,7 @@ use App\Models\EconomicCode;
 
 class EconomicCodes extends Component
 {
-  public $codes, $name, $code, $description, $economic_code_id, $parent_id;
+  public $codes, $name, $name_bn, $code, $description, $economic_code_id, $parent_id;
   public $selectedParentId, $selectedSubHeadId, $isUsed = false;
   public $isOpen = false;
   public $search = '';
@@ -60,12 +60,15 @@ class EconomicCodes extends Component
         $query->where(function ($q) {
           $term = '%' . $this->search . '%';
           $q->where('name', 'like', $term)
+            ->orWhere('name_bn', 'like', $term)
             ->orWhere('code', 'like', $term)
             ->orWhereHas('children', function ($subQ) use ($term) {
               $subQ->where('name', 'like', $term)
+                ->orWhere('name_bn', 'like', $term)
                 ->orWhere('code', 'like', $term)
                 ->orWhereHas('children', function ($projectQ) use ($term) {
                   $projectQ->where('name', 'like', $term)
+                    ->orWhere('name_bn', 'like', $term)
                     ->orWhere('code', 'like', $term);
                 });
             });
@@ -125,6 +128,7 @@ class EconomicCodes extends Component
   private function resetInputFields()
   {
     $this->name = '';
+    $this->name_bn = '';
     $this->code = '';
     $this->description = '';
     $this->economic_code_id = '';
@@ -169,6 +173,7 @@ class EconomicCodes extends Component
 
     $data = [
       'name' => $this->name,
+      'name_bn' => $this->name_bn,
       'description' => $this->description,
     ];
 
@@ -193,7 +198,8 @@ class EconomicCodes extends Component
     abort_if(auth()->user()->cannot('edit-economic-codes'), 403);
     $code = EconomicCode::with('parent.parent')->findOrFail($id);
     $this->economic_code_id = $id;
-    $this->name = $code->name;
+    $this->name = $code->getRawOriginal('name');
+    $this->name_bn = $code->name_bn;
     $this->code = $code->code;
     $this->description = $code->description;
     $this->isUsed = $code->isUsed();

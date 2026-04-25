@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('expenses', function (Blueprint $table) {
-            $table->foreignId('economic_code_id')->nullable()->after('expense_category_id')/* /* /* ->constrained('economic_codes') */ */ *//* /* /* ->onDelete('cascade') */ */ */;
-            $table->foreignId('budget_type_id')->nullable()->after('economic_code_id')/* /* /* ->constrained('budget_types') */ */ *//* /* /* ->onDelete('cascade') */ */ */;
+            $table->foreignId('economic_code_id')->nullable()->after('expense_category_id');
+            $table->foreignId('budget_type_id')->nullable()->after('economic_code_id');
             $table->foreignId('fiscal_year_id')->nullable()->change(); // Already exists but ensuring nullable/constrained if needed
         });
     }

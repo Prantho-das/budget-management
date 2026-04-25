@@ -33,7 +33,7 @@ return new class extends Migration
         });
 
         Schema::table('expenses', function (Blueprint $table) {
-            $table->foreignId('expense_category_id')->nullable()/* /* /* ->constrained() */ */ *//* /* /* ->onDelete('cascade') */ */ */;
+            $table->foreignId('expense_category_id')->nullable();
         });
     }
 };

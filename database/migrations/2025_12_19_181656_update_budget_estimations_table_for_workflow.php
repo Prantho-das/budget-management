@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('budget_estimations', function (Blueprint $table) {
-            $table->foreignId('budget_type_id')->nullable()->after('fiscal_year_id')/* /* /* ->constrained('budget_types') */ */ *//* /* /* ->onDelete('cascade') */ */ */;
+            $table->foreignId('budget_type_id')->nullable()->after('fiscal_year_id');
             $table->string('current_stage')->default('Draft')->after('status');
             $table->json('approval_log')->nullable()->after('current_stage');
             $table->dropColumn('budget_type');

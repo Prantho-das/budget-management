@@ -67,6 +67,11 @@
                                                 @error('name') <span class="text-danger">{{ $message }}</span>@enderror
                                             </div>
                                             <div class="mb-3">
+                                                <label for="name_bn" class="form-label">{{ __('Bangla Name') }}</label>
+                                                <input type="text" class="form-control" id="name_bn" wire:model="name_bn" placeholder="{{ __('Bangla Name') }}">
+                                                @error('name_bn') <span class="text-danger">{{ $message }}</span>@enderror
+                                            </div>
+                                            <div class="mb-3">
                                                 <label for="selectedParentId" class="form-label">{{ __('First Stage') }}</label>
                                                 <select class="form-control" id="selectedParentId" wire:model.live="selectedParentId" disabled>
                                                     <option value="">{{ __('None (Root Level)') }}</option>
