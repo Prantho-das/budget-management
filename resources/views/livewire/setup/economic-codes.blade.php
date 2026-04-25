@@ -160,14 +160,14 @@
                                         <td><span class="badge badge-soft-primary px-3">{{ __('First Stage') }}</span></td>
                                         <td class="text-center">
                                             <div class="btn-group">
+                                                @can('edit-economic-codes')
+                                                    <button wire:click="edit({{ $root->id }})" class="btn btn-sm btn-info btn-soft-info waves-effect waves-light" title="Edit"><i class="mdi mdi-pencil"></i></button>
+                                                @endcan
                                                 @if($root->isUsed())
                                                     <span class="badge bg-soft-warning text-warning p-2" title="{{ __('This record is locked because it is in use') }}">
                                                         <i class="mdi mdi-lock fs-14"></i>
                                                     </span>
                                                 @else
-                                                    @can('edit-economic-codes')
-                                                        <button wire:click="edit({{ $root->id }})" class="btn btn-sm btn-info btn-soft-info waves-effect waves-light" title="Edit"><i class="mdi mdi-pencil"></i></button>
-                                                    @endcan
                                                     @can('delete-economic-codes')
                                                         <button wire:click="delete({{ $root->id }})" class="btn btn-sm btn-danger btn-soft-danger waves-effect waves-light" title="Delete"><i class="mdi mdi-trash-can"></i></button>
                                                     @endcan
@@ -188,14 +188,14 @@
                                             <td><span class="badge badge-soft-info px-3">{{ __('Second Stage') }}</span></td>
                                             <td class="text-center">
                                                 <div class="btn-group">
+                                                    @can('edit-economic-codes')
+                                                        <button wire:click="edit({{ $subHead->id }})" class="btn btn-sm btn-info btn-soft-info waves-effect waves-light"><i class="mdi mdi-pencil"></i></button>
+                                                    @endcan
                                                     @if($subHead->isUsed())
                                                         <span class="badge bg-soft-warning text-warning p-2" title="{{ __('This record is locked because it is in use') }}">
                                                             <i class="mdi mdi-lock fs-14"></i>
                                                         </span>
                                                     @else
-                                                        @can('edit-economic-codes')
-                                                            <button wire:click="edit({{ $subHead->id }})" class="btn btn-sm btn-info btn-soft-info waves-effect waves-light"><i class="mdi mdi-pencil"></i></button>
-                                                        @endcan
                                                         @can('delete-economic-codes')
                                                             <button wire:click="delete({{ $subHead->id }})" class="btn btn-sm btn-danger btn-soft-danger waves-effect waves-light"><i class="mdi mdi-trash-can"></i></button>
                                                         @endcan
@@ -215,14 +215,14 @@
                                                 <td><span class="badge badge-soft-success px-3">{{ __('Third Stage') }}</span></td>
                                                 <td class="text-center">
                                                     <div class="btn-group">
+                                                        @can('edit-economic-codes')
+                                                            <button wire:click="edit({{ $project->id }})" class="btn btn-sm btn-info btn-soft-info waves-effect waves-light"><i class="mdi mdi-pencil"></i></button>
+                                                        @endcan
                                                         @if($project->isUsed())
                                                             <span class="badge bg-soft-warning text-warning p-2" title="{{ __('This record is locked because it is in use') }}">
                                                                 <i class="mdi mdi-lock fs-14"></i>
                                                             </span>
                                                         @else
-                                                            @can('edit-economic-codes')
-                                                                <button wire:click="edit({{ $project->id }})" class="btn btn-sm btn-info btn-soft-info waves-effect waves-light"><i class="mdi mdi-pencil"></i></button>
-                                                            @endcan
                                                             @can('delete-economic-codes')
                                                                 <button wire:click="delete({{ $project->id }})" class="btn btn-sm btn-danger btn-soft-danger waves-effect waves-light"><i class="mdi mdi-trash-can"></i></button>
                                                             @endcan

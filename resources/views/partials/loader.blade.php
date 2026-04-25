@@ -100,10 +100,13 @@
 
         // 1. Livewire Hooks (Database/Action Coverage)
         document.addEventListener('livewire:init', () => {
-            Livewire.hook('request', ({ respond, fail }) => {
-                triggerShow();
-                respond(() => triggerHide());
-                fail(() => triggerHide());
+            Livewire.hook('commit', ({ commit, respond, fail }) => {
+                // Only show loader for explicit actions (save, edit, delete), ignore input typing
+                if (commit.calls && commit.calls.length > 0) {
+                    triggerShow();
+                    respond(() => triggerHide());
+                    fail(() => triggerHide());
+                }
             });
         });
 
