@@ -160,7 +160,7 @@
                                                 <select class="form-select form-select-sm shadow-sm border-primary" id="selectedMonth" wire:model.live="selectedMonth">
                                                     <option value="">{{ __('Select Month') }}</option>
                                                     @foreach(['01' => 'January', '02' => 'February', '03' => 'March', '04' => 'April', '05' => 'May', '06' => 'June', '07' => 'July', '08' => 'August', '09' => 'September', '10' => 'October', '11' => 'November', '12' => 'December'] as $val => $label)
-                                                        <option value="{{ $val }}" {{ $selectedMonth != $val && !$isDraftSaved ? 'disabled' : '' }} style="{{ $selectedMonth != $val && !$isDraftSaved ? 'color: #ccc;' : '' }}">
+                                                        <option value="{{ $val }}" {{ in_array($val, $submittedMonths) ? 'disabled' : '' }} style="{{ in_array($val, $submittedMonths) ? 'color: #ccc;' : '' }}">
                                                             {{ __($label) }}
                                                         </option>
                                                     @endforeach
@@ -174,7 +174,7 @@
                                             <select class="form-select form-select-sm shadow-sm border-primary" id="fiscal_year_id" wire:model.live="fiscal_year_id">
                                                 <option value="">{{ __('Select Year') }}</option>
                                                 @foreach($fiscalYears as $year)
-                                                    <option value="{{ $year->id }}" {{ $fiscal_year_id != $year->id && !$isDraftSaved ? 'disabled' : '' }} style="{{ $fiscal_year_id != $year->id && !$isDraftSaved ? 'color: #ccc;' : '' }}">
+                                                    <option value="{{ $year->id }}" {{ in_array($year->id, $completedFiscalYears ?? []) ? 'disabled' : '' }} style="{{ in_array($year->id, $completedFiscalYears ?? []) ? 'color: #ccc;' : '' }}">
                                                         {{ $year->bn_name }}
                                                     </option>
                                                 @endforeach

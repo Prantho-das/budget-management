@@ -27,6 +27,7 @@ class ExpenseCreate extends Component
     public $totalPrevious = 0;
     public $isDraftSaved = false;
     public $batchCode;
+    public $submittedMonths = [];
 
     protected function rules()
     {
@@ -76,6 +77,18 @@ class ExpenseCreate extends Component
 
     public function loadData()
     {
+        if ($this->fiscal_year_id && $this->rpo_unit_id) {
+            $this->submittedMonths = Expense::where('fiscal_year_id', $this->fiscal_year_id)
+                ->where('rpo_unit_id', $this->rpo_unit_id)
+                ->where('status', Expense::STATUS_APPROVED)
+                ->pluck('date')
+                ->map(fn($d) => \Carbon\Carbon::parse($d)->format('m'))
+                ->unique()
+                ->toArray();
+        } else {
+            $this->submittedMonths = [];
+        }
+
         if ($this->selectedMonth && $this->fiscal_year_id && $this->rpo_unit_id) {
             // Set Names
             $this->officeName = RpoUnit::find($this->rpo_unit_id)?->name;
@@ -308,6 +321,25 @@ class ExpenseCreate extends Component
             }
         }
 
+        $completedFiscalYears = [];
+        if ($this->rpo_unit_id) {
+            $approvedDates = Expense::where('rpo_unit_id', $this->rpo_unit_id)
+                ->where('status', Expense::STATUS_APPROVED)
+                ->get(['fiscal_year_id', 'date']);
+                
+            $fyMonths = [];
+            foreach ($approvedDates as $exp) {
+                $month = \Carbon\Carbon::parse($exp->date)->format('m');
+                $fyMonths[$exp->fiscal_year_id][$month] = true;
+            }
+            
+            foreach ($fyMonths as $fyId => $months) {
+                if (count($months) >= 12) {
+                    $completedFiscalYears[] = $fyId;
+                }
+            }
+        }
+
         $fiscalYears = FiscalYear::orderBy('name', 'desc')->get();
 
         $offices = [];
@@ -319,6 +351,7 @@ class ExpenseCreate extends Component
             'economicCodes' => $orderedCodes,
             'fiscalYears' => $fiscalYears,
             'offices' => $offices,
+            'completedFiscalYears' => $completedFiscalYears,
         ])->layout('layouts.skot');
     }
 }
