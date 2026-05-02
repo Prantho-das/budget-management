@@ -118,7 +118,7 @@
                             <form wire:submit.prevent.stop="store">
                                 @csrf
                                 {{-- Form Header Section --}}
-                                <div class="voucher-header bg-light border-bottom p-3">
+                                <div class="voucher-header bg-light border-bottom p-3 d-none">
                                     <div class="row align-items-center">
                                         <div class="col-md-8">
                                             <h5 class="mb-2 text-primary fw-bold">{{ __('মাসিক ব্যয় বিবরণী / Monthly Expense Statement') }}</h5>
@@ -210,8 +210,8 @@
                                             <thead class="table-primary">
                                                 <tr class="text-center align-middle">
                                                     <th style="width: 40px;" class="small d-none">{{ __('SL') }}</th>
-                                                    <th style="width: 80px;" class="small">{{ __('Economic Code') }}</th>
-                                                    <th class="small">{{ __('Economic Head') }}</th>
+                                                    <th style="width: 1%; white-space: nowrap;" class="small">{{ __('Economic Code') }}</th>
+                                                    <th class="small" style="width: 1%; white-space: nowrap;">{{ __('Economic Head') }}</th>
                                                     <th style="width: 110px;" class="small">{{ __('Budget') }}</th>
                                                     <th style="width: 110px;" class="small">{{ __('Prev. Total') }}</th>
                                                     <th style="width: 110px;" class="small">{{ __('Current Month') }}</th>

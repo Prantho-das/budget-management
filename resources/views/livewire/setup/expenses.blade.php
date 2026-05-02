@@ -125,7 +125,7 @@
                                 <form wire:submit.prevent="store">
                                     {{-- Form Header Section --}}
                                     <div class="voucher-header bg-light border-bottom p-3">
-                                        <div class="row align-items-center">
+                                        <div class="row align-items-center ">
                                             <div class="col-md-8">
                                                 <h5 class="mb-2 text-primary fw-bold">{{ __('মাসিক ব্যয় বিবরণী / Monthly Expense Statement') }}</h5>
                                                 <div class="row g-2 small">
@@ -226,7 +226,7 @@
                                                     <tr class="text-center align-middle">
                                                         <th style="width: 50px;" class="small">#</th>
                                                         <th style="width: 100px;" class="small">{{ __('Code') }}</th>
-                                                        <th class="small">{{ __('Economic Head / বাজেট খাত') }}</th>
+                                                        <th class="small" style="width: 1%; white-space: nowrap;">{{ __('Economic Head / বাজেট খাত') }}</th>
                                                         <th style="width: 130px;" class="small">{{ __('This Month') }}<br>{{ __('(Spent)') }}</th>
                                                         <th style="width: 130px;" class="small">{{ __('Previous Total') }}</th>
                                                         <th style="width: 150px;" class="small">{{ __('New Amount') }}<br>{{ __('(নতুন পরিমাণ)') }}</th>
@@ -425,7 +425,7 @@
                                     <tr>
                                         <th>{{ __('Date') }}</th>
                                         <th>{{ __('Code') }}</th>
-                                        <th>{{ __('Economic Code') }}</th>
+                                        <th style="width: 1%; white-space: nowrap;">{{ __('Economic Code') }}</th>
                                         <th class="text-end">{{ __('Amount') }}</th>
                                         <th class="text-center">{{ __('Status') }}</th>
                                         <th class="text-center">{{ __('Action') }}</th>
