@@ -21,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Super Admin Bypass - Automatically grant all permissions
         \Illuminate\Support\Facades\Gate::before(function ($user, $ability) {
-            return $user->email == 'superadmin@example.com' ? true : null;
+            return $user->email == 'admin@budget.com' ? true : null;
         });
     }
 }
