@@ -51,7 +51,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/setup/economic-codes', \App\Livewire\Setup\EconomicCodes::class)->middleware('can:view-economic-codes')->name('setup.economic-codes');
     Route::get('/setup/budget-types', \App\Livewire\Setup\BudgetTypes::class)->middleware('can:view-budget-types')->name('setup.budget-types');
     Route::get('/setup/users', \App\Livewire\Setup\Users::class)->middleware('can:view-users')->name('setup.users');
-    Route::get('/setup/workflow', \App\Livewire\Setup\WorkflowManagement::class)->middleware('can:view-system-settings')->name('setup.workflow');
+    Route::get('/setup/workflow', \App\Livewire\Setup\WorkflowManagement::class)->middleware('can:view-workflow-setup')->name('setup.workflow');
     Route::get('settings/two-factor', TwoFactor::class)
         ->middleware(
             when(
@@ -66,17 +66,17 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/budget/estimations', \App\Livewire\BudgetEstimations::class)->middleware('can:view-budget-estimations')->name('budget.estimations');
-    Route::get('/budget/approvals', \App\Livewire\BudgetApprovals::class)->name('budget.approvals');
+    Route::get('/budget/approvals', \App\Livewire\BudgetApprovals::class)->middleware('can:view-budget-approvals')->name('budget.approvals');
     Route::get('/budget/release', \App\Livewire\BudgetRelease::class)->middleware('can:release-budget')->name('budget.release');
-    Route::get('/budget/office-wise', \App\Livewire\OfficeWiseBudget::class)->middleware('can:release-budget')->name('budget.office-wise');
+    Route::get('/budget/office-wise', \App\Livewire\OfficeWiseBudget::class)->middleware('can:view-ministry-budget-preparation')->name('budget.office-wise');
     Route::get('/budget/status', \App\Livewire\BudgetStatus::class)->middleware('can:view-budget-status')->name('budget.status');
     Route::get('/budget/summary', \App\Livewire\BudgetSummary::class)->middleware('can:view-budget-summary')->name('budget.summary');
 
     // Budget Distribution
-    Route::get('/budget/distribution/list', \App\Livewire\BudgetDistribution\BudgetDistributionList::class)->name('budget.distribution.list');
-    Route::get('/budget/distribution/entry', \App\Livewire\BudgetDistribution\BudgetDistributionEntry::class)->name('budget.distribution.entry');
-    Route::get('/setup/ministry-budgets', \App\Livewire\Setup\MinistryBudgetList::class)->name('setup.ministry-budget-list');
-    Route::get('/setup/ministry-budget-entry/{master_id?}', \App\Livewire\Setup\MinistryBudgetEntry::class)->name('setup.ministry-budget-entry');
+    Route::get('/budget/distribution/list', \App\Livewire\BudgetDistribution\BudgetDistributionList::class)->middleware('can:view-budget-distribution-list')->name('budget.distribution.list');
+    Route::get('/budget/distribution/entry', \App\Livewire\BudgetDistribution\BudgetDistributionEntry::class)->middleware('can:view-budget-distribution-entry')->name('budget.distribution.entry');
+    Route::get('/setup/ministry-budgets', \App\Livewire\Setup\MinistryBudgetList::class)->middleware('can:view-ministry-budget-list')->name('setup.ministry-budget-list');
+    Route::get('/setup/ministry-budget-entry/{master_id?}', \App\Livewire\Setup\MinistryBudgetEntry::class)->middleware('can:view-ministry-budget-entry')->name('setup.ministry-budget-entry');
 });
 
 

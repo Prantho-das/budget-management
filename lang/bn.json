@@ -752,5 +752,7 @@
     "Expenses Submitted Successfully.": "খরচ সফলভাবে জমা দেওয়া হয়েছে।",
     "Error saving data: ": "ডেটা সংরক্ষণে ত্রুটি: ",
     "Expenses saved as draft. Please click Submit to finalize.": "খরচ খসড়া হিসেবে সংরক্ষিত। চূড়ান্ত করতে দয়া করে জমা দিন-এ ক্লিক করুন।",
-    "Bangla Name": "বাংলা নাম"
+    "Bangla Name": "বাংলা নাম",
+    "Name (Bangla)":"নাম (বাংলা)",
+    "Name (English)":"নাম (ইংরেজি)"
 }

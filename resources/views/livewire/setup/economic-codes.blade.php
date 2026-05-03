@@ -62,14 +62,14 @@
                                                 @error('code') <span class="text-danger">{{ $message }}</span>@enderror
                                             </div>
                                             <div class="mb-3">
-                                                <label for="name" class="form-label">{{ __('Name') }}</label>
-                                                <input type="text" class="form-control" id="name" wire:model="name" placeholder="{{ __('Name') }}">
-                                                @error('name') <span class="text-danger">{{ $message }}</span>@enderror
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="name_bn" class="form-label">{{ __('Bangla Name') }}</label>
+                                                <label for="name_bn" class="form-label">{{ __('Economic Head (Bangla)') }}</label>
                                                 <input type="text" class="form-control" id="name_bn" wire:model="name_bn" placeholder="{{ __('Bangla Name') }}">
                                                 @error('name_bn') <span class="text-danger">{{ $message }}</span>@enderror
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="name" class="form-label">{{ __('Economic Head (English)') }}</label>
+                                                <input type="text" class="form-control" id="name" wire:model="name" placeholder="{{ __('Name') }}">
+                                                @error('name') <span class="text-danger">{{ $message }}</span>@enderror
                                             </div>
                                             <div class="mb-3">
                                                 <label for="selectedParentId" class="form-label">{{ __('First Stage') }}</label>
@@ -143,7 +143,8 @@
                                 <tr>
                                     <th style="width: 80px;">{{ __('SL') }}</th>
                                     <th style="width: 150px;">{{ __('Economic Code') }}</th>
-                                    <th>{{ __('Name') }}</th>
+                                    <th>{{ __('Economic Head (English)') }}</th>
+                                    <th>{{ __('Economic Head (Bangla)') }}</th>
                                     <th>{{ __('Type') }}</th>
                                     <th class="text-center">{{ __('Action') }}</th>
                                 </tr>
@@ -156,7 +157,8 @@
                                         <td>
                                             <span class="badge bg-primary fs-13">{{ $root->code }}</span>
                                         </td>
-                                        <td class="fw-bold text-primary">{{ $root->name }}</td>
+                                        <td class="fw-bold text-primary">{{ $root->getRawOriginal('name') }}</td>
+                                        <td class="fw-bold text-primary BanglaFont">{{ $root->name_bn }}</td>
                                         <td><span class="badge badge-soft-primary px-3">{{ __('First Stage') }}</span></td>
                                         <td class="text-center">
                                             <div class="btn-group">
@@ -184,7 +186,8 @@
                                                 <i class="mdi mdi-arrow-right-bottom me-1 text-muted"></i>
                                                 <span class="badge bg-info fs-12">{{ $subHead->code }}</span>
                                             </td>
-                                            <td class="fw-medium text-info">{{ $subHead->name }}</td>
+                                            <td class="fw-medium text-info">{{ $subHead->getRawOriginal('name') }}</td>
+                                            <td class="fw-medium text-info BanglaFont">{{ $subHead->name_bn }}</td>
                                             <td><span class="badge badge-soft-info px-3">{{ __('Second Stage') }}</span></td>
                                             <td class="text-center">
                                                 <div class="btn-group">
@@ -211,7 +214,8 @@
                                                     <i class="mdi mdi-subdirectory-arrow-right me-1 text-muted"></i>
                                                     <span class="badge bg-success fs-11">{{ $project->code }}</span>
                                                 </td>
-                                                <td class="text-success">{{ $project->name }}</td>
+                                                <td class="text-success">{{ $project->getRawOriginal('name') }}</td>
+                                                <td class="text-success BanglaFont">{{ $project->name_bn }}</td>
                                                 <td><span class="badge badge-soft-success px-3">{{ __('Third Stage') }}</span></td>
                                                 <td class="text-center">
                                                     <div class="btn-group">

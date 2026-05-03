@@ -8,38 +8,51 @@
         bottom: 0 !important;
         width: 100vw !important;
         height: 100vh !important;
-        background: rgba(255, 255, 255, 0.95) !important;
+        background: rgba(255, 255, 255, 0.8) !important;
         z-index: 2147483647 !important;
         display: flex;
         align-items: center;
         justify-content: center;
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(15px) saturate(180%);
+        -webkit-backdrop-filter: blur(15px) saturate(180%);
         flex-direction: column;
     }
     
     .loader-content {
         text-align: center;
         z-index: 2147483648 !important;
+        padding: 2rem;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 24px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+        border: 1px solid rgba(255,255,255,0.8);
     }
     .spinner {
-        width: 60px;
-        height: 60px;
-        border: 5px solid rgba(26, 115, 232, 0.1);
-        border-top-color: #1a73e8;
+        width: 70px;
+        height: 70px;
+        border: 4px solid rgba(26, 115, 232, 0.05);
+        border-top: 4px solid #1a73e8;
+        border-left: 4px solid #1a73e8;
         border-radius: 50%;
-        animation: loader-spin 0.8s linear infinite;
+        animation: loader-spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         margin: 0 auto 20px;
+        filter: drop-shadow(0 0 10px rgba(26, 115, 232, 0.2));
     }
     .loading-text {
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-family: 'Inter', 'SolaimanLipi', system-ui, sans-serif;
         color: #1a202c;
-        font-weight: 600;
-        font-size: 18px;
+        font-weight: 700;
+        font-size: 20px;
         letter-spacing: -0.025em;
+        animation: pulse 1.5s ease-in-out infinite;
     }
     @keyframes loader-spin {
+        from { transform: rotate(0deg); }
         to { transform: rotate(360deg); }
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.7; transform: scale(0.98); }
     }
 </style>
 
@@ -59,14 +72,7 @@
             this.activeRequests--;
             if (this.activeRequests <= 0) {
                 this.activeRequests = 0;
-                const timeShown = Date.now() - this.showTimestamp;
-                const remaining = Math.max(0, 400 - timeShown);
-
-                setTimeout(() => {
-                    if (this.activeRequests === 0) {
-                        this.visible = false;
-                    }
-                }, remaining);
+                this.visible = false;
             }
         },
         forceHide() {
@@ -100,13 +106,28 @@
 
         // 1. Livewire Hooks (Database/Action Coverage)
         document.addEventListener('livewire:init', () => {
+            // Show for specific commits that involve database changes/submissions
             Livewire.hook('commit', ({ commit, respond, fail }) => {
-                // Only show loader for explicit actions (save, edit, delete), ignore input typing
+                let shouldShowLoader = false;
+                
                 if (commit.calls && commit.calls.length > 0) {
+                    const actionKeywords = ['store', 'update', 'save', 'delete', 'submit', 'approve', 'confirm'];
+                    shouldShowLoader = commit.calls.some(call => {
+                        const method = call.method.toLowerCase();
+                        return actionKeywords.some(keyword => method.includes(keyword));
+                    });
+                }
+                
+                if (shouldShowLoader) {
                     triggerShow();
                     respond(() => triggerHide());
                     fail(() => triggerHide());
                 }
+            });
+
+            // Handle navigation transitions
+            Livewire.hook('request', ({ request, respond, fail }) => {
+                // ...
             });
         });
 
@@ -132,6 +153,7 @@
                 !link.href.startsWith('javascript:') &&
                 link.origin === window.location.origin
             ) {
+                // Primary mouse click
                 if (e.button === 0 && !e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey) {
                     triggerShow();
                 }
@@ -139,14 +161,19 @@
         });
 
         document.addEventListener('submit', (e) => {
+            // Only show for non-Livewire forms (Livewire forms are handled by commit hook)
             if (!e.target.hasAttribute('wire:submit')) {
                 triggerShow();
             }
         });
 
-        // Handle page restores
-        window.addEventListener('pageshow', () => {
+        // Handle browser back/forward and page restores
+        window.addEventListener('pageshow', (event) => {
             triggerForceHide();
+        });
+        
+        window.addEventListener('popstate', () => {
+            // triggerShow(); // Optional: show when navigating back/forward
         });
     })();
 </script>

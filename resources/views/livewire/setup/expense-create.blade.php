@@ -153,13 +153,29 @@
                                 {{-- Selection Controls --}}
                                 <div class="p-3 bg-light-subtle border-bottom">
                                     <div class="row g-2">
+                                       
+                                        <div class="col-md-4">
+                                            <label for="fiscal_year_id" class="form-label fw-semibold small mb-1">
+                                                {{ __('Fiscal Year') }} <span class="text-danger">*</span>
+                                            </label>
+                                            <select class="form-select form-select-sm shadow-sm border-primary" id="fiscal_year_id" wire:model.live="fiscal_year_id">
+                                                <option value="">{{ __('Select Year') }}</option>
+                                                @foreach($fiscalYears as $year)
+                                                    <option value="{{ $year->id }}" {{ in_array($year->id, $completedFiscalYears ?? []) ? 'disabled' : '' }} style="{{ in_array($year->id, $completedFiscalYears ?? []) ? 'color: #ccc;' : '' }}">
+                                                        {{ bn_num($year->name) }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            @error('fiscal_year_id') <span class="text-danger small">{{ $message }}</span>@enderror
+                                        </div> 
+                                        @if($fiscal_year_id)
                                         <div class="col-md-4">
                                             <label for="selectedMonth" class="form-label fw-semibold small mb-1">
-                                                Select Month <span class="text-danger">*</span>
+                                                {{ __('Select Month') }} <span class="text-danger">*</span>
                                             </label>
                                                 <select class="form-select form-select-sm shadow-sm border-primary" id="selectedMonth" wire:model.live="selectedMonth">
                                                     <option value="">{{ __('Select Month') }}</option>
-                                                    @foreach(['01' => 'January', '02' => 'February', '03' => 'March', '04' => 'April', '05' => 'May', '06' => 'June', '07' => 'July', '08' => 'August', '09' => 'September', '10' => 'October', '11' => 'November', '12' => 'December'] as $val => $label)
+                                                    @foreach($fyMonths as $val => $label)
                                                         <option value="{{ $val }}" {{ in_array($val, $submittedMonths) ? 'disabled' : '' }} style="{{ in_array($val, $submittedMonths) ? 'color: #ccc;' : '' }}">
                                                             {{ __($label) }}
                                                         </option>
@@ -167,40 +183,8 @@
                                                 </select>
                                             @error('selectedMonth') <span class="text-danger small">{{ $message }}</span>@enderror
                                         </div>
-                                        <div class="col-md-4">
-                                            <label for="fiscal_year_id" class="form-label fw-semibold small mb-1">
-                                                Fiscal Year <span class="text-danger">*</span>
-                                            </label>
-                                            <select class="form-select form-select-sm shadow-sm border-primary" id="fiscal_year_id" wire:model.live="fiscal_year_id">
-                                                <option value="">{{ __('Select Year') }}</option>
-                                                @foreach($fiscalYears as $year)
-                                                    <option value="{{ $year->id }}" {{ in_array($year->id, $completedFiscalYears ?? []) ? 'disabled' : '' }} style="{{ in_array($year->id, $completedFiscalYears ?? []) ? 'color: #ccc;' : '' }}">
-                                                        {{ $year->bn_name }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                            @error('fiscal_year_id') <span class="text-danger small">{{ $message }}</span>@enderror
-                                        </div>
-                                        <div class="col-md-4">
-                                            @if($isHq || auth()->user()->hasRole('Admin'))
-                                                <label for="rpo_unit_id" class="form-label fw-semibold small mb-1">
-                                                    {{ __('Select Office Group') }} <span class="text-danger">*</span>
-                                                </label>
-                                                <select class="form-select form-select-sm" id="rpo_unit_id" wire:model.live="rpo_unit_id">
-                                                    <option value="">{{ __('Select Office Group') }}</option>
-                                                    @foreach($offices as $office)
-                                                        <option value="{{ $office->id }}">{{ $office->name }}</option>
-                                                    @endforeach
-                                                </select>
-                                                @error('rpo_unit_id') <span class="text-danger small">{{ $message }}</span>@enderror
-                                            @else
-                                                <label class="form-label fw-semibold small mb-1">{{ __('Office Group') }}</label>
-                                                <div class="form-control form-control-sm bg-light">
-                                                    {{ auth()->user()->office->name ?? 'N/A' }}
-                                                </div>
-                                                <input type="hidden" wire:model="rpo_unit_id">
-                                            @endif
-                                        </div>
+                                        @endif
+                                        <input type="hidden" wire:model="rpo_unit_id">
                                 </div>
                                 
                                 @if($rpo_unit_id && $fiscal_year_id)
@@ -227,7 +211,7 @@
                                                         {{-- Serial Number --}}
                                                         <td class="text-center small d-none">
                                                             @php
-                                                                $hasChildren = collect($economicCodes)->where('parent_id', $code->id)->count() > 0;
+        $hasChildren = collect($economicCodes)->where('parent_id', $code->id)->count() > 0;
                                                             @endphp
                                                             @if(!$hasChildren)
                                                                 {{ bn_num($serialNo++) }}
@@ -251,9 +235,10 @@
                                                                 @else
                                                                     <i class="bx bx-file text-muted me-2"></i>
                                                                 @endif
-                                                                <span class="{{ $code->parent_id == null ? 'fw-bold text-uppercase' : '' }}">
-                                                                    {{ $code->name }}
-                                                                </span>
+                                                                <div class="{{ $code->parent_id == null ? 'fw-bold text-uppercase' : '' }}">
+                                                                    <div class="text-dark">{{ $code->getRawOriginal('name') }}</div>
+                                                                    <div class="text-muted small BanglaFont">{{ $code->name_bn }}</div>
+                                                                </div>
                                                                 @if($code->description && $code->parent_id)
                                                                     <i class="bx bx-info-circle text-muted ms-1" title="{{ $code->description }}"></i>
                                                                 @endif
@@ -261,16 +246,16 @@
                                                         </td>
                                                         
                                                         @php
-                                                            // Only allow input for codes with no children (third layer)
-                                                            $hasChildren = collect($economicCodes)->where('parent_id', $code->id)->count() > 0;
-                                                            $canHaveExpense = !$hasChildren;
+        // Only allow input for codes with no children (third layer)
+        $hasChildren = collect($economicCodes)->where('parent_id', $code->id)->count() > 0;
+        $canHaveExpense = !$hasChildren;
                                                         @endphp
                                                         
                                                         @if($canHaveExpense)
                                                             {{-- Budget Allocation --}}
                                                             <td class="text-end">
                                                                 @php
-                                                                     $budgetAllocation = $budgetAllocations[$code->id] ?? 0;
+            $budgetAllocation = $budgetAllocations[$code->id] ?? 0;
                                                                 @endphp
                                                                 <span class="font-monospace small {{ $budgetAllocation > 0 ? 'text-info fw-semibold' : 'text-muted' }}">
                                                                     {{ bn_comma_format($budgetAllocation, 2) }}
@@ -280,7 +265,7 @@
                                                             {{-- Previous Total (Up to last month) --}}
                                                             <td class="text-end">
                                                                 @php
-                                                                    $previousTotal = $previousExpenses[$code->id] ?? 0;
+            $previousTotal = $previousExpenses[$code->id] ?? 0;
                                                                 @endphp
                                                                 <span class="font-monospace small text-primary">
                                                                     {{ bn_comma_format($previousTotal, 2) }}
@@ -299,8 +284,8 @@
                                                             {{-- Total Expenditure (Previous + This Month) --}}
                                                             <td class="text-end">
                                                                 @php
-                                                                    $thisMonth = floatval($expenseEntries[$code->id]['amount'] ?? 0);
-                                                                    $totalExpenditure = $previousTotal + $thisMonth;
+            $thisMonth = floatval($expenseEntries[$code->id]['amount'] ?? 0);
+            $totalExpenditure = $previousTotal + $thisMonth;
                                                                 @endphp
                                                                 <span class="font-monospace small text-success fw-semibold">
                                                                     {{ bn_comma_format($totalExpenditure, 2) }}
@@ -310,7 +295,7 @@
                                                             {{-- Balance (Budget - Total Expenditure) --}}
                                                             <td class="text-end">
                                                                 @php
-                                                                    $balance = $budgetAllocation - $totalExpenditure;
+            $balance = $budgetAllocation - $totalExpenditure;
                                                                 @endphp
                                                                 <span class="font-monospace small {{ $balance < 0 ? 'text-danger' : ($balance > 0 ? 'text-success' : 'text-muted') }} fw-semibold">
                                                                     {{ bn_comma_format($balance, 2) }}
@@ -349,10 +334,10 @@
                                                     {{-- Total This Month (New Entries) --}}
                                                     <td class="text-end font-monospace text-success">
                                                         @php
-                                                            $totalThisMonth = 0;
-                                                            foreach($expenseEntries as $entry) {
-                                                                $totalThisMonth += floatval($entry['amount'] ?? 0);
-                                                            }
+    $totalThisMonth = 0;
+    foreach ($expenseEntries as $entry) {
+        $totalThisMonth += floatval($entry['amount'] ?? 0);
+    }
                                                         @endphp
                                                         {{ bn_comma_format($totalThisMonth, 2) }}
                                                     </td>
@@ -360,7 +345,7 @@
                                                     {{-- Total Expenditure --}}
                                                     <td class="text-end font-monospace text-success fw-bold">
                                                         @php
-                                                            $totalExpenditure = $totalPrevious + $totalThisMonth;
+    $totalExpenditure = $totalPrevious + $totalThisMonth;
                                                         @endphp
                                                         {{ bn_comma_format($totalExpenditure, 2) }}
                                                     </td>
@@ -368,7 +353,7 @@
                                                     {{-- Total Balance --}}
                                                     <td class="text-end font-monospace fw-bold">
                                                         @php
-                                                            $totalBalance = $totalBudget - $totalExpenditure;
+    $totalBalance = $totalBudget - $totalExpenditure;
                                                         @endphp
                                                         <span class="{{ $totalBalance < 0 ? 'text-danger' : 'text-success' }}">
                                                             {{ bn_comma_format($totalBalance, 2) }}

@@ -61,6 +61,7 @@ class PermissionSeeder extends Seeder
             'submit-budget-estimations' => 'Budget Estimation',
             'view-budget-status' => 'Budget Estimation',
             'view-budget-summary' => 'Budget Estimation',
+            'view-budget-approvals' => 'Budget Approval',
 
             // Approval Workflow
             'approve-budget' => 'Budget Approval',
@@ -68,6 +69,13 @@ class PermissionSeeder extends Seeder
             'release-budget' => 'Budget Approval',
             'view-budget-distribution' => 'Budget Distribution',
             'create-budget-distribution' => 'Budget Distribution',
+            'view-budget-distribution-entry' => 'Budget Distribution',
+            'view-budget-distribution-list' => 'Budget Distribution',
+
+            // Ministry Budget / Preparation
+            'view-ministry-budget-list' => 'Budget Preparation',
+            'view-ministry-budget-entry' => 'Budget Preparation',
+            'view-ministry-budget-preparation' => 'Budget Preparation',
 
             // Security management
             'view-roles' => 'Roles',
@@ -82,6 +90,14 @@ class PermissionSeeder extends Seeder
             // System Settings
             'view-system-settings' => 'System Settings',
             'edit-system-settings' => 'System Settings',
+            'view-workflow-setup' => 'System Settings',
+
+            // Menu Control Permissions
+            'menu-budget-demand' => 'Menu Control',
+            'menu-budget-distribution' => 'Menu Control',
+            'menu-budget-preparation' => 'Menu Control',
+            'menu-access-control' => 'Menu Control',
+            'menu-settings' => 'Menu Control',
 
             // Reports
             'view-reports' => 'Reports',

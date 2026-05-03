@@ -61,7 +61,7 @@ class ExpenseCreate extends Component
         $userOffice = $user->office;
         $this->isHq = $userOffice && $userOffice->parent_id === null;
 
-        $this->rpo_unit_id = $this->isHq ? null : $user->rpo_unit_id;
+        $this->rpo_unit_id = $user->rpo_unit_id;
 
         $this->loadExistingEntries();
     }
@@ -340,7 +340,42 @@ class ExpenseCreate extends Component
             }
         }
 
-        $fiscalYears = FiscalYear::orderBy('name', 'desc')->get();
+        // Only current + previous FY
+        $allFiscalYears = FiscalYear::orderBy('start_date', 'desc')->get();
+        $today = now();
+        $currentFY = $allFiscalYears->first(fn($fy) => $today->between($fy->start_date, $fy->end_date));
+
+        $fiscalYears = collect();
+        if ($currentFY) {
+            $fiscalYears->push($currentFY);
+            $previousFY = $allFiscalYears
+                ->filter(fn($fy) => $fy->end_date < $currentFY->start_date)
+                ->sortByDesc('end_date')
+                ->first();
+            if ($previousFY) {
+                $fiscalYears->push($previousFY);
+            }
+        } else {
+            // fallback: latest 2
+            $fiscalYears = $allFiscalYears->take(2);
+        }
+
+        // Months ordered by selected FY start month
+        $allMonths = ['01'=>'January','02'=>'February','03'=>'March','04'=>'April','05'=>'May','06'=>'June','07'=>'July','08'=>'August','09'=>'September','10'=>'October','11'=>'November','12'=>'December'];
+        $fyMonths = $allMonths; // default
+        if ($this->fiscal_year_id) {
+            $selectedFY = $allFiscalYears->find($this->fiscal_year_id);
+            if ($selectedFY) {
+                $startMonth = (int) \Carbon\Carbon::parse($selectedFY->start_date)->format('m');
+                $orderedMonths = [];
+                for ($i = 0; $i < 12; $i++) {
+                    $m = (($startMonth - 1 + $i) % 12) + 1;
+                    $key = str_pad($m, 2, '0', STR_PAD_LEFT);
+                    $orderedMonths[$key] = $allMonths[$key];
+                }
+                $fyMonths = $orderedMonths;
+            }
+        }
 
         $offices = [];
         if ($this->isHq || auth()->user()->hasRole('Admin')) {
@@ -350,6 +385,7 @@ class ExpenseCreate extends Component
         return view('livewire.setup.expense-create', [
             'economicCodes' => $orderedCodes,
             'fiscalYears' => $fiscalYears,
+            'fyMonths' => $fyMonths,
             'offices' => $offices,
             'completedFiscalYears' => $completedFiscalYears,
         ])->layout('layouts.skot');

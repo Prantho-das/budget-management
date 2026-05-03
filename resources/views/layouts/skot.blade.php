@@ -167,86 +167,71 @@
                             </a>
                         </li>
                         @endcan
-                        @canany(['view-budget-estimations', 'approve-budget', 'release-budget', 'view-budget-status', 'view-budget-summary'])
+                        @can('menu-budget-demand')
                             <li>
                                 <a href="javascript: void(0);" class="has-arrow waves-effect">
                                     <i class="bx bx-file"></i>
                                     <span key="t-utility">{{ __('Budget Demand') }}</span>
                                 </a>
                                 <ul class="sub-menu" aria-expanded="false">
-                                    @can('create-budget-estimations')
+                                    @can('view-budget-estimations')
                                         <li><a href="{{ route('budget.estimations') }}" wire:navigate
-                                                key="t-estimations">{{ __('Entry') }}</a></li>
+                                                 key="t-estimations">{{ __('Entry') }}</a></li>
                                     @endcan
-                                    @canany(['approve-budget', 'reject-budget', 'release-budget'])
+                                    @can('view-budget-approvals')
                                         <li><a href="{{ route('budget.approvals') }}" wire:navigate
-                                                key="t-approvals">{{ __('Approval') }}</a></li>
-                                    @endcanany
-                                    {{-- @can('release-budget')
-                                        <li>
-                                            <a href="javascript: void(0);" class="has-arrow waves-effect">
-                                                <i class="bx bx-layer"></i>
-                                                <span key="t-preparation">{{ __('Budget Preparation') }}</span>
-                                            </a>
-                                            <ul class="sub-menu" aria-expanded="false">
-                                                <li><a href="{{ route('budget.release') }}" wire:navigate
-                                                        key="t-release">{{ __('Budget Release') }}</a></li>
-                                                <li><a href="{{ route('budget.office-wise') }}" wire:navigate
-                                                        key="t-office-wise">{{ __('Office-wise Budget') }}</a></li>
-                                            </ul>
-                                        </li>
-                                    @endcan --}}
+                                                 key="t-approvals">{{ __('Approval') }}</a></li>
+                                    @endcan
                                     @can('view-budget-status')
                                         <li><a href="{{ route('budget.status') }}" wire:navigate
-                                                key="t-status">{{ __('Budget Status') }}</a></li>
+                                                 key="t-status">{{ __('Budget Status') }}</a></li>
                                     @endcan
                                     @can('view-budget-summary')
                                         <li><a href="{{ route('budget.summary') }}" wire:navigate
-                                                key="t-summary">{{ __('My Budget Summary') }}</a></li>
+                                                 key="t-summary">{{ __('My Budget Summary') }}</a></li>
                                     @endcan
                                 </ul>
                             </li>
+                        @endcanany
+
+                        @can('menu-budget-distribution')
                             <li>
                                 <a href="javascript: void(0);" class="has-arrow waves-effect">
                                     <i class="bx bx-share-alt"></i>
                                     <span key="t-budget-distribution">{{ __('Budget Distribution') }}</span>
                                 </a>
                                 <ul class="sub-menu" aria-expanded="false">
-                                    @can('budget-distribution-single')
-                                    <li>
-                                            <a href="{{ route('budget.distribution.entry') }}" wire:navigate
+                                    @can('view-budget-distribution-entry')
+                                        <li><a href="{{ route('budget.distribution.entry') }}" wire:navigate
                                                 key="t-distribution-entry">{{ __('Adjustment Create') }}</a></li>
-                                                                                       @endcan
-                                                    @can('view-budget-distribution')
-                                                    <li><a href="{{ route('budget.distribution.list') }}" wire:navigate
-                                                    key="t-distribution-list">{{ __('Adjustment') }}</a></li>
-                                                    @endcan
-                                      
+                                    @endcan
+                                    @can('view-budget-distribution-list')
+                                        <li><a href="{{ route('budget.distribution.list') }}" wire:navigate
+                                                key="t-distribution-list">{{ __('Adjustment') }}</a></li>
+                                    @endcan
                                 </ul>
                             </li>
-                        @endcan
+                        @endcanany
 
-                        @canany(['release-budget'])
-                        <li>
-                            <a href="javascript: void(0);" class="has-arrow waves-effect">
-                                <i class="bx bx-layer"></i>
-                                <span key="t-preparation">{{ __('Budget Preparation') }}</span>
-                            </a>
-                            <ul class="sub-menu" aria-expanded="false">
-                                {{-- <li><a href="{{ route('budget.release') }}" wire:navigate
-                                        key="t-release">{{ __('Budget Summary') }}</a></li> --}}
-                                @can('release-budget')
-                                <li><a href="{{ route('setup.ministry-budget-list') }}" wire:navigate
-                                        key="t-ministry-entry">{{ __('Ministry Budget Entry List') }}</a></li>
-                                @endcan
-                                @can('release-budget')
-                                <li><a href="{{ route('budget.office-wise') }}" wire:navigate
-                        key="t-office-wise">{{ __('Ministry Budget Preparation') }}</a></li>
-                                @endcan
+                        @can('menu-budget-preparation')
+                            <li>
+                                <a href="javascript: void(0);" class="has-arrow waves-effect">
+                                    <i class="bx bx-layer"></i>
+                                    <span key="t-preparation">{{ __('Budget Preparation') }}</span>
+                                </a>
+                                <ul class="sub-menu" aria-expanded="false">
+                                    @can('view-ministry-budget-list')
+                                        <li><a href="{{ route('setup.ministry-budget-list') }}" wire:navigate
+                                                key="t-ministry-entry">{{ __('Ministry Budget Entry List') }}</a></li>
+                                    @endcan
+                                    @can('view-ministry-budget-preparation')
+                                        <li><a href="{{ route('budget.office-wise') }}" wire:navigate
+                                                key="t-office-wise">{{ __('Ministry Budget Preparation') }}</a></li>
+                                    @endcan
+                                </ul>
+                            </li>
+                        @endcanany
 
-                            </ul>
-                        </li>
-                    @endcan
                         @can('view-expenses')
                             <li>
                                 <a href="{{ route('setup.expenses') }}" wire:navigate class="waves-effect">
@@ -256,7 +241,7 @@
                             </li>
                         @endcan
 
-                        @canany(['view-users', 'view-roles', 'view-permissions'])
+                        @can('menu-access-control')
                             <li>
                                 <a href="javascript: void(0);" class="has-arrow waves-effect">
                                     <i class="bx bx-user-circle"></i>
@@ -277,15 +262,9 @@
                                     @endcan
                                 </ul>
                             </li>
-                        @endcan
+                        @endcanany
 
-                        @canany([
-        'view-fiscal-years',
-        'view-budget-types',
-        'view-offices',
-        'view-economic-codes',
-        'view-system-settings'
-    ])
+                        @can('menu-settings')
                             <li>
                                 <a href="javascript: void(0);" class="has-arrow waves-effect">
                                     <i class="bx bx-cog"></i>
@@ -311,12 +290,14 @@
                                     @can('view-system-settings')
                                         <li><a href="{{ route('setup.system-settings') }}" wire:navigate
                                                 key="t-system-settings">{{ __('System Settings') }}</a></li>
+                                    @endcan
+                                    @can('view-workflow-setup')
                                         <li><a href="{{ route('setup.workflow') }}" wire:navigate
                                                 key="t-workflow">{{ __('Workflow Setup') }}</a></li>
                                     @endcan
                                 </ul>
                             </li>
-                        @endcan
+                        @endcanany
 
 
                     </ul>
