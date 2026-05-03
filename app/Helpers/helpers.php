@@ -86,6 +86,10 @@ if (! function_exists('bn_num')) {
             return '';
         }
 
+        if (app()->getLocale() == 'en') {
+            return $number;
+        }
+
         // Handle numbers with hyphens like fiscal years "2025-26"
         if (is_string($number) && strpos($number, '-') !== false) {
             $parts = explode('-', $number);
@@ -145,6 +149,10 @@ if (! function_exists('bn_comma_format')) {
         }
 
         $formatted = number_format($number, $decimal);
+
+        if (app()->getLocale() == 'en') {
+            return $formatted;
+        }
 
         // Map English digits to Bangla digits
         $en = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
