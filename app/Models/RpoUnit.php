@@ -14,6 +14,7 @@ class RpoUnit extends Model
 
     protected $fillable = [
         'name',
+        'name_en',
         'code',
         'parent_id',
         'district',

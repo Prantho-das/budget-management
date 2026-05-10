@@ -56,16 +56,7 @@
                                     <div class="modal-body p-4">
                                         <form>
                                             <div class="row">
-                                                <div class="col-md-8 mb-3">
-                                                    <label for="name" class="form-label fw-bold">{{ __('Office Name') }} <span class="text-danger">*</span></label>
-                                                    <div class="input-group">
-                                                        <span class="input-group-text"><i class="bx bx-building"></i></span>
-                                                        <input type="text" class="form-control" id="name" wire:model="name" placeholder="{{ __('e.g. বিভাগীয় পাসপোর্ট ও ভিসা অফিস, ঢাকা') }}">
-                                                    </div>
-                                                    @error('name') <span class="text-danger small">{{ $message }}</span>@enderror
-                                                </div>
-                                                
-                                                <div class="col-md-4 mb-3">
+                                                <div class="col-md-6 mb-3">
                                                     <label for="code" class="form-label fw-bold">{{ __('Office Code') }} <span class="text-danger">*</span></label>
                                                     <div class="input-group">
                                                         <span class="input-group-text"><i class="bx bx-hash"></i></span>
@@ -73,6 +64,28 @@
                                                     </div>
                                                     @error('code') <span class="text-danger small">{{ $message }}</span>@enderror
                                                 </div>
+												
+												 <div class="col-md-6 mb-3">
+                                                    <label for="name" class="form-label fw-bold">{{ __('Office Name (English)') }} <span class="text-danger">*</span></label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text"><i class="bx bx-building"></i></span>
+                                                        <input type="text" class="form-control" id="name_en" wire:model="name_en" placeholder="{{ __('e.g. DIP, Dhaka') }}">
+                                                    </div>
+                                                    @error('name_en') <span class="text-danger small">{{ $message }}</span>@enderror
+                                                </div>
+												
+												<div class="col-md-12 mb-3">
+                                                    <label for="name" class="form-label fw-bold">{{ __('Office Name (Bangla)') }} <span class="text-danger">*</span></label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text"><i class="bx bx-building"></i></span>
+                                                        <input type="text" class="form-control" id="name" wire:model="name" placeholder="{{ __('e.g. বিভাগীয় পাসপোর্ট ও ভিসা অফিস, ঢাকা') }}">
+                                                    </div>
+                                                    @error('name') <span class="text-danger small">{{ $message }}</span>@enderror
+                                                </div>
+												
+												
+                                                
+                                                
 
                                                 <div class="col-md-12 mb-3">
                                                     <label for="parent_id" class="form-label fw-bold">{{ __('Office Group') }}</label>
@@ -113,8 +126,10 @@
                                 <tr>
                                     <th style="width: 80px;">{{ __('SL') }}</th>
                                     <th style="width: 150px;">{{ __('Office Code') }}</th>
-                                    <th>{{ __('Office Name') }}</th>
-                                    {{-- <th>{{ __('Type') }}</th> --}}
+                                    <th style="width: 150px;">{{ __('Office Name (Bn)') }}</th>
+                                    <th style="width: 150px;">{{ __('Office Name (En)') }}</th>
+                                     {{--<th>{{ __('Office Name') }}</th>
+                                    <th>{{ __('Type') }}</th> --}}
                                     <th class="text-center">{{ __('Action') }}</th>
                                 </tr>
                             </thead>
@@ -127,6 +142,7 @@
                                             <span class="badge bg-primary fs-13">{{ bn_num($root->code) }}</span>
                                         </td>
                                         <td class="fw-bold text-primary">{{ $root->name }}</td>
+                                        <td class="fw-bold text-primary">{{ !empty($root->name_en) ? $root->name_en : '--' }}</td>
                                         {{-- <td><span class="badge badge-soft-primary px-3">{{ __('Headquarters') }}</span></td> --}}
                                         <td class="text-center">
                                             <div class="btn-group">
@@ -149,6 +165,7 @@
                                                 <span class="badge bg-info fs-12">{{ bn_num($child->code) }}</span>
                                             </td>
                                             <td class="fw-medium text-info">{{ $child->name }}</td>
+                                            <td class="fw-medium text-info">{{ $child->name_en }}</td>
                                             {{-- <td><span class="badge badge-soft-info px-3">{{ __('District Office') }}</span></td> --}}
                                             <td class="text-center">
                                                 <div class="btn-group">

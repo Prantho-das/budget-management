@@ -7,7 +7,7 @@ use App\Models\RpoUnit;
 
 class RpoUnits extends Component
 {
-  public $rpo_units, $name, $code, $parent_id, $rpo_unit_id;
+  public $rpo_units, $name, $name_en, $code, $parent_id, $rpo_unit_id;
   public $isOpen = false;
   public $search = '';
 
@@ -86,12 +86,14 @@ class RpoUnits extends Component
 
     $this->validate([
       'name' => 'required',
+      'name_en' => 'required',
       'code' => 'required|unique:rpo_units,code,' . $this->rpo_unit_id,
       'parent_id' => 'nullable|exists:rpo_units,id'
     ]);
 
     RpoUnit::updateOrCreate(['id' => $this->rpo_unit_id], [
       'name' => $this->name,
+      'name_en' => $this->name_en,
       'code' => $this->code,
       'parent_id' => $this->parent_id ?: null,
       'status' => true
@@ -112,6 +114,7 @@ class RpoUnits extends Component
     $unit = RpoUnit::findOrFail($id);
     $this->rpo_unit_id = $id;
     $this->name = $unit->name;
+    $this->name_en = $unit->name_en;
     $this->code = $unit->code;
     $this->parent_id = $unit->parent_id;
 
