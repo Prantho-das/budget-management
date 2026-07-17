@@ -1,4 +1,32 @@
 <div>
+    <style>
+        @media print {
+            .vertical-menu,
+            .navbar-header,
+            .footer,
+            .btn,
+            .btn-outline-secondary,
+            .breadcrumb,
+            .page-title-right {
+                display: none !important;
+            }
+            .main-content {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .card {
+                border: none !important;
+                box-shadow: none !important;
+            }
+            .table-responsive {
+                overflow: visible !important;
+            }
+            input {
+                border: none !important;
+                background: transparent !important;
+            }
+        }
+    </style>
     <div class="row">
         <div class="col-12">
             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
@@ -95,7 +123,10 @@
                                 <p class="text-muted mb-0">{{ __('Detailed Economic Code Breakdown') }}</p>
                             </div>
                             <div class="text-end">
-                                <button wire:click="saveAsDraft" class="btn btn-warning btn-rounded px-4">
+                                <button onclick="window.print()" class="btn btn-secondary btn-rounded px-4">
+                                    <i class="bx bx-printer me-1"></i> {{ __('Print') }}
+                                </button>
+                                <button wire:click="saveAsDraft" class="btn btn-warning btn-rounded px-4 ms-2">
                                     <i class="bx bx-save me-1"></i> {{ __('Save as Draft') }}
                                 </button>
                                 <button onclick="confirmApproval({{ $office->id }}, '{{ $selected_budget_type_id }}', '{{ $selected_stage }}', '{{ $selected_batch_id }}')" class="btn btn-success btn-rounded px-4 ms-2">
@@ -194,7 +225,7 @@
             })
         }
 
-        async function promptRejection(id, type, stage) {
+        async function promptRejection(id, type, stage, batch) {
             const { value: text } = await Swal.fire({
                 title: '{{ __("Reason for Rejection") }} (' + type + ' - ' + stage + ')',
                 input: 'textarea',
@@ -205,10 +236,10 @@
             })
 
             if (text) {
-                // Formatting key to match PHP key generation: $officeId . '_' . $budgetTypeId . '_' . stage
-                let key = id + '_' + type + '_' + stage.replace(/ /g, '_');
+                // Formatting key to match PHP key generation: $officeId . '_' . $budgetTypeId . '_' . stage . '_' . batchId
+                let key = id + '_' + type + '_' + stage.replace(/ /g, '_') + '_' + batch;
                 @this.set('remarks.' + key, text);
-                @this.reject(id, type, stage);
+                @this.reject(id, type, stage, batch);
             }
         }
     </script>

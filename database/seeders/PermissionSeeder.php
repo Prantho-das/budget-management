@@ -63,10 +63,10 @@ class PermissionSeeder extends Seeder
             'view-budget-summary' => 'Budget Estimation',
             'view-budget-approvals' => 'Budget Approval',
 
-            // Approval Workflow
             'approve-budget' => 'Budget Approval',
             'reject-budget' => 'Budget Approval',
             'release-budget' => 'Budget Approval',
+            'edit-budget-approval-amount' => 'Budget Approval',
             'view-budget-distribution' => 'Budget Distribution',
             'create-budget-distribution' => 'Budget Distribution',
             'view-budget-distribution-entry' => 'Budget Distribution',
