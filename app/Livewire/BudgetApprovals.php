@@ -165,6 +165,15 @@ class BudgetApprovals extends Component
 
     public function approve($officeId, $budgetTypeId, $currentStage, $batchId)
     {
+        \Illuminate\Support\Facades\Log::info("BudgetApprovals::approve called", [
+            'officeId' => $officeId,
+            'budgetTypeId' => $budgetTypeId,
+            'currentStage' => $currentStage,
+            'batchId' => $batchId,
+            'user' => Auth::user()->email,
+            'user_rpo_unit_id' => Auth::user()->rpo_unit_id
+        ]);
+
         abort_if(auth()->user()->cannot('approve-budget') && auth()->user()->cannot('release-budget'), 403);
 
         $workflow = new \App\Services\BudgetWorkflowService();
@@ -172,8 +181,16 @@ class BudgetApprovals extends Component
             ->where('target_office_id', Auth::user()->rpo_unit_id)
             ->get();
 
+        \Illuminate\Support\Facades\Log::info("Found estimations to approve", ['count' => $estimations->count()]);
+
         if ($estimations->isNotEmpty()) {
-            $workflow->approveBatch($estimations);
+            try {
+                $workflow->approveBatch($estimations);
+                \Illuminate\Support\Facades\Log::info("Workflow approveBatch completed successfully");
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Workflow approveBatch failed", ['error' => $e->getMessage()]);
+                throw $e;
+            }
         }
 
         session()->flash('message', __('Budget Approved Successfully.'));

@@ -13,25 +13,22 @@ class RpoUnitSeeder extends Seeder
     public function run(): void
     {
         // Define Headquarters root
-        $hq = RpoUnit::updateOrCreate(['id' => 1], [
+        $hq = RpoUnit::updateOrCreate(['code' => '১৬১০৫০১'], [
             'name' => 'প্রধান কার্যালয়',
-            'code' => '১৬১০৫০১',
             'status' => true,
             'parent_id' => null
         ]);
 
         // Define Regional level
-        $regional = RpoUnit::updateOrCreate(['id' => 5], [
+        $regional = RpoUnit::updateOrCreate(['code' => 'REG001'], [
             'name' => 'বিভাগীয় পাসপোর্ট ও ভিসা অফিসসমূহ',
-            'code' => 'REG001',
             'parent_id' => $hq->id,
             'status' => true
         ]);
 
         // Define specific office
-        RpoUnit::updateOrCreate(['id' => 6], [
+        RpoUnit::updateOrCreate(['code' => '১৩৩২৫৫'], [
             'name' => 'বিভাগীয় পাসপোর্ট ও ভিসা অফিস, ঢাকা',
-            'code' => '১৩৩২৫৫',
             'parent_id' => $regional->id,
             'status' => true
         ]);

@@ -73,12 +73,11 @@ class RoleSeeder extends Seeder
             'menu-budget-demand',
         ]);
 
-        // Additional Roles from User discussion
         Role::firstOrCreate(['name' => 'Assistant Budget Officer (HQ)', 'guard_name' => 'web'])->syncPermissions([
             'view-dashboard',
             'view-budget-estimations',
             'view-budget-approvals',
-            'release-budget',
+            'approve-budget',
             'reject-budget',
             'edit-budget-approval-amount',
             'view-reports',

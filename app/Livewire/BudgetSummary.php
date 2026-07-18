@@ -84,6 +84,45 @@ class BudgetSummary extends Component
                 ];
             });
 
+        // Grouped allocations for print report
+        $allocations = BudgetAllocation::with(['economicCode'])
+            ->where('rpo_unit_id', $userOfficeId)
+            ->where('fiscal_year_id', $this->fiscal_year_id)
+            ->get();
+
+        $groupedAllocations = [];
+        $grandTotal = 0;
+        foreach ($allocations as $alloc) {
+            $codeModel = $alloc->economicCode;
+            if (!$codeModel) continue;
+
+            $fullCode = $codeModel->code;
+            $groupCode = substr($fullCode, 0, 4);
+
+            $groupModel = \App\Models\EconomicCode::where('code', $groupCode)->first();
+            $groupName = $groupModel ? $groupModel->name : __('Other');
+
+            if (!isset($groupedAllocations[$groupCode])) {
+                $groupedAllocations[$groupCode] = [
+                    'group_code' => $groupCode,
+                    'group_name' => $groupName,
+                    'items' => [],
+                    'subtotal' => 0
+                ];
+            }
+
+            $groupedAllocations[$groupCode]['items'][] = [
+                'code' => $fullCode,
+                'name' => $codeModel->name,
+                'amount' => $alloc->amount
+            ];
+            $groupedAllocations[$groupCode]['subtotal'] += $alloc->amount;
+            $grandTotal += $alloc->amount;
+        }
+
+        $selectedOffice = \App\Models\RpoUnit::find($userOfficeId);
+        $selectedFiscalYear = FiscalYear::find($this->fiscal_year_id);
+
         $fiscalYears = FiscalYear::orderBy('name', 'desc')->get();
         $offices = \App\Models\RpoUnit::all();
 
@@ -96,6 +135,10 @@ class BudgetSummary extends Component
             'totalExpenses' => $totalExpenses,
             'availableBalance' => $availableBalance,
             'budgetByCode' => $budgetByCode,
+            'groupedAllocations' => $groupedAllocations,
+            'grandTotal' => $grandTotal,
+            'selectedOffice' => $selectedOffice,
+            'selectedFiscalYear' => $selectedFiscalYear,
             'fiscalYears' => $fiscalYears,
             'offices' => $offices
         ])->extends('layouts.skot')->section('content');

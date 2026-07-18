@@ -209,6 +209,11 @@
     @endif
 
     <script>
+        function getLivewireComponent() {
+            const element = document.querySelector('[wire\\:id]');
+            return element ? Livewire.find(element.getAttribute('wire:id')) : null;
+        }
+
         function confirmApproval(id, type, stage, batch) {
             Swal.fire({
                 title: '{{ __("Confirm Approval") }}',
@@ -220,7 +225,10 @@
                 confirmButtonText: '{{ __("Yes, approve it!") }}'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    @this.approve(id, type, stage, batch);
+                    const component = getLivewireComponent();
+                    if (component) {
+                        component.approve(id, type, stage, batch);
+                    }
                 }
             })
         }
@@ -236,10 +244,12 @@
             })
 
             if (text) {
-                // Formatting key to match PHP key generation: $officeId . '_' . $budgetTypeId . '_' . stage . '_' . batchId
-                let key = id + '_' + type + '_' + stage.replace(/ /g, '_') + '_' + batch;
-                @this.set('remarks.' + key, text);
-                @this.reject(id, type, stage, batch);
+                const component = getLivewireComponent();
+                if (component) {
+                    let key = id + '_' + type + '_' + stage.replace(/ /g, '_') + '_' + batch;
+                    component.set('remarks.' + key, text);
+                    component.reject(id, type, stage, batch);
+                }
             }
         }
     </script>
