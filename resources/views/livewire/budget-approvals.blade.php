@@ -1,29 +1,106 @@
 <div>
     <style>
+        /* Screen styles: Hide print layout on screen */
+        #formal-print-report {
+            display: none;
+        }
+
+        /* Print styles */
         @media print {
+            /* Hide all regular dashboard/screen elements */
             .vertical-menu,
             .navbar-header,
             .footer,
-            .btn,
-            .btn-outline-secondary,
-            .breadcrumb,
-            .page-title-right {
+            .page-title-box,
+            .row,
+            .alert,
+            select,
+            label,
+            #page-topbar,
+            .main-content {
                 display: none !important;
             }
-            .main-content {
+
+            /* Reset container widths and margins */
+            body, html {
+                background: #fff !important;
+                color: #000 !important;
                 margin: 0 !important;
                 padding: 0 !important;
+                font-size: 13px !important;
+                font-family: 'SolaimanLipi', 'Nikosh', sans-serif !important;
             }
-            .card {
-                border: none !important;
-                box-shadow: none !important;
+
+            /* Make print container full width and visible */
+            #formal-print-report {
+                display: block !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 20px !important;
             }
-            .table-responsive {
-                overflow: visible !important;
+
+            /* Table styling matching the PDF */
+            .print-table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                margin-top: 15px !important;
             }
-            input {
-                border: none !important;
-                background: transparent !important;
+
+            .print-table th, .print-table td {
+                border: 1px solid #000 !important;
+                padding: 5px 8px !important;
+                vertical-align: middle !important;
+            }
+
+            .print-table th {
+                background-color: #f2f2f2 !important;
+                font-weight: bold !important;
+                text-align: center !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .text-center {
+                text-align: center !important;
+            }
+
+            .text-end {
+                text-align: right !important;
+            }
+
+            .fw-bold {
+                font-weight: bold !important;
+            }
+
+            .mb-0 {
+                margin-bottom: 0 !important;
+            }
+
+            .mt-1 {
+                margin-top: 4px !important;
+            }
+
+            .header-title-block {
+                text-align: center !important;
+                margin-bottom: 25px !important;
+                line-height: 1.5 !important;
+            }
+
+            .header-title-block h3 {
+                font-size: 18px !important;
+                font-weight: bold !important;
+                margin: 0 0 5px 0 !important;
+            }
+
+            .header-title-block h4 {
+                font-size: 16px !important;
+                margin: 0 0 5px 0 !important;
+                font-weight: normal !important;
+            }
+
+            .header-title-block p {
+                margin: 0 !important;
+                font-size: 14px !important;
             }
         }
     </style>
@@ -251,6 +328,83 @@
                     component.reject(id, type, stage, batch);
                 }
             }
-        }
     </script>
+
+    @if($viewMode === 'detail' && $office)
+    <!-- START OF FORMAL PRINT REPORT LAYOUT -->
+    <div id="formal-print-report">
+        <div class="header-title-block">
+            <h3>গণপ্রজাতন্ত্রী বাংলাদেশ সরকার</h3>
+            <h4>ইমিগ্রেশন ও পাসপোর্ট অধিদপ্তর</h4>
+            <p>ই-৭, আগারগাঁও, ঢাকা</p>
+            <p class="mt-1 fw-bold">অফিসের নাম: {{ $office->name ?? '' }}@if(isset($office->code)); অফিস কোড নং-{{ bn_num($office->code) }}@endif</p>
+            <p class="fw-bold">{{ bn_num($selectedFiscalYear->name ?? '') }} অর্থবছরের বাজেট বরাদ্দ (বরাদ্দ নং ১)</p>
+        </div>
+
+        <table class="print-table">
+            <thead>
+                <tr>
+                    <th style="width: 20%;">অর্থনৈতিক গ্রুপ/কোড</th>
+                    <th style="width: 45%;">বিবরণ</th>
+                    <th style="width: 17%; text-align: right;">পরিমাণ (হাজার টাকায়)</th>
+                    <th style="width: 18%; text-align: right;">মোট (হাজার টাকায়)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php
+                    $grandTotalInThousands = 0;
+                @endphp
+                @forelse($groupedDemands as $groupCode => $group)
+                    @php
+                        $subtotalInThousands = $group['subtotal_approved'] / 1000;
+                        $grandTotalInThousands += $subtotalInThousands;
+                    @endphp
+                    <!-- Group Header Row -->
+                    <tr class="fw-bold">
+                        <td>{{ bn_num($group['group_code']) }}</td>
+                        <td>{{ $group['group_name'] }}</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    
+                    <!-- Child Items Rows -->
+                    @foreach($group['items'] as $item)
+                        @php
+                            $amountInThousands = $item['approved'] / 1000;
+                        @endphp
+                        <tr>
+                            <td style="padding-left: 20px;">{{ bn_num($item['code']) }}</td>
+                            <td>{{ $item['name'] }}</td>
+                            <td class="text-end">{{ $amountInThousands > 0 ? bn_comma_format($amountInThousands, 0) : '০' }}</td>
+                            <td></td>
+                        </tr>
+                    @endforeach
+
+                    <!-- Subtotal Row -->
+                    <tr class="fw-bold">
+                        <td></td>
+                        <td class="text-end">উপমোট</td>
+                        <td></td>
+                        <td class="text-end">{{ $subtotalInThousands > 0 ? bn_comma_format($subtotalInThousands, 0) : '০' }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="4" class="text-center">কোনো বাজেট বরাদ্দ পাওয়া যায়নি।</td>
+                    </tr>
+                @endforelse
+
+                <!-- Grand Total Row -->
+                @if(count($groupedDemands) > 0)
+                    <tr class="fw-bold">
+                        <td class="text-center">সর্বমোট</td>
+                        <td></td>
+                        <td class="text-end">{{ bn_comma_format($grandTotalInThousands, 0) }}</td>
+                        <td class="text-end">{{ bn_comma_format($grandTotalInThousands, 0) }}</td>
+                    </tr>
+                @endif
+            </tbody>
+        </table>
+    </div>
+    <!-- END OF FORMAL PRINT REPORT LAYOUT -->
+    @endif
 </div>

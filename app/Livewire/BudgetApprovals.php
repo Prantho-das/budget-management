@@ -237,8 +237,63 @@ class BudgetApprovals extends Component
     public function render()
     {
         abort_if(auth()->user()->cannot('approve-budget') && auth()->user()->cannot('release-budget') && auth()->user()->cannot('reject-budget'), 403);
+        
+        $groupedDemands = [];
+        $grandTotalDemand = 0;
+        $grandTotalApproved = 0;
+        $selectedFiscalYear = null;
+
+        if ($this->selected_batch_id) {
+            $estimations = BudgetEstimation::where('batch_id', $this->selected_batch_id)
+                ->where('target_office_id', Auth::user()->rpo_unit_id)
+                ->with(['economicCode', 'fiscalYear'])
+                ->get();
+                
+            if ($estimations->isNotEmpty()) {
+                $selectedFiscalYear = $estimations->first()->fiscalYear;
+            }
+
+            foreach ($estimations as $est) {
+                $codeModel = $est->economicCode;
+                if (!$codeModel) continue;
+
+                $fullCode = $codeModel->code;
+                $groupCode = substr($fullCode, 0, 4);
+
+                $groupModel = \App\Models\EconomicCode::where('code', $groupCode)->first();
+                $groupName = $groupModel ? $groupModel->name : __('Other');
+
+                if (!isset($groupedDemands[$groupCode])) {
+                    $groupedDemands[$groupCode] = [
+                        'group_code' => $groupCode,
+                        'group_name' => $groupName,
+                        'items' => [],
+                        'subtotal_demand' => 0,
+                        'subtotal_approved' => 0,
+                    ];
+                }
+
+                $approvedVal = $est->amount_approved ?? $est->amount_demand;
+
+                $groupedDemands[$groupCode]['items'][] = [
+                    'code' => $fullCode,
+                    'name' => $codeModel->name,
+                    'demand' => $est->amount_demand,
+                    'approved' => $approvedVal,
+                ];
+                $groupedDemands[$groupCode]['subtotal_demand'] += $est->amount_demand;
+                $groupedDemands[$groupCode]['subtotal_approved'] += $approvedVal;
+                $grandTotalDemand += $est->amount_demand;
+                $grandTotalApproved += $approvedVal;
+            }
+        }
+
         return view('livewire.budget-approvals', [
-            'office' => $this->selected_office_id ? RpoUnit::find($this->selected_office_id) : null
+            'office' => $this->selected_office_id ? RpoUnit::find($this->selected_office_id) : null,
+            'groupedDemands' => $groupedDemands,
+            'grandTotalDemand' => $grandTotalDemand,
+            'grandTotalApproved' => $grandTotalApproved,
+            'selectedFiscalYear' => $selectedFiscalYear,
         ])->extends('layouts.skot')->section('content');
     }
 }
