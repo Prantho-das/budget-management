@@ -9,35 +9,28 @@
         /* Print styles */
         @media print {
             /* Hide all regular dashboard/screen elements */
-            .vertical-menu,
-            .navbar-header,
-            .footer,
-            .page-title-box,
-            .row,
-            .alert,
-            select,
-            label,
-            #page-topbar,
-            .main-content {
-                display: none !important;
+            body * {
+                visibility: hidden;
+            }
+            #formal-print-report, #formal-print-report * {
+                visibility: visible;
+            }
+            #formal-print-report {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                display: block !important;
             }
 
             /* Reset container widths and margins */
             body, html {
                 background: #fff !important;
                 color: #000 !important;
-                margin: 0 !important;
-                padding: 0 !important;
                 font-size: 13px !important;
                 font-family: 'SolaimanLipi', 'Nikosh', sans-serif !important;
-            }
-
-            /* Make print container full width and visible */
-            #formal-print-report {
-                display: block !important;
-                width: 100% !important;
-                margin: 0 !important;
-                padding: 20px !important;
             }
 
             /* Table styling matching the PDF */
@@ -288,11 +281,6 @@
     @endif
 
     <script>
-        function getLivewireComponent() {
-            const element = document.querySelector('[wire\\:id]');
-            return element ? Livewire.find(element.getAttribute('wire:id')) : null;
-        }
-
         function confirmApproval(id, type, stage, batch) {
             Swal.fire({
                 title: '{{ __("Confirm Approval") }}',
@@ -304,10 +292,7 @@
                 confirmButtonText: '{{ __("Yes, approve it!") }}'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const component = getLivewireComponent();
-                    if (component) {
-                        component.approve(id, type, stage, batch);
-                    }
+                    @this.approve(id, type, stage, batch);
                 }
             })
         }
@@ -323,13 +308,11 @@
             })
 
             if (text) {
-                const component = getLivewireComponent();
-                if (component) {
-                    let key = id + '_' + type + '_' + stage.replace(/ /g, '_') + '_' + batch;
-                    component.set('remarks.' + key, text);
-                    component.reject(id, type, stage, batch);
-                }
+                let key = id + '_' + type + '_' + stage.replace(/ /g, '_') + '_' + batch;
+                @this.set('remarks.' + key, text);
+                @this.reject(id, type, stage, batch);
             }
+        }
     </script>
 
     @if($viewMode === 'detail' && $office)
