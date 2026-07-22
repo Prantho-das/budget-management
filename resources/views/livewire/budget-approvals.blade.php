@@ -216,12 +216,8 @@
                                     <tr>
                                         <th>{{ __('Code') }}</th>
                                         <th>{{ __('Description') }}</th>
-                                        @foreach($previousDemands as $codeId => $years)
-                                            @once
-                                                @foreach($years as $index => $data)
-                                                    <th class="text-center">{{ __('Exp') }}<br><small>{{ $data['year'] }}</small></th>
-                                                @endforeach
-                                            @endonce
+                                        @foreach($prevYears as $yearName)
+                                            <th class="text-center">{{ __('Exp') }}<br><small>{{ $yearName }}</small></th>
                                         @endforeach
                                         <th style="width: 12%;">{{ __('Demand Amount') }}</th>
                                         <th style="width: 15%;">{{ __('Requester Remarks') }}</th>
@@ -341,7 +337,7 @@
                 @endphp
                 @forelse($groupedDemands as $groupCode => $group)
                     @php
-                        $subtotalInThousands = $group['subtotal_approved'] / 1000;
+                        $subtotalInThousands = $group['subtotal_approved'];
                         $grandTotalInThousands += $subtotalInThousands;
                     @endphp
                     <!-- Group Header Row -->
@@ -355,7 +351,7 @@
                     <!-- Child Items Rows -->
                     @foreach($group['items'] as $item)
                         @php
-                            $amountInThousands = $item['approved'] / 1000;
+                            $amountInThousands = $item['approved'];
                         @endphp
                         <tr>
                             <td style="padding-left: 20px;">{{ bn_num($item['code']) }}</td>

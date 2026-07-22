@@ -23,6 +23,7 @@ class BudgetApprovals extends Component
     public $selected_stage;
     public $selected_batch_id;
     public $viewMode = 'inbox'; // 'inbox' or 'detail'
+    public $prevYears = [];
 
     public function mount()
     {
@@ -124,6 +125,8 @@ class BudgetApprovals extends Component
             ->get()
             ->reverse()
             ->values();
+
+        $this->prevYears = $previousYears->pluck('name')->toArray();
 
         $pastFyIds = $previousYears->pluck('id')->toArray();
         $rawExpenses = \App\Models\Expense::whereIn('fiscal_year_id', $pastFyIds)
